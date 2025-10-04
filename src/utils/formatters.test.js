@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fmtBRL, fmtPct, monthLabel, toNumber, yyyymm } from "./formatters";
+import { enumerateMonths, fmtBRL, fmtPct, midOfMonth, monthLabel, toNumber, yyyymm } from "./formatters";
 
 describe("toNumber", () => {
   it("converts localized numbers", () => {
@@ -24,6 +24,14 @@ describe("date helpers", () => {
     const label = monthLabel("2024-05").toLowerCase();
     expect(label).toContain("mai");
     expect(label).toContain("2024");
+  });
+
+  it("enumerates months inclusively", () => {
+    expect(enumerateMonths("2024-01", "2024-03")).toEqual(["2024-01", "2024-02", "2024-03"]);
+  });
+
+  it("returns mid of month", () => {
+    expect(midOfMonth("2024-02").getDate()).toBe(15);
   });
 });
 

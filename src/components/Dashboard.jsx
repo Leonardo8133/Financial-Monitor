@@ -12,23 +12,35 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { fmtBRL, monthLabel } from "../utils/formatters.js";
+import { fmtBRL } from "../utils/formatters.js";
 
-export function Dashboard({ monthly, timeseries }) {
+export function Dashboard({ monthly }) {
   const monthlyChart = monthly.map((m) => ({
-    month: monthLabel(m.ym),
+    month: m.label,
     Investido: Math.max(0, m.invested),
     "Em Conta": Math.max(0, m.inAccount),
     "Entradas/Saídas": m.cashFlow,
     Rendimento: m.yieldValue,
   }));
 
-  const tsChart = timeseries.map((d) => ({
-    date: new Date(d.date).toLocaleDateString("pt-BR"),
-    Investido: d.invested,
-    "Em Conta": d.inAccount,
-    Rendimento: d.yieldValue,
+  const tsChart = monthly.map((m) => ({
+    ts: m.midDateValue,
+    label: m.label,
+    Investido: m.invested,
+    "Em Conta": m.inAccount,
+    Rendimento: m.yieldValue,
   }));
+
+  const formatTick = (value) =>
+    value
+      ? new Date(value).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })
+      : "";
+
+  const formatLabel = (value, payload) =>
+    payload?.[0]?.payload?.label ||
+    (value ? new Date(value).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) : "");
+
+  const domain = tsChart.length ? ["dataMin", "dataMax"] : [0, 1];
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -61,9 +73,12 @@ export function Dashboard({ monthly, timeseries }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
+              <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
               <YAxis tickFormatter={(v) => fmtBRL(v)} />
-              <Tooltip formatter={(v) => fmtBRL(v)} />
+              <Tooltip
+                formatter={(v) => fmtBRL(v)}
+                labelFormatter={formatLabel}
+              />
               <Legend />
               <Area type="monotone" dataKey="Rendimento" fillOpacity={1} fill="url(#grad1)" />
             </AreaChart>
@@ -77,9 +92,12 @@ export function Dashboard({ monthly, timeseries }) {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={tsChart}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
+              <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
               <YAxis tickFormatter={(v) => fmtBRL(v)} />
-              <Tooltip formatter={(v) => fmtBRL(v)} />
+              <Tooltip
+                formatter={(v) => fmtBRL(v)}
+                labelFormatter={formatLabel}
+              />
               <Legend />
               <Line type="monotone" dataKey="Investido" dot={false} />
               <Line type="monotone" dataKey="Em Conta" dot={false} />

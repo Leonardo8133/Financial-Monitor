@@ -33,6 +33,29 @@ export function monthLabel(ym) {
   return d.toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
 }
 
+export function midOfMonth(ym) {
+  const [y, m] = ym.split("-");
+  return new Date(Number(y), Number(m) - 1, 15);
+}
+
+export function enumerateMonths(startYm, endYm) {
+  if (!startYm || !endYm) return [];
+  const [startY, startM] = startYm.split("-").map(Number);
+  const [endY, endM] = endYm.split("-").map(Number);
+  const months = [];
+  let y = startY;
+  let m = startM;
+  while (y < endY || (y === endY && m <= endM)) {
+    months.push(`${y}-${String(m).padStart(2, "0")}`);
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return months;
+}
+
 export function download(filename, text) {
   const blob = new Blob([text], { type: "application/json;charset=utf-8" });
   const url = URL.createObjectURL(blob);
