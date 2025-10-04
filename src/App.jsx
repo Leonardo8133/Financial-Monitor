@@ -412,13 +412,6 @@ function resolveTone(value) {
   return "neutral";
 }
 
-function resolveTone(value) {
-  if (value === null || value === undefined) return "neutral";
-  if (value < 0) return "negative";
-  if (value > 0) return "positive";
-  return "neutral";
-}
-
 function mergeBanksFromEntries(entries, baseBanks = DEFAULT_BANKS) {
   let next = Array.isArray(baseBanks) ? [...baseBanks] : [...DEFAULT_BANKS];
   for (const entry of entries) {
