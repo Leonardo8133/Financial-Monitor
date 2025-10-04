@@ -3,7 +3,18 @@ import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
 import { KPICard } from "./components/KPICard.jsx";
+import { Tabs } from "./components/Tab.jsx";
+import { ActionButton } from "./components/ActionButton.jsx";
 import { demoBanks, demoCreatedAt, demoEntries } from "./data/demoEntries.js";
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  DocumentIcon,
+  TrashIcon,
+  ChartBarIcon,
+  TableCellsIcon,
+  PlusIcon,
+} from '@heroicons/react/24/outline';
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
 import {
   download,
@@ -289,8 +300,11 @@ export default function App() {
           </div>
           <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <ActionButton onClick={exportJson}>Exportar</ActionButton>
-              <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
+              <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>
+                Exportar
+              </ActionButton>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
+                <ArrowUpTrayIcon className="h-5 w-5" />
                 Importar
                 <input
                   ref={fileRef}
@@ -300,8 +314,11 @@ export default function App() {
                   onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
                 />
               </label>
-              <ActionButton onClick={downloadTemplate}>Template</ActionButton>
+              <ActionButton icon={DocumentIcon} onClick={downloadTemplate}>
+                Template
+              </ActionButton>
               <ActionButton
+                icon={TrashIcon}
                 onClick={() => {
                   if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) setEntries([]);
                 }}
@@ -309,14 +326,16 @@ export default function App() {
                 Limpar
               </ActionButton>
             </div>
-            <div className="flex items-center justify-end gap-2">
-              <TabButton active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
-                Dashboard
-              </TabButton>
-              <TabButton active={tab === "historico"} onClick={() => setTab("historico")}>Histórico</TabButton>
-              <TabButton active={tab === "entrada"} onClick={() => setTab("entrada")}>Nova Entrada</TabButton>
-            </div>
           </div>
+          <Tabs
+            tabs={[
+              { key: 'dashboard', label: 'Dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
+              { key: 'historico', label: 'Histórico', icon: <TableCellsIcon className="h-5 w-5" /> },
+              { key: 'entrada', label: 'Nova Entrada', icon: <PlusIcon className="h-5 w-5" /> },
+            ]}
+            activeTab={tab}
+            onChange={setTab}
+          />
         </header>
 
         <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
