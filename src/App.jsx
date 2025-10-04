@@ -43,17 +43,12 @@ export default function App() {
 
   const setEntries = (updater) => {
     setStore((prev) => {
-      const current = Array.isArray(prev.entries) ? prev.entries : [];
-      const next = typeof updater === "function" ? updater(current) : updater;
-      return { ...prev, entries: next };
-    });
-  };
-
-  const setBanks = (updater) => {
-    setStore((prev) => {
-      const current = Array.isArray(prev.banks) ? prev.banks : DEFAULT_BANKS;
-      const next = typeof updater === "function" ? updater(current) : updater;
-      return { ...prev, banks: next };
+      const currentEntries = Array.isArray(prev.entries) ? prev.entries : [];
+      const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
+      const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
+      const currentBanks = Array.isArray(prev.banks) && prev.banks.length ? prev.banks : DEFAULT_BANKS;
+      const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
+      return { ...prev, entries: nextEntries, banks: mergedBanks };
     });
   };
 
@@ -174,7 +169,6 @@ export default function App() {
     if (!prepared.length) return;
 
     setEntries((prev) => [...prev, ...prepared]);
-    setBanks((prev) => mergeBanksFromEntries(prepared, prev));
     setDrafts([createDraftEntry()]);
     setTab("historico");
   }
