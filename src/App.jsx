@@ -35,6 +35,7 @@ import {
   withId,
 } from "./utils/entries.js";
 import { DEFAULT_BANKS, ensureBankInLibrary } from "./config/banks.js";
+import { Link } from "react-router-dom";
 
 const STORAGE_SEED = {
   entries: [],
@@ -317,6 +318,9 @@ export default function App() {
               <ActionButton icon={DocumentIcon} onClick={downloadTemplate}>
                 Template
               </ActionButton>
+              <Link to="/gastos" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-50">
+                Ir para Gastos
+              </Link>
               <ActionButton
                 icon={TrashIcon}
                 onClick={() => {
