@@ -1,4 +1,4 @@
-const BANK_LIBRARY = [
+export const DEFAULT_BANKS = [
   { name: "Nubank Caixinhas", color: "#8A05BE", icon: "🟣" },
   { name: "Nubank Investimentos", color: "#7A04B5", icon: "💜" },
   { name: "XP", color: "#000000", icon: "⚫" },
@@ -7,9 +7,7 @@ const BANK_LIBRARY = [
   { name: "Binance", color: "#F3BA2F", icon: "🟡" },
 ];
 
-const lookup = new Map(BANK_LIBRARY.map((bank) => [bank.name.toLowerCase(), bank]));
-
-function stringToColor(input = "") {
+export function stringToColor(input = "") {
   let hash = 0;
   for (let i = 0; i < input.length; i += 1) {
     hash = input.charCodeAt(i) + ((hash << 5) - hash);
@@ -19,10 +17,18 @@ function stringToColor(input = "") {
   return `hsl(${hue} 70% 50%)`;
 }
 
-export function getBankVisual(bankName = "") {
-  const preset = lookup.get(bankName.toLowerCase());
+export function resolveBankVisual(bankName = "", library = DEFAULT_BANKS) {
+  const lower = bankName.toLowerCase();
+  const preset = library.find((bank) => bank.name.toLowerCase() === lower);
   if (preset) return preset;
   return { name: bankName, color: stringToColor(bankName), icon: "🏦" };
 }
 
-export const BANKS = BANK_LIBRARY;
+export function ensureBankInLibrary(bankName, library = DEFAULT_BANKS) {
+  if (!bankName) return library;
+  const lower = bankName.toLowerCase();
+  const exists = library.some((bank) => bank.name.toLowerCase() === lower);
+  if (exists) return library;
+  const nextBank = resolveBankVisual(bankName, []);
+  return [...library, nextBank];
+}

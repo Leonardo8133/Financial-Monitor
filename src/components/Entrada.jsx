@@ -1,7 +1,9 @@
 import { createDraftEntry } from "../utils/entries.js";
 import { Field } from "./Field.jsx";
 
-export function Entrada({ drafts, setDrafts, onSubmit }) {
+export function Entrada({ drafts, setDrafts, onSubmit, banks }) {
+  const bankOptionsId = "bank-options";
+
   function updateRow(id, name, value) {
     setDrafts((prev) =>
       prev.map((row) => {
@@ -58,13 +60,21 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
         </div>
       </div>
 
+      <datalist id={bankOptionsId}>
+        {banks.map((bank) => (
+          <option key={bank.name} value={bank.name} />
+        ))}
+      </datalist>
+
       <div className="space-y-4">
         {drafts.map((row, index) => (
-          <div key={row.id} className="rounded-xl border border-slate-200 p-4">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <div key={row.id} className="space-y-3 rounded-xl border border-slate-200 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
               <span className="font-semibold text-slate-700">Entrada #{index + 1}</span>
               <div className="flex flex-wrap items-center gap-2">
-                {row.locked && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[0.65rem] uppercase">Bloqueado</span>}
+                {row.locked && (
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[0.65rem] uppercase">Bloqueado</span>
+                )}
                 <button
                   type="button"
                   onClick={() => toggleLock(row.id)}
@@ -86,8 +96,8 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Field label="Data">
+            <div className="flex flex-wrap items-end gap-3">
+              <Field className="w-full sm:w-40" label="Data">
                 <input
                   type="date"
                   required={!row.locked}
@@ -97,9 +107,10 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field label="Banco/Origem">
+              <Field className="min-w-[14rem] flex-1" label="Banco/Origem">
                 <input
                   type="text"
+                  list={bankOptionsId}
                   required={!row.locked}
                   placeholder="ex.: Nubank Caixinhas"
                   value={row.bank}
@@ -108,7 +119,7 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field label="Valor na Conta (R$)">
+              <Field className="w-full sm:w-40" label="Valor na Conta (R$)">
                 <input
                   type="number"
                   step="0.01"
@@ -119,7 +130,7 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field label="Valor em Investimentos (R$)">
+              <Field className="w-full sm:w-48" label="Valor em Investimentos (R$)">
                 <input
                   type="number"
                   step="0.01"
@@ -130,7 +141,7 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field label="Entrada/Saída (R$)">
+              <Field className="w-full sm:w-44" label="Entrada/Saída (R$)">
                 <input
                   type="number"
                   step="0.01"
@@ -141,29 +152,6 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
                 <p className="mt-1 text-xs text-slate-500">Use negativo para saídas.</p>
-              </Field>
-              <Field label="Rendimento (R$)">
-                <input
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={row.yieldValue}
-                  disabled={row.locked}
-                  onChange={(e) => updateRow(row.id, "yieldValue", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
-                />
-              </Field>
-              <Field label="Rendimento (%)">
-                <input
-                  type="number"
-                  step="0.0001"
-                  inputMode="decimal"
-                  placeholder="ex.: 0.0195 = 1,95%"
-                  value={row.yieldPct}
-                  disabled={row.locked}
-                  onChange={(e) => updateRow(row.id, "yieldPct", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
-                />
               </Field>
             </div>
           </div>
@@ -181,8 +169,8 @@ export function Entrada({ drafts, setDrafts, onSubmit }) {
         <p className="mb-2 font-semibold">Como usar:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Preencha <strong>Data</strong> e <strong>Banco/Origem</strong> para cada linha.</li>
+          <li>Selecione um banco já utilizado ou digite um novo nome para salvá-lo automaticamente.</li>
           <li>Use o botão <strong>Bloquear</strong> para travar uma entrada pronta enquanto adiciona outras.</li>
-          <li>Os lançamentos bloqueados continuam sendo enviados quando você clica em "Adicionar lançamentos".</li>
         </ul>
       </div>
     </form>

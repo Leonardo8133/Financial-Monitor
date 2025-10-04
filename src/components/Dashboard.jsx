@@ -20,7 +20,7 @@ export function Dashboard({ monthly }) {
     Investido: Math.max(0, m.invested),
     "Em Conta": Math.max(0, m.inAccount),
     "Entradas/Saídas": m.cashFlow,
-    Rendimento: m.yieldValue,
+    Rendimento: m.yieldValue ?? 0,
   }));
 
   const tsChart = monthly.map((m) => ({
@@ -28,7 +28,7 @@ export function Dashboard({ monthly }) {
     label: m.label,
     Investido: m.invested,
     "Em Conta": m.inAccount,
-    Rendimento: m.yieldValue,
+    Rendimento: m.yieldValue ?? 0,
   }));
 
   const formatTick = (value) =>

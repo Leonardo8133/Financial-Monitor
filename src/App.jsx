@@ -3,7 +3,7 @@ import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
 import { KPICard } from "./components/KPICard.jsx";
-import { demoEntries } from "./data/demoEntries.js";
+import { demoBanks, demoCreatedAt, demoEntries } from "./data/demoEntries.js";
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
 import {
   download,
@@ -16,44 +16,119 @@ import {
   toNumber,
   yyyymm,
 } from "./utils/formatters.js";
-import { createDraftEntry, makeId, withId } from "./utils/entries.js";
+import {
+  computeDerivedEntries,
+  computeTotals,
+  createDraftEntry,
+  makeId,
+  withId,
+} from "./utils/entries.js";
+import { DEFAULT_BANKS, ensureBankInLibrary } from "./config/banks.js";
+
+const STORAGE_SEED = {
+  entries: [],
+  banks: DEFAULT_BANKS,
+  createdAt: new Date().toISOString(),
+};
 
 export default function App() {
-  const [entries, setEntries] = useLocalStorageState(LS_KEY, []);
+  const [store, setStore] = useLocalStorageState(LS_KEY, STORAGE_SEED);
+  const entries = Array.isArray(store.entries) ? store.entries : [];
+  const banks = Array.isArray(store.banks) && store.banks.length ? store.banks : DEFAULT_BANKS;
+  const createdAt = store.createdAt ?? STORAGE_SEED.createdAt;
+
   const [tab, setTab] = useState("dashboard");
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
   const fileRef = useRef(null);
 
+  const setEntries = (updater) => {
+    setStore((prev) => {
+      const currentEntries = Array.isArray(prev.entries) ? prev.entries : [];
+      const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
+      const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
+      const currentBanks = Array.isArray(prev.banks) && prev.banks.length ? prev.banks : DEFAULT_BANKS;
+      const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
+      return { ...prev, entries: nextEntries, banks: mergedBanks };
+    });
+  };
+
+  const setCreatedAt = (value) => {
+    setStore((prev) => ({ ...prev, createdAt: value }));
+  };
+
+  useEffect(() => {
+    if (Array.isArray(store)) {
+      const normalized = store.map(withId);
+      setStore({
+        entries: normalized,
+        banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
+        createdAt: new Date().toISOString(),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const entriesWithIds = useMemo(
+    () => entries.map((entry) => (entry.id ? entry : withId(entry))),
+    [entries]
+  );
+
+  useEffect(() => {
+    const needsIds = entries.some((entry) => !entry.id);
+    if (needsIds) {
+      setEntries(entriesWithIds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!store.createdAt) {
+      setCreatedAt(new Date().toISOString());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.createdAt]);
+
+  const derivedEntries = useMemo(
+    () => computeDerivedEntries(entriesWithIds),
+    [entriesWithIds]
+  );
+
   const monthly = useMemo(() => {
     const byMonth = new Map();
-    for (const entry of entries) {
+    for (const entry of derivedEntries) {
       const key = yyyymm(entry.date);
       if (!key) continue;
-      const base = byMonth.get(key) || {
-        ym: key,
-        invested: 0,
-        inAccount: 0,
-        cashFlow: 0,
-        yieldValue: 0,
-        investedBase: 0,
-      };
-      const invested = toNumber(entry.invested);
-      base.invested += invested;
-      base.investedBase += Math.max(0, invested);
+      const base =
+        byMonth.get(key) || {
+          ym: key,
+          invested: 0,
+          inAccount: 0,
+          cashFlow: 0,
+          yieldValue: 0,
+          previousTotal: 0,
+        };
+      base.invested += toNumber(entry.invested);
       base.inAccount += toNumber(entry.inAccount);
       base.cashFlow += toNumber(entry.cashFlow);
-      base.yieldValue += toNumber(entry.yieldValue);
+      if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
+        base.yieldValue += entry.yieldValue;
+        base.previousTotal += entry.previousTotal ?? 0;
+      }
       byMonth.set(key, base);
     }
+
     return Array.from(byMonth.values())
       .map((month) => ({
         ...month,
-        yieldPct: month.investedBase ? month.yieldValue / month.investedBase : 0,
+        yieldPct: month.previousTotal ? month.yieldValue / month.previousTotal : null,
       }))
       .sort((a, b) => (a.ym < b.ym ? -1 : 1));
-  }, [entries]);
+  }, [derivedEntries]);
 
-  const monthlyLookup = useMemo(() => new Map(monthly.map((m) => [m.ym, m])), [monthly]);
+  const monthlyLookup = useMemo(
+    () => new Map(monthly.map((m) => [m.ym, m])),
+    [monthly]
+  );
 
   const timeline = useMemo(() => {
     if (monthly.length === 0) return [];
@@ -65,7 +140,7 @@ export default function App() {
         inAccount: 0,
         cashFlow: 0,
         yieldValue: 0,
-        yieldPct: 0,
+        yieldPct: null,
       };
       const midDate = midOfMonth(ym);
       return {
@@ -77,59 +152,75 @@ export default function App() {
     });
   }, [monthly, monthlyLookup]);
 
-  const totals = useMemo(
-    () =>
-      entries.reduce(
-        (acc, e) => {
-          acc.invested += toNumber(e.invested);
-          acc.inAccount += toNumber(e.inAccount);
-          acc.cashFlow += toNumber(e.cashFlow);
-          acc.yieldValue += toNumber(e.yieldValue);
-          return acc;
-        },
-        { invested: 0, inAccount: 0, cashFlow: 0, yieldValue: 0 }
-      ),
-    [entries]
-  );
-
+  const totals = useMemo(() => computeTotals(derivedEntries), [derivedEntries]);
   const lastMonth = timeline.at(-1);
 
   function handleSubmitDrafts(rows) {
     const prepared = rows
       .filter((row) => row.bank && row.date)
       .map((row) => ({
-        ...row,
         id: makeId(),
-        locked: undefined,
+        bank: row.bank.trim(),
+        date: row.date,
         invested: toNumber(row.invested),
         inAccount: toNumber(row.inAccount),
         cashFlow: toNumber(row.cashFlow),
-        yieldValue: toNumber(row.yieldValue),
-        yieldPct: Number(row.yieldPct) || 0,
       }));
     if (!prepared.length) return;
+
     setEntries((prev) => [...prev, ...prepared]);
     setDrafts([createDraftEntry()]);
     setTab("historico");
   }
 
   function exportJson() {
-    const payload = { version: 1, exportedAt: new Date().toISOString(), entries };
-    download(`investimentos_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
+    const summary = computeTotals(derivedEntries);
+    const strippedEntries = entriesWithIds.map(({ id, yieldValue, yieldPct, previousTotal, computedTotal, ...rest }) => rest);
+    const payload = {
+      version: 2,
+      created_at: createdAt,
+      exported_at: new Date().toISOString(),
+      banks,
+      inputs: [
+        {
+          summary,
+          entries: strippedEntries,
+        },
+      ],
+    };
+    download(
+      `investimentos_${new Date().toISOString().slice(0, 10)}.json`,
+      JSON.stringify(payload, null, 2)
+    );
   }
 
   function downloadTemplate() {
-    const template = [
-      {
-        bank: "Banco Exemplo",
-        date: "2025-01-15",
-        inAccount: 0,
-        invested: 1000,
-        cashFlow: 1000,
-        yieldValue: 10,
-        yieldPct: 0.01,
-      },
-    ];
+    const template = {
+      version: 2,
+      created_at: new Date().toISOString(),
+      banks: [
+        { name: "Banco Exemplo", color: "#2563EB", icon: "🏦" },
+      ],
+      inputs: [
+        {
+          summary: {
+            total_invested: 1000,
+            total_in_account: 0,
+            total_input: 1000,
+            total_yield_value: 0,
+          },
+          entries: [
+            {
+              bank: "Banco Exemplo",
+              date: "2025-01-15",
+              inAccount: 0,
+              invested: 1000,
+              cashFlow: 1000,
+            },
+          ],
+        },
+      ],
+    };
     download("template_investimentos.json", JSON.stringify(template, null, 2));
   }
 
@@ -139,14 +230,36 @@ export default function App() {
       try {
         const data = JSON.parse(reader.result);
         if (Array.isArray(data)) {
-          setEntries(data.map(withId));
+          const normalized = data.map(withId);
+          setStore((prev) => ({
+            ...prev,
+            entries: normalized,
+            banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
+          }));
+        } else if (data && Array.isArray(data.inputs)) {
+          const inputEntries = data.inputs.flatMap((section) => section.entries || []);
+          const normalized = inputEntries.map(withId);
+          const incomingBanks = Array.isArray(data.banks) && data.banks.length ? data.banks : banks;
+          const created = data.created_at || createdAt || new Date().toISOString();
+          setStore({
+            entries: normalized,
+            banks: mergeBanksFromEntries(normalized, incomingBanks),
+            createdAt: created,
+          });
         } else if (data && Array.isArray(data.entries)) {
-          setEntries(data.entries.map(withId));
+          const normalized = data.entries.map(withId);
+          setStore((prev) => ({
+            ...prev,
+            entries: normalized,
+            banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
+          }));
         } else {
-          alert("Arquivo inválido. Esperado JSON com { entries: [...] } ou um array de lançamentos.");
+          window.alert(
+            "Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de lançamentos."
+          );
         }
       } catch (e) {
-        alert("Falha ao ler JSON: " + e.message);
+        window.alert("Falha ao ler JSON: " + e.message);
       }
     };
     reader.readAsText(file);
@@ -154,18 +267,14 @@ export default function App() {
 
   function loadDemo() {
     if (!entries.length && window.confirm("Carregar dados de exemplo? Você pode apagar depois.")) {
-      setEntries(demoEntries.map(withId));
+      const normalized = demoEntries.map(withId);
+      setStore({
+        entries: normalized,
+        banks: mergeBanksFromEntries(normalized, demoBanks),
+        createdAt: demoCreatedAt,
+      });
     }
   }
-
-  useEffect(() => {
-    setEntries((prev) => {
-      const needsIds = prev.some((entry) => !entry.id);
-      if (!needsIds) return prev;
-      return prev.map(withId);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
@@ -179,13 +288,6 @@ export default function App() {
             </p>
           </div>
           <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
-            <div className="flex items-center justify-end gap-2">
-              <TabButton active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
-                Dashboard
-              </TabButton>
-              <TabButton active={tab === "historico"} onClick={() => setTab("historico")}>Histórico</TabButton>
-              <TabButton active={tab === "entrada"} onClick={() => setTab("entrada")}>Nova Entrada</TabButton>
-            </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <ActionButton onClick={exportJson}>Exportar</ActionButton>
               <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
@@ -198,24 +300,27 @@ export default function App() {
                   onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
                 />
               </label>
-              <ActionButton onClick={downloadTemplate}>Baixar template</ActionButton>
+              <ActionButton onClick={downloadTemplate}>Template</ActionButton>
               <ActionButton
                 onClick={() => {
                   if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) setEntries([]);
                 }}
               >
-                Limpar dados
+                Limpar
               </ActionButton>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <TabButton active={tab === "dashboard"} onClick={() => setTab("dashboard")}>
+                Dashboard
+              </TabButton>
+              <TabButton active={tab === "historico"} onClick={() => setTab("historico")}>Histórico</TabButton>
+              <TabButton active={tab === "entrada"} onClick={() => setTab("entrada")}>Nova Entrada</TabButton>
             </div>
           </div>
         </header>
 
         <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <KPICard
-            title="Total Investido"
-            value={fmtBRL(totals.invested)}
-            subtitle="Soma atual de 'Valor em Investimentos'"
-          />
+          <KPICard title="Total Investido" value={fmtBRL(totals.total_invested)} subtitle="Soma atual de 'Valor em Investimentos'" />
           <KPICard
             title="Investido último mês"
             value={fmtBRL(lastMonth?.invested ?? 0)}
@@ -223,9 +328,17 @@ export default function App() {
           />
           <KPICard
             title="Rendimento último mês"
-            value={fmtBRL(lastMonth?.yieldValue ?? 0)}
-            secondaryValue={fmtPct(lastMonth?.yieldPct ?? 0)}
-            tone={lastMonth?.yieldValue >= 0 ? "positive" : "negative"}
+            value={
+              lastMonth && lastMonth.yieldValue !== null && lastMonth.yieldValue !== undefined
+                ? fmtBRL(lastMonth.yieldValue)
+                : "–"
+            }
+            secondaryValue={
+              lastMonth && lastMonth.yieldPct !== null && lastMonth.yieldPct !== undefined
+                ? fmtPct(lastMonth.yieldPct)
+                : ""
+            }
+            tone={resolveTone(lastMonth?.yieldValue)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
           />
           <KPICard
@@ -249,14 +362,23 @@ export default function App() {
 
         {tab === "dashboard" && <Dashboard monthly={timeline} />}
 
-        {tab === "historico" && <Historico entries={entries} setEntries={setEntries} />}
+        {tab === "historico" && (
+          <Historico
+            entries={entriesWithIds}
+            computedEntries={derivedEntries}
+            setEntries={setEntries}
+            banks={banks}
+          />
+        )}
 
-        {tab === "entrada" && <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} />}
+        {tab === "entrada" && (
+          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} />
+        )}
 
         <footer className="mt-10 text-center text-xs text-slate-500">
           <p>
-            Dica: clique em <strong>Exportar</strong> para salvar um arquivo local. Você pode importar depois para continuar de onde
-            parou.
+            Dica: clique em <strong>Exportar</strong> para salvar um arquivo local. Você pode importar depois para continuar de
+            onde parou.
           </p>
         </footer>
       </div>
@@ -288,3 +410,17 @@ function ActionButton({ children, onClick }) {
   );
 }
 
+function resolveTone(value) {
+  if (value === null || value === undefined) return "neutral";
+  if (value < 0) return "negative";
+  if (value > 0) return "positive";
+  return "neutral";
+}
+
+function mergeBanksFromEntries(entries, baseBanks = DEFAULT_BANKS) {
+  let next = Array.isArray(baseBanks) ? [...baseBanks] : [...DEFAULT_BANKS];
+  for (const entry of entries) {
+    next = ensureBankInLibrary(entry.bank, next);
+  }
+  return next;
+}
