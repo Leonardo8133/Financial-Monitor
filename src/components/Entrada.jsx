@@ -1,8 +1,10 @@
 import { createDraftEntry } from "../utils/entries.js";
 import { Field } from "./Field.jsx";
 
-export function Entrada({ drafts, setDrafts, onSubmit, banks }) {
+export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
   const bankOptionsId = "bank-options";
+  const sourceOptionsId = "source-options";
+  const sourceLibrary = Array.isArray(sources) ? sources : [];
 
   function updateRow(id, name, value) {
     setDrafts((prev) =>
@@ -66,6 +68,12 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks }) {
         ))}
       </datalist>
 
+      <datalist id={sourceOptionsId}>
+        {sourceLibrary.map((source) => (
+          <option key={source.name} value={source.name} />
+        ))}
+      </datalist>
+
       <div className="space-y-4">
         {drafts.map((row, index) => (
           <div key={row.id} className="space-y-3 rounded-xl border border-slate-200 p-4">
@@ -116,6 +124,17 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks }) {
                   value={row.bank}
                   disabled={row.locked}
                   onChange={(e) => updateRow(row.id, "bank", e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                />
+              </Field>
+              <Field className="min-w-[12rem] flex-1" label="Fonte de investimento">
+                <input
+                  type="text"
+                  list={sourceOptionsId}
+                  placeholder="ex.: Salário"
+                  value={row.source}
+                  disabled={row.locked}
+                  onChange={(e) => updateRow(row.id, "source", e.target.value)}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
