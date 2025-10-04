@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
@@ -6,12 +6,11 @@ import { KPICard } from "./components/KPICard.jsx";
 import { Tabs } from "./components/Tab.jsx";
 import { ActionButton } from "./components/ActionButton.jsx";
 import { PersonalInfoModal } from "./components/PersonalInfoModal.jsx";
+import { ImportModal } from "./components/ImportModal.jsx";
 import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  DocumentIcon,
-  TrashIcon,
   ChartBarIcon,
   TableCellsIcon,
   PlusIcon,
@@ -60,8 +59,10 @@ export default function App() {
 
   const [tab, setTab] = useState("dashboard");
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
-  const fileRef = useRef(null);
   const [personalModalOpen, setPersonalModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [focusArea, setFocusArea] = useState("investimentos");
+  const fileRef = useRef(null);
 
   const setEntries = (updater) => {
     setStore((prev) => {
@@ -118,6 +119,13 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store.createdAt]);
 
+  useEffect(() => {
+    if (focusArea === "gastos") {
+      setTab("historico");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusArea]);
+
   const derivedEntries = useMemo(
     () => computeDerivedEntries(entriesWithIds),
     [entriesWithIds]
@@ -136,6 +144,7 @@ export default function App() {
           cashFlow: 0,
           yieldValue: 0,
           previousTotal: 0,
+          sources: new Map(),
         };
       base.invested += toNumber(entry.invested);
       base.inAccount += toNumber(entry.inAccount);
@@ -144,14 +153,24 @@ export default function App() {
         base.yieldValue += entry.yieldValue;
         base.previousTotal += entry.previousTotal ?? 0;
       }
+      const sourceKey = (entry.source || "Outros").trim() || "Outros";
+      const sourceBucket = base.sources.get(sourceKey) || { name: sourceKey, invested: 0, total: 0 };
+      sourceBucket.invested += toNumber(entry.invested);
+      sourceBucket.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
+      base.sources.set(sourceKey, sourceBucket);
       byMonth.set(key, base);
     }
 
     return Array.from(byMonth.values())
-      .map((month) => ({
-        ...month,
-        yieldPct: month.previousTotal ? month.yieldValue / month.previousTotal : null,
-      }))
+      .map((month) => {
+        const { sources, ...rest } = month;
+        const sourceList = sources ? Array.from(sources.values()) : [];
+        return {
+          ...rest,
+          sources: sourceList,
+          yieldPct: rest.previousTotal ? rest.yieldValue / rest.previousTotal : null,
+        };
+      })
       .sort((a, b) => (a.ym < b.ym ? -1 : 1));
   }, [derivedEntries]);
 
@@ -171,10 +190,12 @@ export default function App() {
         cashFlow: 0,
         yieldValue: 0,
         yieldPct: null,
+        sources: [],
       };
       const midDate = midOfMonth(ym);
       return {
         ...data,
+        sources: Array.isArray(data.sources) ? data.sources : [],
         label: monthLabel(ym),
         midDate,
         midDateValue: midDate.getTime(),
@@ -205,6 +226,18 @@ export default function App() {
   }, [derivedEntries]);
 
   const lastMonth = timeline.at(-1);
+  const focusOptions = [
+    {
+      key: "investimentos",
+      label: "Investimentos",
+      tooltip: "Visualize os indicadores e gráficos dos seus investimentos",
+    },
+    {
+      key: "gastos",
+      label: "Gastos",
+      tooltip: "Atalho para o histórico para revisar entradas negativas",
+    },
+  ];
 
   function handleSubmitDrafts(rows) {
     const prepared = rows
@@ -299,6 +332,7 @@ export default function App() {
             banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
             sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
           }));
+          setImportModalOpen(false);
         } else if (data && Array.isArray(data.inputs)) {
           const inputEntries = data.inputs.flatMap((section) => section.entries || []);
           const normalized = inputEntries.map(withId);
@@ -312,6 +346,7 @@ export default function App() {
             personalInfo: data.personal_info || personalInfo,
             createdAt: created,
           });
+          setImportModalOpen(false);
         } else if (data && Array.isArray(data.entries)) {
           const normalized = data.entries.map(withId);
           setStore((prev) => ({
@@ -320,6 +355,7 @@ export default function App() {
             banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
             sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
           }));
+          setImportModalOpen(false);
         } else {
           window.alert(
             "Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de lançamentos."
@@ -345,6 +381,12 @@ export default function App() {
     }
   }
 
+  function handleClearEntries() {
+    if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) {
+      setEntries([]);
+    }
+  }
+
   function handleGeneratePdf() {
     createPdfReport({
       personalInfo,
@@ -365,7 +407,28 @@ export default function App() {
         <header className="mb-6 space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold">Monitor de Investimentos – Leo</h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold text-slate-900">Monitor de Investimentos</h1>
+                <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-[0.7rem] font-semibold text-slate-600 shadow-sm">
+                  {focusOptions.map((option) => {
+                    const active = option.key === focusArea;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => setFocusArea(option.key)}
+                        className={`rounded-full px-3 py-1 transition ${
+                          active ? "bg-slate-900 text-white shadow" : "hover:bg-slate-100"
+                        }`}
+                        title={option.tooltip}
+                        aria-pressed={active}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <p className="text-sm text-slate-600">
                 Adicione lançamentos, visualize o histórico por mês e gere gráficos. Seus dados ficam apenas no seu navegador
                 (localStorage).
@@ -373,48 +436,57 @@ export default function App() {
             </div>
             <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
               <div className="flex flex-wrap items-center gap-2">
-                <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>
+                <ActionButton
+                  icon={ArrowDownTrayIcon}
+                  onClick={exportJson}
+                  title="Baixe um arquivo JSON com todos os lançamentos e configurações"
+                >
                   Exportar
                 </ActionButton>
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
-                  <ArrowUpTrayIcon className="h-5 w-5" />
+                <ActionButton
+                  icon={ArrowUpTrayIcon}
+                  onClick={() => setImportModalOpen(true)}
+                  title="Importe um arquivo JSON salvo anteriormente"
+                >
                   Importar
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="application/json"
-                    className="hidden"
-                    onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
-                  />
-                </label>
-                <ActionButton icon={DocumentIcon} onClick={downloadTemplate}>
-                  Template
                 </ActionButton>
-                <ActionButton icon={DocumentArrowDownIcon} onClick={handleGeneratePdf}>
+                <ActionButton
+                  icon={DocumentArrowDownIcon}
+                  onClick={handleGeneratePdf}
+                  title="Gere um relatório em PDF com seus indicadores atuais"
+                >
                   Relatório PDF
                 </ActionButton>
-                <ActionButton icon={UserCircleIcon} onClick={() => setPersonalModalOpen(true)}>
-                  Dados pessoais
-                </ActionButton>
-                <Link to="/gastos" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-50">
-                  Ir para Gastos
-                </Link>
                 <ActionButton
-                  icon={TrashIcon}
-                  onClick={() => {
-                    if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) setEntries([]);
-                  }}
+                  icon={UserCircleIcon}
+                  onClick={() => setPersonalModalOpen(true)}
+                  title="Edite os dados pessoais exibidos nos relatórios"
                 >
-                  Limpar
+                  Dados pessoais
                 </ActionButton>
               </div>
             </div>
           </div>
           <Tabs
             tabs={[
-              { key: 'dashboard', label: 'Dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
-              { key: 'historico', label: 'Histórico', icon: <TableCellsIcon className="h-5 w-5" /> },
-              { key: 'entrada', label: 'Nova Entrada', icon: <PlusIcon className="h-5 w-5" /> },
+              {
+                key: 'dashboard',
+                label: 'Dashboard',
+                icon: <ChartBarIcon className="h-5 w-5" />,
+                tooltip: 'Resumo visual com indicadores e gráficos',
+              },
+              {
+                key: 'historico',
+                label: 'Histórico',
+                icon: <TableCellsIcon className="h-5 w-5" />,
+                tooltip: 'Lista completa dos lançamentos realizados',
+              },
+              {
+                key: 'entrada',
+                label: 'Nova Entrada',
+                icon: <PlusIcon className="h-5 w-5" />,
+                tooltip: 'Adicionar um novo conjunto de valores',
+              },
             ]}
             activeTab={tab}
             onChange={setTab}
@@ -427,11 +499,13 @@ export default function App() {
             value={fmtBRL(totals.total_invested)}
             subtitle="Soma atual de 'Valor em Investimentos'"
             hoverDetails={sourceSummary}
+            tooltip="Soma de todos os valores preenchidos em 'Valor em Investimentos' nos lançamentos"
           />
           <KPICard
             title="Investido último mês"
             value={fmtBRL(lastMonth?.invested ?? 0)}
             subtitle={lastMonth ? `Referente a ${lastMonth.label}` : "Sem dados do mês"}
+            tooltip="Total investido registrado no mês selecionado"
           />
           <KPICard
             title="Rendimento último mês"
@@ -447,22 +521,29 @@ export default function App() {
             }
             tone={resolveTone(lastMonth?.yieldValue)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
+            tooltip="Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais"
           />
           <KPICard
             title="Entrada/Saída último mês"
             value={fmtBRL(lastMonth?.cashFlow ?? 0)}
             tone={(lastMonth?.cashFlow ?? 0) >= 0 ? "positive" : "negative"}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
+            tooltip="Somatório das entradas (positivas) e saídas (negativas) informadas no mês"
           />
           <KPICard
             title="Total em Conta último mês"
             value={fmtBRL(lastMonth?.inAccount ?? 0)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
+            tooltip="Soma do campo 'Valor na Conta' para o mês selecionado"
           />
         </section>
 
         <section className="mb-6 flex flex-wrap items-center gap-2">
-          <button onClick={loadDemo} className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-600">
+          <button
+            onClick={loadDemo}
+            className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-600"
+            title="Preenche o painel com dados fictícios para demonstração"
+          >
             Carregar dados de exemplo
           </button>
         </section>
@@ -476,6 +557,7 @@ export default function App() {
             setEntries={setEntries}
             banks={banks}
             sources={sources}
+            onClearAll={handleClearEntries}
           />
         )}
 
@@ -490,6 +572,12 @@ export default function App() {
           </p>
         </footer>
       </div>
+      <ImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={importJsonFile}
+        onDownloadTemplate={downloadTemplate}
+      />
       <PersonalInfoModal
         open={personalModalOpen}
         onClose={() => setPersonalModalOpen(false)}

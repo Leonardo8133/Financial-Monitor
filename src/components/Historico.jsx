@@ -4,7 +4,7 @@ import { resolveSourceVisual } from "../config/sources.js";
 import { fmtBRL, fmtPct, monthLabel, toNumber, yyyymm } from "../utils/formatters.js";
 import { Td, Th } from "./TableCells.jsx";
 
-export function Historico({ entries, computedEntries, setEntries, banks, sources }) {
+export function Historico({ entries, computedEntries, setEntries, banks, sources, onClearAll }) {
   const [q, setQ] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -113,6 +113,12 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
     setDraft((prev) => (prev ? { ...prev, [name]: value } : prev));
   }
 
+  const handleClearAll = () => {
+    if (typeof onClearAll === "function") {
+      onClearAll();
+    }
+  };
+
   return (
     <div className="rounded-2xl bg-white p-4 shadow">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -122,11 +128,22 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          {typeof onClearAll === "function" && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="rounded-lg border border-red-200 px-2 py-1 font-semibold text-red-600 transition hover:bg-red-50"
+              title="Remove todos os lançamentos armazenados"
+            >
+              Limpar tudo
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setCollapsed((prev) => !prev)}
             className="rounded-lg border border-slate-200 px-2 py-1 font-semibold text-slate-600 transition hover:bg-slate-100"
+            title={collapsed ? "Expandir os detalhes das linhas" : "Ocultar detalhes das linhas"}
           >
             {collapsed ? "Expandir tudo" : "Colapsar tudo"}
           </button>

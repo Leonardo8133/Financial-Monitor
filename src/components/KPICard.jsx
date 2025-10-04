@@ -6,13 +6,14 @@ const tones = {
   negative: "text-red-600",
 };
 
-export function KPICard({ title, value, secondaryValue, subtitle, tone = "neutral", hoverDetails = [] }) {
+export function KPICard({ title, value, secondaryValue, subtitle, tone = "neutral", hoverDetails = [], tooltip }) {
   const toneClass = tones[tone] ?? tones.neutral;
   const details = Array.isArray(hoverDetails) ? hoverDetails : [];
   const hasHoverDetails = details.length > 0;
+  const tooltipMessage = tooltip || (hasHoverDetails ? "Passe o mouse para ver detalhes da composição" : undefined);
 
   return (
-    <div className="group rounded-xl bg-white p-3 shadow-sm" title={hasHoverDetails ? "Passe o mouse para ver detalhes" : undefined}>
+    <div className="group rounded-xl bg-white p-3 shadow-sm" title={tooltipMessage}>
       <div className="text-[0.65rem] uppercase tracking-wide text-slate-500">{title}</div>
       <div className={`mt-1 text-lg font-semibold ${toneClass} ${hasHoverDetails ? "group-hover:hidden" : ""}`}>{value}</div>
       {secondaryValue && (
