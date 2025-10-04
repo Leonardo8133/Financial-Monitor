@@ -141,17 +141,17 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="w-full sm:w-44" label="Entrada/Saída (R$)">
-                <input
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={row.cashFlow}
-                  disabled={row.locked}
-                  onChange={(e) => updateRow(row.id, "cashFlow", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
-                />
+                            <Field className="w-full sm:w-[7.5rem]" label="Entrada/Saída">
                 <p className="mt-1 text-xs text-slate-500">Use negativo para saídas.</p>
+                <input
+                  type="text"
+                  className={`mt-1 block w-full rounded-lg border-slate-200 text-sm shadow-sm focus:border-slate-500 focus:ring-0 ${
+                    row.locked ? "bg-slate-50" : ""
+                  }`}
+                  value={row.cashFlow}
+                  onChange={(ev) => updateRow(row.id, "cashFlow", ev.target.value)}
+                  disabled={row.locked}
+                />
               </Field>
             </div>
           </div>
