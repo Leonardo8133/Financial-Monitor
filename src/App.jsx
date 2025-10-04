@@ -405,28 +405,11 @@ export default function App() {
   );
 }
 
-function TabButton({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-2xl px-3 py-1.5 text-xs font-semibold shadow-sm transition ${
-        active ? "bg-slate-900 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function ActionButton({ children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-    >
-      {children}
-    </button>
-  );
+function resolveTone(value) {
+  if (value === null || value === undefined) return "neutral";
+  if (value < 0) return "negative";
+  if (value > 0) return "positive";
+  return "neutral";
 }
 
 function resolveTone(value) {
