@@ -5,7 +5,8 @@ import { Historico } from "./components/Historico.jsx";
 import { KPICard } from "./components/KPICard.jsx";
 import { Tabs } from "./components/Tab.jsx";
 import { ActionButton } from "./components/ActionButton.jsx";
-import { demoBanks, demoCreatedAt, demoEntries } from "./data/demoEntries.js";
+import { PersonalInfoModal } from "./components/PersonalInfoModal.jsx";
+import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -14,7 +15,9 @@ import {
   ChartBarIcon,
   TableCellsIcon,
   PlusIcon,
-} from '@heroicons/react/24/outline';
+  DocumentArrowDownIcon,
+  UserCircleIcon,
+} from "./components/icons.jsx";
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
 import {
   download,
@@ -35,11 +38,15 @@ import {
   withId,
 } from "./utils/entries.js";
 import { DEFAULT_BANKS, ensureBankInLibrary } from "./config/banks.js";
+import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
+import { createPdfReport } from "./utils/pdf.js";
 import { Link } from "react-router-dom";
 
 const STORAGE_SEED = {
   entries: [],
   banks: DEFAULT_BANKS,
+  sources: DEFAULT_SOURCES,
+  personalInfo: {},
   createdAt: new Date().toISOString(),
 };
 
@@ -47,11 +54,14 @@ export default function App() {
   const [store, setStore] = useLocalStorageState(LS_KEY, STORAGE_SEED);
   const entries = Array.isArray(store.entries) ? store.entries : [];
   const banks = Array.isArray(store.banks) && store.banks.length ? store.banks : DEFAULT_BANKS;
+  const sources = Array.isArray(store.sources) && store.sources.length ? store.sources : DEFAULT_SOURCES;
+  const personalInfo = store.personalInfo || {};
   const createdAt = store.createdAt ?? STORAGE_SEED.createdAt;
 
   const [tab, setTab] = useState("dashboard");
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
   const fileRef = useRef(null);
+  const [personalModalOpen, setPersonalModalOpen] = useState(false);
 
   const setEntries = (updater) => {
     setStore((prev) => {
@@ -59,13 +69,19 @@ export default function App() {
       const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
       const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
       const currentBanks = Array.isArray(prev.banks) && prev.banks.length ? prev.banks : DEFAULT_BANKS;
+      const currentSources = Array.isArray(prev.sources) && prev.sources.length ? prev.sources : DEFAULT_SOURCES;
       const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
-      return { ...prev, entries: nextEntries, banks: mergedBanks };
+      const mergedSources = mergeSourcesFromEntries(nextEntries, currentSources);
+      return { ...prev, entries: nextEntries, banks: mergedBanks, sources: mergedSources };
     });
   };
 
   const setCreatedAt = (value) => {
     setStore((prev) => ({ ...prev, createdAt: value }));
+  };
+
+  const setPersonalInfo = (value) => {
+    setStore((prev) => ({ ...prev, personalInfo: { ...value } }));
   };
 
   useEffect(() => {
@@ -74,6 +90,8 @@ export default function App() {
       setStore({
         entries: normalized,
         banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
+        sources: mergeSourcesFromEntries(normalized, DEFAULT_SOURCES),
+        personalInfo: {},
         createdAt: new Date().toISOString(),
       });
     }
@@ -165,6 +183,27 @@ export default function App() {
   }, [monthly, monthlyLookup]);
 
   const totals = useMemo(() => computeTotals(derivedEntries), [derivedEntries]);
+
+  const sourceSummary = useMemo(() => {
+    const map = new Map();
+    for (const entry of derivedEntries) {
+      const key = (entry.source || "Outros").trim() || "Outros";
+      const current = map.get(key) || { name: key, invested: 0, total: 0 };
+      current.invested += toNumber(entry.invested);
+      current.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
+      map.set(key, current);
+    }
+    const totalInvested = Array.from(map.values()).reduce((acc, item) => acc + item.invested, 0);
+    return Array.from(map.values())
+      .map((item) => ({
+        name: item.name,
+        invested: item.invested,
+        total: item.total,
+        percentage: totalInvested ? Math.round((item.invested / totalInvested) * 100) : 0,
+      }))
+      .sort((a, b) => b.invested - a.invested);
+  }, [derivedEntries]);
+
   const lastMonth = timeline.at(-1);
 
   function handleSubmitDrafts(rows) {
@@ -173,6 +212,7 @@ export default function App() {
       .map((row) => ({
         id: makeId(),
         bank: row.bank.trim(),
+        source: row.source?.trim() || "",
         date: row.date,
         invested: toNumber(row.invested),
         inAccount: toNumber(row.inAccount),
@@ -193,6 +233,8 @@ export default function App() {
       created_at: createdAt,
       exported_at: new Date().toISOString(),
       banks,
+      sources,
+      personal_info: personalInfo,
       inputs: [
         {
           summary,
@@ -213,6 +255,13 @@ export default function App() {
       banks: [
         { name: "Banco Exemplo", color: "#2563EB", icon: "🏦" },
       ],
+      sources: [
+        { name: "Salário", color: "#0EA5E9", icon: "💼" },
+      ],
+      personal_info: {
+        fullName: "Nome do Investidor",
+        email: "investidor@email.com",
+      },
       inputs: [
         {
           summary: {
@@ -224,6 +273,7 @@ export default function App() {
           entries: [
             {
               bank: "Banco Exemplo",
+              source: "Salário",
               date: "2025-01-15",
               inAccount: 0,
               invested: 1000,
@@ -247,15 +297,19 @@ export default function App() {
             ...prev,
             entries: normalized,
             banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
+            sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
           }));
         } else if (data && Array.isArray(data.inputs)) {
           const inputEntries = data.inputs.flatMap((section) => section.entries || []);
           const normalized = inputEntries.map(withId);
           const incomingBanks = Array.isArray(data.banks) && data.banks.length ? data.banks : banks;
+          const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
           const created = data.created_at || createdAt || new Date().toISOString();
           setStore({
             entries: normalized,
             banks: mergeBanksFromEntries(normalized, incomingBanks),
+            sources: mergeSourcesFromEntries(normalized, incomingSources),
+            personalInfo: data.personal_info || personalInfo,
             createdAt: created,
           });
         } else if (data && Array.isArray(data.entries)) {
@@ -264,6 +318,7 @@ export default function App() {
             ...prev,
             entries: normalized,
             banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
+            sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
           }));
         } else {
           window.alert(
@@ -283,52 +338,76 @@ export default function App() {
       setStore({
         entries: normalized,
         banks: mergeBanksFromEntries(normalized, demoBanks),
+        sources: mergeSourcesFromEntries(normalized, demoSources),
+        personalInfo,
         createdAt: demoCreatedAt,
       });
     }
   }
 
+  function handleGeneratePdf() {
+    createPdfReport({
+      personalInfo,
+      totals,
+      sources: sourceSummary.map((source) => ({
+        name: source.name,
+        total: source.invested,
+        percentage: source.percentage,
+      })),
+      entries: entriesWithIds,
+      exportedAt: new Date(),
+    });
+  }
+
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold">Monitor de Investimentos – Leo</h1>
-            <p className="text-sm text-slate-600">
-              Adicione lançamentos, visualize o histórico por mês e gere gráficos. Seus dados ficam apenas no seu navegador
-              (localStorage).
-            </p>
-          </div>
-          <div className="flex items-center justify-end gap-4">
-            <div className="flex items-center gap-2">
-              <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>
-                Exportar
-              </ActionButton>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
-                <ArrowUpTrayIcon className="h-5 w-5" />
-                Importar
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="application/json"
-                  className="hidden"
-                  onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
-                />
-              </label>
-              <ActionButton icon={DocumentIcon} onClick={downloadTemplate}>
-                Template
-              </ActionButton>
-              <Link to="/gastos" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-50">
-                Ir para Gastos
-              </Link>
-              <ActionButton
-                icon={TrashIcon}
-                onClick={() => {
-                  if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) setEntries([]);
-                }}
-              >
-                Limpar
-              </ActionButton>
+        <header className="mb-6 space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold">Monitor de Investimentos – Leo</h1>
+              <p className="text-sm text-slate-600">
+                Adicione lançamentos, visualize o histórico por mês e gere gráficos. Seus dados ficam apenas no seu navegador
+                (localStorage).
+              </p>
+            </div>
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2">
+                <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>
+                  Exportar
+                </ActionButton>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
+                  <ArrowUpTrayIcon className="h-5 w-5" />
+                  Importar
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="application/json"
+                    className="hidden"
+                    onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
+                  />
+                </label>
+                <ActionButton icon={DocumentIcon} onClick={downloadTemplate}>
+                  Template
+                </ActionButton>
+                <ActionButton icon={DocumentArrowDownIcon} onClick={handleGeneratePdf}>
+                  Relatório PDF
+                </ActionButton>
+                <ActionButton icon={UserCircleIcon} onClick={() => setPersonalModalOpen(true)}>
+                  Dados pessoais
+                </ActionButton>
+                <Link to="/gastos" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-50">
+                  Ir para Gastos
+                </Link>
+                <ActionButton
+                  icon={TrashIcon}
+                  onClick={() => {
+                    if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) setEntries([]);
+                  }}
+                >
+                  Limpar
+                </ActionButton>
+              </div>
             </div>
           </div>
           <Tabs
@@ -343,7 +422,12 @@ export default function App() {
         </header>
 
         <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <KPICard title="Total Investido" value={fmtBRL(totals.total_invested)} subtitle="Soma atual de 'Valor em Investimentos'" />
+          <KPICard
+            title="Total Investido"
+            value={fmtBRL(totals.total_invested)}
+            subtitle="Soma atual de 'Valor em Investimentos'"
+            hoverDetails={sourceSummary}
+          />
           <KPICard
             title="Investido último mês"
             value={fmtBRL(lastMonth?.invested ?? 0)}
@@ -383,7 +467,7 @@ export default function App() {
           </button>
         </section>
 
-        {tab === "dashboard" && <Dashboard monthly={timeline} />}
+        {tab === "dashboard" && <Dashboard monthly={timeline} sourceSummary={sourceSummary} sources={sources} />}
 
         {tab === "historico" && (
           <Historico
@@ -391,11 +475,12 @@ export default function App() {
             computedEntries={derivedEntries}
             setEntries={setEntries}
             banks={banks}
+            sources={sources}
           />
         )}
 
         {tab === "entrada" && (
-          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} />
+          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} sources={sources} />
         )}
 
         <footer className="mt-10 text-center text-xs text-slate-500">
@@ -405,6 +490,12 @@ export default function App() {
           </p>
         </footer>
       </div>
+      <PersonalInfoModal
+        open={personalModalOpen}
+        onClose={() => setPersonalModalOpen(false)}
+        initialValue={personalInfo}
+        onSave={setPersonalInfo}
+      />
     </div>
   );
 }
@@ -420,6 +511,14 @@ function mergeBanksFromEntries(entries, baseBanks = DEFAULT_BANKS) {
   let next = Array.isArray(baseBanks) ? [...baseBanks] : [...DEFAULT_BANKS];
   for (const entry of entries) {
     next = ensureBankInLibrary(entry.bank, next);
+  }
+  return next;
+}
+
+function mergeSourcesFromEntries(entries, baseSources = DEFAULT_SOURCES) {
+  let next = Array.isArray(baseSources) ? [...baseSources] : [...DEFAULT_SOURCES];
+  for (const entry of entries) {
+    next = ensureSourceInLibrary(entry.source, next);
   }
   return next;
 }
