@@ -7,6 +7,12 @@ export function ExpensesEntrada({ drafts, setDrafts, onSubmit, categories, sourc
   const categoryOptionsId = "category-options";
   const sourceOptionsId = "source-options";
 
+  function formatCurrency(value) {
+    if (!value || value === '0') return 'R$ 0,00';
+    const numValue = Number(value);
+    return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
   function updateRow(id, name, value) {
     setDrafts((prev) => prev.map((row) => (row.id === id && !row.locked ? { ...row, [name]: value } : row)));
   }
@@ -94,20 +100,29 @@ export function ExpensesEntrada({ drafts, setDrafts, onSubmit, categories, sourc
             </div>
 
             <div className="flex flex-wrap items-end gap-3">
-              <Field className="w-full sm:w-40" label="Data">
-                <input type="date" required={!row.locked} value={row.date} disabled={row.locked} onChange={(e) => updateRow(row.id, "date", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
+              <Field className="w-full sm:w-40" label="Data" helpText="Data da despesa">
+                <input type="date" required={!row.locked} value={row.date} disabled={row.locked} onChange={(e) => updateRow(row.id, "date", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
               </Field>
-              <Field className="min-w-[14rem] flex-1" label="Descrição">
-                <input type="text" required={!row.locked} placeholder="ex.: Supermercado" value={row.description} disabled={row.locked} onChange={(e) => updateRow(row.id, "description", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
+              <Field className="min-w-[14rem] flex-1" label="Descrição" helpText="Descrição detalhada da despesa">
+                <input type="text" required={!row.locked} placeholder="ex.: Supermercado" value={row.description} disabled={row.locked} onChange={(e) => updateRow(row.id, "description", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
               </Field>
-              <Field className="w-full sm:w-56" label="Categoria">
-                <input type="text" list={categoryOptionsId} placeholder="ex.: Alimentação" value={row.category} disabled={row.locked} onChange={(e) => updateRow(row.id, "category", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
+              <Field className="w-full sm:w-56" label="Categoria" helpText="Categoria da despesa para organização">
+                <input type="text" list={categoryOptionsId} placeholder="ex.: Alimentação" value={row.category} disabled={row.locked} onChange={(e) => updateRow(row.id, "category", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
               </Field>
-              <Field className="w-full sm:w-56" label="Fonte">
-                <input type="text" list={sourceOptionsId} placeholder="ex.: Pessoal" value={row.source} disabled={row.locked} onChange={(e) => updateRow(row.id, "source", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
+              <Field className="w-full sm:w-56" label="Fonte" helpText="Fonte do dinheiro usado na despesa">
+                <input type="text" list={sourceOptionsId} placeholder="ex.: Pessoal" value={row.source} disabled={row.locked} onChange={(e) => updateRow(row.id, "source", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
               </Field>
-              <Field className="w-full sm:w-40" label="Valor (R$)" title="Valor da despesa em reais; use decimais com vírgula ou ponto">
-                <input type="number" step="0.01" inputMode="decimal" value={row.value} disabled={row.locked} onChange={(e) => updateRow(row.id, "value", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
+              <Field className="w-full sm:w-40" label="Valor (R$)" helpText="Valor da despesa em reais; use decimais com vírgula ou ponto">
+                <input 
+                  type="text" 
+                  value={formatCurrency(row.value)} 
+                  disabled={row.locked} 
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                    updateRow(row.id, "value", value || '0');
+                  }} 
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" 
+                />
               </Field>
             </div>
           </div>

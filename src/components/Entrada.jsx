@@ -6,6 +6,12 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
   const sourceOptionsId = "source-options";
   const sourceLibrary = Array.isArray(sources) ? sources : [];
 
+  function formatCurrency(value) {
+    if (!value || value === '0') return 'R$ 0,00';
+    const numValue = Number(value);
+    return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
   function updateRow(id, name, value) {
     setDrafts((prev) =>
       prev.map((row) => {
@@ -109,17 +115,17 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-12" title="Preencha a data do lançamento; use dias do mês para agrupar corretamente">
-              <Field className="md:col-span-2" label="Data" >
+              <Field className="md:col-span-2" label="Data" helpText="Data do lançamento; use dias do mês para agrupar corretamente">
                 <input
                   type="date"
                   required={!row.locked}
                   value={row.date}
                   disabled={row.locked}
                   onChange={(e) => updateRow(row.id, "date", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-3" label="Banco" >
+              <Field className="md:col-span-2" label="Banco" helpText="Banco ou instituição financeira onde o valor está">
                 <input
                   type="text"
                   list={bankOptionsId}
@@ -128,10 +134,10 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   value={row.bank}
                   disabled={row.locked}
                   onChange={(e) => updateRow(row.id, "bank", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-2" label="Fonte" >
+              <Field className="md:col-span-2" label="Fonte" helpText="Origem do dinheiro (ex: salário, bônus, venda)">
                 <input
                   type="text"
                   list={sourceOptionsId}
@@ -139,43 +145,45 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   value={row.source}
                   disabled={row.locked}
                   onChange={(e) => updateRow(row.id, "source", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-2" label="Conta (R$)" >
+              <Field className="md:col-span-2" label="Conta (R$)" helpText="Valor que fica na conta corrente">
                 <input
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={row.inAccount}
+                  type="text"
+                  value={formatCurrency(row.inAccount)}
                   disabled={row.locked}
-                  onChange={(e) => updateRow(row.id, "inAccount", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                    updateRow(row.id, "inAccount", value || '0');
+                  }}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-1" label="Investido (R$)" title="Aporte do mês que vai para investimentos; use 0 se não houve">
+              <Field className="md:col-span-2" label="Investido (R$)" helpText="Aporte do mês que vai para investimentos; use 0 se não houve">
                 <input
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={row.invested}
+                  type="text"
+                  value={formatCurrency(row.invested)}
                   disabled={row.locked}
-                  onChange={(e) => updateRow(row.id, "invested", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                    updateRow(row.id, "invested", value || '0');
+                  }}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-4" label="Fluxo (R$)" title="Positivo para entradas (depósitos), negativo para saídas (retiradas). Afeta o gráfico de fluxo.">
+              <Field className="md:col-span-2" label="Fluxo (R$)" helpText="Positivo para entradas (depósitos), negativo para saídas (retiradas). Afeta o gráfico de fluxo.">
                 <input
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
+                  type="text"
                   className={`w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 ${
                     row.locked ? "bg-slate-100" : ""
                   }`}
-                  value={row.cashFlow}
-                  onChange={(ev) => updateRow(row.id, "cashFlow", ev.target.value)}
+                  value={formatCurrency(row.cashFlow)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                    updateRow(row.id, "cashFlow", value || '0');
+                  }}
                   disabled={row.locked}
-                  title="Informe valores positivos para entradas e negativos para saídas"
                 />
               </Field>
             </div>

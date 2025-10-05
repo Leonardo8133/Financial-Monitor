@@ -9,6 +9,8 @@ import { ActionButton } from "./components/ActionButton.jsx";
 import { BackToHomeButton } from "./components/BackToHomeButton.jsx";
 import { ImportModal } from "./components/ImportModal.jsx";
 import { Projecoes } from "./components/Projecoes.jsx";
+import { OfflineIndicator } from "./components/OfflineIndicator.jsx";
+import { useOfflineMode } from "./hooks/useOfflineMode.js";
 // import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
@@ -59,6 +61,9 @@ export default function App() {
   const personalInfo = store.personalInfo;
   const settings = store.settings;
   const createdAt = store.createdAt;
+
+  // Ativar modo offline
+  useOfflineMode();
 
   // Determinar a aba ativa baseada na URL
   const getCurrentTab = () => {
@@ -544,6 +549,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
+      <OfflineIndicator />
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 space-y-4">
           <BackToHomeButton />
