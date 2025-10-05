@@ -1,6 +1,7 @@
 import { Field } from "../../components/Field.jsx";
 import { useState } from "react";
 import { Uploader } from "./Uploader.jsx";
+import { ensureExpensesDefaults } from "../config/storage.js";
 
 export function ExpensesEntrada({ drafts, setDrafts, onSubmit, categories, sources, setStore }) {
   const categoryOptionsId = "category-options";
@@ -41,13 +42,25 @@ export function ExpensesEntrada({ drafts, setDrafts, onSubmit, categories, sourc
   function addCategory() {
     const name = newCategory.trim();
     if (!name) return;
-    setStore((prev) => ({ ...prev, categories: [...prev.categories, { name, color: "", icon: "🏷️" }] }));
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      return {
+        ...safePrev,
+        categories: [...safePrev.categories, { name, color: "", icon: "🏷️" }],
+      };
+    });
     setNewCategory("");
   }
   function addSource() {
     const name = newSource.trim();
     if (!name) return;
-    setStore((prev) => ({ ...prev, sources: [...prev.sources, { name, color: "", icon: "💼" }] }));
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      return {
+        ...safePrev,
+        sources: [...safePrev.sources, { name, color: "", icon: "💼" }],
+      };
+    });
     setNewSource("");
   }
 

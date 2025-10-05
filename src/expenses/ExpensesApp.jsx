@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ExpensesDashboard } from "./components/ExpensesDashboard.jsx";
 import { ExpensesEntrada } from "./components/ExpensesEntrada.jsx";
@@ -10,7 +10,14 @@ import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { DEFAULT_CATEGORIES, ensureCategoryInLibrary } from "./config/categories.js";
 import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
 import { computeDerivedExpenses, computeTotals, withId, makeId } from "./utils/expenses.js";
+import { ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentIcon, PlusIcon, TableCellsIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm, toNumber } from "../utils/formatters.js";
+import {
+  EXPENSES_LS_KEY,
+  EXPENSES_STORAGE_SEED,
+  ensureExpensesDefaults,
+} from "./config/storage.js";
+
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentIcon, PlusIcon, TableCellsIcon, ChartBarIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 const EXPENSES_LS_KEY = "leo-expenses-v1";
@@ -23,31 +30,70 @@ const STORAGE_SEED = {
 };
 
 export default function ExpensesApp() {
-  const [store, setStore] = useLocalStorageState(EXPENSES_LS_KEY, STORAGE_SEED);
-  const expenses = Array.isArray(store.expenses) ? store.expenses : [];
-  const categories = Array.isArray(store.categories) && store.categories.length ? store.categories : DEFAULT_CATEGORIES;
-  const sources = Array.isArray(store.sources) && store.sources.length ? store.sources : DEFAULT_SOURCES;
-  const createdAt = store.createdAt ?? STORAGE_SEED.createdAt;
+  const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
+  const store = ensureExpensesDefaults(storeState);
+  const expenses = store.expenses;
+  const categories = store.categories;
+  const sources = store.sources;
+  const createdAt = store.createdAt;
+  const personalInfo = store.personalInfo;
+  const settings = store.settings;
 
-  const [tab, setTab] = useState("dashboard");
+  const [tab, setTab] = useState(settings.defaultTab || "dashboard");
   const [drafts, setDrafts] = useState(() => [createDraftExpense()]);
+  const fileRef = useRef(null);
+  const defaultsRef = useRef(settings.defaultTab);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  
+  useEffect(() => {
+    if (settings.defaultTab && defaultsRef.current !== settings.defaultTab) {
+      defaultsRef.current = settings.defaultTab;
+      setTab(settings.defaultTab);
+    }
+  }, [settings.defaultTab]);
+
+  useEffect(() => {
+    if (Array.isArray(storeState)) {
+      const normalized = storeState.map(withId);
+      setStore((prev) => {
+        const safePrev = ensureExpensesDefaults(prev);
+        return {
+          ...safePrev,
+          expenses: normalized,
+          categories: mergeCategoriesFromExpenses(normalized, DEFAULT_CATEGORIES),
+          sources: mergeSourcesFromExpenses(normalized, DEFAULT_SOURCES),
+        };
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function setExpenses(updater) {
     setStore((prev) => {
-      const currentExpenses = Array.isArray(prev.expenses) ? prev.expenses : [];
+      const safePrev = ensureExpensesDefaults(prev);
+      const currentExpenses = Array.isArray(safePrev.expenses) ? safePrev.expenses : [];
       const candidateExpenses = typeof updater === "function" ? updater(currentExpenses) : updater;
       const nextExpenses = Array.isArray(candidateExpenses) ? candidateExpenses : [];
-      const currentSources = Array.isArray(prev.sources) && prev.sources.length ? prev.sources : DEFAULT_SOURCES;
-      const currentCategories = Array.isArray(prev.categories) && prev.categories.length ? prev.categories : DEFAULT_CATEGORIES;
+      const currentSources =
+        Array.isArray(safePrev.sources) && safePrev.sources.length ? safePrev.sources : DEFAULT_SOURCES;
+      const currentCategories =
+        Array.isArray(safePrev.categories) && safePrev.categories.length ? safePrev.categories : DEFAULT_CATEGORIES;
       const mergedSources = mergeSourcesFromExpenses(nextExpenses, currentSources);
       const mergedCategories = mergeCategoriesFromExpenses(nextExpenses, currentCategories);
-      return { ...prev, expenses: nextExpenses, sources: mergedSources, categories: mergedCategories };
+      return {
+        ...safePrev,
+        expenses: nextExpenses,
+        sources: mergedSources,
+        categories: mergedCategories,
+      };
     });
   }
 
   function setCreatedAt(value) {
-    setStore((prev) => ({ ...prev, createdAt: value }));
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      return { ...safePrev, createdAt: value };
+    });
   }
 
   function createDraftExpense(overrides = {}) {
@@ -107,11 +153,13 @@ export default function ExpensesApp() {
 
   function exportJson() {
     const payload = {
-      version: 1,
+      version: 2,
       created_at: createdAt,
       exported_at: new Date().toISOString(),
       categories,
       sources,
+      personal_info: personalInfo,
+      settings,
       inputs: [
         {
           summary: totals,
@@ -172,6 +220,47 @@ export default function ExpensesApp() {
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
+        if (data && Array.isArray(data.inputs)) {
+          const inputExpenses = data.inputs.flatMap((section) => section.expenses || []);
+          const normalized = inputExpenses.map(withId);
+          const incomingCategories = Array.isArray(data.categories) && data.categories.length ? data.categories : categories;
+          const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
+          const created = data.created_at || createdAt || new Date().toISOString();
+          setStore((prev) => {
+            const safePrev = ensureExpensesDefaults(prev);
+            const nextCategories = mergeCategoriesFromExpenses(normalized, incomingCategories);
+            const nextSources = mergeSourcesFromExpenses(normalized, incomingSources);
+            const nextPersonal = {
+              ...safePrev.personalInfo,
+              ...(data.personal_info || {}),
+            };
+            const nextSettings = {
+              ...safePrev.settings,
+              ...(data.settings || {}),
+            };
+            return {
+              ...safePrev,
+              expenses: normalized,
+              categories: nextCategories,
+              sources: nextSources,
+              personalInfo: nextPersonal,
+              settings: nextSettings,
+              createdAt: created,
+            };
+          });
+        } else if (Array.isArray(data.expenses)) {
+          const normalized = data.expenses.map(withId);
+          setStore((prev) => {
+            const safePrev = ensureExpensesDefaults(prev);
+            return {
+              ...safePrev,
+              expenses: normalized,
+              categories: mergeCategoriesFromExpenses(normalized, safePrev.categories),
+              sources: mergeSourcesFromExpenses(normalized, safePrev.sources),
+            };
+          });
+        } else {
+          window.alert("Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de despesas.");
         const { errors, items, incomingCategories, incomingSources, created } = validateExpensesPayload(data);
         if (errors.length) {
           window.alert(`Erros ao validar JSON:\n- ${errors.join("\n- ")}`);
@@ -251,6 +340,24 @@ export default function ExpensesApp() {
           <div className="flex items-center justify-end gap-4">
             <div className="flex items-center gap-2">
               <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>Exportar</ActionButton>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
+                <ArrowUpTrayIcon className="h-5 w-5" />
+                Importar
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="application/json"
+                  className="hidden"
+                  onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
+                />
+              </label>
+              <Link
+                to="/gastos/configuracoes"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+              >
+                <span aria-hidden="true">⚙️</span>
+                Configurações
+              </Link>
               <ActionButton icon={ArrowUpTrayIcon} onClick={() => setImportModalOpen(true)}>Importar</ActionButton>
               <Link to="/investimentos" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-50">Ir para Investimentos</Link>
             </div>
