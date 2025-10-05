@@ -1,15 +1,16 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ExpensesDashboard } from "./components/ExpensesDashboard.jsx";
 import { ExpensesEntrada } from "./components/ExpensesEntrada.jsx";
 import { ExpensesHistorico } from "./components/ExpensesHistorico.jsx";
 import { ActionButton } from "../components/ActionButton.jsx";
 import { Tabs } from "../components/Tab.jsx";
+import { ImportModal } from "../components/ImportModal.jsx";
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { DEFAULT_CATEGORIES, ensureCategoryInLibrary } from "./config/categories.js";
 import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
 import { computeDerivedExpenses, computeTotals, withId, makeId } from "./utils/expenses.js";
-import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm } from "../utils/formatters.js";
+import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm, toNumber } from "../utils/formatters.js";
 import { ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentIcon, PlusIcon, TableCellsIcon, ChartBarIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 const EXPENSES_LS_KEY = "leo-expenses-v1";
@@ -30,7 +31,7 @@ export default function ExpensesApp() {
 
   const [tab, setTab] = useState("dashboard");
   const [drafts, setDrafts] = useState(() => [createDraftExpense()]);
-  const fileRef = useRef(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   function setExpenses(updater) {
     setStore((prev) => {
@@ -121,39 +122,105 @@ export default function ExpensesApp() {
     download(`gastos_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
   }
 
+  function validateExpensesPayload(data) {
+    const errors = [];
+    let items = [];
+    let incomingCategories = null;
+    let incomingSources = null;
+    let created = null;
+
+    if (Array.isArray(data)) {
+      items = data;
+    } else if (data && typeof data === "object") {
+      incomingCategories = Array.isArray(data.categories) ? data.categories : null;
+      incomingSources = Array.isArray(data.sources) ? data.sources : null;
+      created = typeof data.created_at === "string" ? data.created_at : null;
+
+      if (Array.isArray(data.inputs)) {
+        items = data.inputs.flatMap((section) => Array.isArray(section.expenses) ? section.expenses : []);
+        if (!items.length) errors.push("'inputs' não contém nenhuma lista 'expenses'.");
+      } else if (Array.isArray(data.expenses)) {
+        items = data.expenses;
+      } else {
+        errors.push("Estrutura inválida. Use { inputs: [{ expenses: [...] }] } ou { expenses: [...] }.");
+      }
+    } else {
+      errors.push("JSON raiz deve ser um objeto ou um array.");
+    }
+
+    // Validar itens
+    const itemErrors = [];
+    items.forEach((e, idx) => {
+      const where = `Item #${idx + 1}`;
+      if (!e || typeof e !== "object") { itemErrors.push(`${where}: não é um objeto.`); return; }
+      if (!e.date) itemErrors.push(`${where}: campo obrigatório ausente: 'date'.`);
+      else if (isNaN(new Date(e.date))) itemErrors.push(`${where}: 'date' inválido (use AAAA-MM-DD).`);
+      if (!e.description) itemErrors.push(`${where}: campo obrigatório ausente: 'description'.`);
+      if (e.value === undefined || e.value === null || String(e.value).trim() === "") {
+        itemErrors.push(`${where}: 'value' ausente (pode ser 0, positivo ou negativo).`);
+      } else if (!Number.isFinite(Number(String(e.value).replace(/\./g, "").replace(/,/g, ".")))) {
+        itemErrors.push(`${where}: 'value' inválido (use número, ex.: -123.45).`);
+      }
+    });
+    errors.push(...itemErrors);
+
+    return { errors, items, incomingCategories, incomingSources, created };
+  }
+
   function importJsonFile(file) {
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
-        if (data && Array.isArray(data.inputs)) {
-          const inputExpenses = data.inputs.flatMap((section) => section.expenses || []);
-          const normalized = inputExpenses.map(withId);
-          const incomingCategories = Array.isArray(data.categories) && data.categories.length ? data.categories : categories;
-          const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
-          const created = data.created_at || createdAt || new Date().toISOString();
-          setStore({
-            expenses: normalized,
-            categories: mergeCategoriesFromExpenses(normalized, incomingCategories),
-            sources: mergeSourcesFromExpenses(normalized, incomingSources),
-            createdAt: created,
-          });
-        } else if (Array.isArray(data.expenses)) {
-          const normalized = data.expenses.map(withId);
-          setStore((prev) => ({
-            ...prev,
-            expenses: normalized,
-            categories: mergeCategoriesFromExpenses(normalized, prev.categories || DEFAULT_CATEGORIES),
-            sources: mergeSourcesFromExpenses(normalized, prev.sources || DEFAULT_SOURCES),
-          }));
-        } else {
-          window.alert("Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de despesas.");
+        const { errors, items, incomingCategories, incomingSources, created } = validateExpensesPayload(data);
+        if (errors.length) {
+          window.alert(`Erros ao validar JSON:\n- ${errors.join("\n- ")}`);
+          return;
         }
+        const normalized = items.map((e) => withId({ ...e, value: Number(String(e.value).replace(/\./g, "").replace(/,/g, ".")) }));
+        const cats = incomingCategories && incomingCategories.length ? incomingCategories : categories;
+        const srcs = incomingSources && incomingSources.length ? incomingSources : sources;
+        const createdAtValue = created || createdAt || new Date().toISOString();
+        setStore({
+          expenses: normalized,
+          categories: mergeCategoriesFromExpenses(normalized, cats),
+          sources: mergeSourcesFromExpenses(normalized, srcs),
+          createdAt: createdAtValue,
+        });
+        setImportModalOpen(false);
       } catch (e) {
         window.alert("Falha ao ler JSON: " + e.message);
       }
     };
     reader.readAsText(file);
+  }
+
+  function downloadTemplate() {
+    const template = {
+      version: 1,
+      created_at: new Date().toISOString(),
+      categories: [
+        { name: "Alimentação", color: "", icon: "🍔" },
+      ],
+      sources: [
+        { name: "Pessoal", color: "", icon: "💼" },
+      ],
+      inputs: [
+        {
+          summary: { total_spent: 123.45 },
+          expenses: [
+            {
+              date: "2025-01-31",
+              description: "Supermercado",
+              category: "Alimentação",
+              source: "Pessoal",
+              value: -123.45,
+            },
+          ],
+        },
+      ],
+    };
+    download("template_gastos.json", JSON.stringify(template, null, 2));
   }
 
   function handleSubmitDrafts(rows) {
@@ -165,7 +232,7 @@ export default function ExpensesApp() {
         description: r.description.trim(),
         category: r.category.trim(),
         source: r.source.trim(),
-        value: Number(r.value) || 0,
+        value: toNumber(r.value),
       }));
     if (!prepared.length) return;
     setExpenses((prev) => [...prev, ...prepared]);
@@ -184,17 +251,7 @@ export default function ExpensesApp() {
           <div className="flex items-center justify-end gap-4">
             <div className="flex items-center gap-2">
               <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>Exportar</ActionButton>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
-                <ArrowUpTrayIcon className="h-5 w-5" />
-                Importar
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="application/json"
-                  className="hidden"
-                  onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
-                />
-              </label>
+              <ActionButton icon={ArrowUpTrayIcon} onClick={() => setImportModalOpen(true)}>Importar</ActionButton>
               <Link to="/investimentos" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-50">Ir para Investimentos</Link>
             </div>
           </div>
@@ -221,6 +278,12 @@ export default function ExpensesApp() {
           <p>Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.</p>
         </footer>
       </div>
+      <ImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={importJsonFile}
+        onDownloadTemplate={downloadTemplate}
+      />
     </div>
   );
 }
