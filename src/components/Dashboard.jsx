@@ -17,6 +17,17 @@ import {
 import { fmtBRL } from "../utils/formatters.js";
 import { resolveSourceVisual } from "../config/sources.js";
 
+// Função para formatar valores em K
+const formatValueInK = (value) => {
+  if (value === 0) return "0";
+  const absValue = Math.abs(value);
+  if (absValue >= 1000) {
+    const kValue = (value / 1000).toFixed(1);
+    return kValue.endsWith('.0') ? kValue.slice(0, -2) + 'k' : kValue + 'k';
+  }
+  return value.toString();
+};
+
 export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
   const safeMonthly = Array.isArray(monthly) ? monthly : [];
 
@@ -29,27 +40,46 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
 
   const domain = safeMonthly.length ? ["dataMin", "dataMax"] : [0, 1];
 
-  const flowChart = safeMonthly.map((m) => ({
-    ts: m.midDateValue,
-    label: m.label,
-    Entradas: m.cashFlow > 0 ? m.cashFlow : 0,
-    Saidas: m.cashFlow < 0 ? m.cashFlow : 0,
-  }));
-  const hasFlowData = flowChart.some((row) => row.Entradas !== 0 || row.Saidas !== 0);
-
-  let cumulativeYield = 0;
-  const yieldChart = safeMonthly.map((m) => {
-    const monthlyYield = m.yieldValue ?? 0;
-    cumulativeYield += monthlyYield;
-    return {
-      ts: m.midDateValue,
-      label: m.label,
-      RendimentoMensal: monthlyYield,
-      RendimentoAcumulado: cumulativeYield,
-    };
+  // Preparar dados do fluxo por fonte
+  const flowChartBySource = safeMonthly.map((m) => {
+    const row = { ts: m.midDateValue, label: m.label };
+    const monthlySources = new Map(
+      (Array.isArray(m.sources) ? m.sources : []).map((source) => [source.name, source.invested])
+    );
+    
+    // Calcular fluxo líquido por fonte (entrada - saída)
+    uniqueSourceNames.forEach((name) => {
+      const sourceValue = monthlySources.get(name) ?? 0;
+      row[name] = sourceValue; // Valor absoluto do fluxo por fonte
+    });
+    
+    return row;
   });
-  const hasYieldData = yieldChart.some(
-    (row) => row.RendimentoMensal !== 0 || row.RendimentoAcumulado !== 0
+  const hasFlowData = flowChartBySource.some((row) => 
+    uniqueSourceNames.some(name => row[name] !== 0)
+  );
+
+  // Preparar dados do rendimento mensal por fonte
+  const yieldChartBySource = safeMonthly.map((m) => {
+    const row = { ts: m.midDateValue, label: m.label };
+    const monthlySources = new Map(
+      (Array.isArray(m.sources) ? m.sources : []).map((source) => [source.name, source.invested])
+    );
+    
+    // Calcular rendimento mensal por fonte (assumindo que o yieldValue é proporcional ao investido)
+    const totalInvested = m.invested || 1; // Evitar divisão por zero
+    const yieldPct = m.yieldPct || 0;
+    
+    uniqueSourceNames.forEach((name) => {
+      const sourceInvested = monthlySources.get(name) ?? 0;
+      const sourceYield = sourceInvested * yieldPct;
+      row[name] = sourceYield;
+    });
+    
+    return row;
+  });
+  const hasYieldData = yieldChartBySource.some((row) => 
+    uniqueSourceNames.some(name => row[name] !== 0)
   );
 
   const sourceLibrary = Array.isArray(sources) ? sources : [];
@@ -110,89 +140,88 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <div className="rounded-2xl bg-white p-4 shadow">
-        <h3 className="mb-2 text-sm font-semibold">Entrada e saída ao longo do tempo</h3>
+        <h3 className="mb-2 text-sm font-semibold">Fluxo por fonte ao longo do tempo</h3>
         <div className="h-72">
           {hasFlowData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={flowChart}>
+              <AreaChart data={flowChartBySource}>
                 <defs>
-                  <linearGradient id={flowInGradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id={flowOutGradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.05} />
-                  </linearGradient>
+                  {uniqueSourceNames.map((name, index) => {
+                    const gradientId = `flow-source-${index}`;
+                    const color = colorBySource.get(name);
+                    return (
+                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+                      </linearGradient>
+                    );
+                  })}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={(value) => fmtBRL(value)} />
+                <YAxis tickFormatter={(value) => formatValueInK(value)} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="Entradas"
-                  name="Entradas"
-                  stroke="#10b981"
-                  fill={`url(#${flowInGradientId})`}
-                  strokeWidth={2}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="Saidas"
-                  name="Saídas"
-                  stroke="#ef4444"
-                  fill={`url(#${flowOutGradientId})`}
-                  strokeWidth={2}
-                />
+                {uniqueSourceNames.map((name, index) => (
+                  <Area
+                    key={name}
+                    type="monotone"
+                    dataKey={name}
+                    name={name}
+                    stroke={colorBySource.get(name)}
+                    fill={`url(#flow-source-${index})`}
+                    strokeWidth={2}
+                  />
+                ))}
               </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-              Adicione lançamentos com entradas ou saídas para visualizar este gráfico.
+              Adicione lançamentos com fontes para visualizar este gráfico.
             </div>
           )}
         </div>
       </div>
 
       <div className="rounded-2xl bg-white p-4 shadow">
-        <h3 className="mb-2 text-sm font-semibold">Rendimento ao longo do tempo</h3>
+        <h3 className="mb-2 text-sm font-semibold">Rendimento mensal por fonte</h3>
         <div className="h-72">
           {hasYieldData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={yieldChart}>
+              <AreaChart data={yieldChartBySource}>
+                <defs>
+                  {uniqueSourceNames.map((name, index) => {
+                    const gradientId = `yield-source-${index}`;
+                    const color = colorBySource.get(name);
+                    return (
+                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+                      </linearGradient>
+                    );
+                  })}
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis yAxisId="left" tickFormatter={(value) => fmtBRL(value)} width={70} />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  tickFormatter={(value) => fmtBRL(value)}
-                  width={70}
-                />
+                <YAxis tickFormatter={(value) => formatValueInK(value)} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
-                <Bar
-                  yAxisId="left"
-                  dataKey="RendimentoMensal"
-                  name="Rendimento mensal"
-                  fill="#6366f1"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="RendimentoAcumulado"
-                  name="Rendimento acumulado"
-                  stroke="#0f172a"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </ComposedChart>
+                {uniqueSourceNames.map((name, index) => (
+                  <Area
+                    key={name}
+                    type="monotone"
+                    dataKey={name}
+                    name={name}
+                    stroke={colorBySource.get(name)}
+                    fill={`url(#yield-source-${index})`}
+                    strokeWidth={2}
+                  />
+                ))}
+              </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-              Registre lançamentos consecutivos para calcular rendimentos mensais e acumulados.
+              Registre lançamentos consecutivos para calcular rendimentos mensais por fonte.
             </div>
           )}
         </div>
@@ -222,7 +251,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={(value) => fmtBRL(value)} />
+                <YAxis tickFormatter={(value) => formatValueInK(value)} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
                 <Area

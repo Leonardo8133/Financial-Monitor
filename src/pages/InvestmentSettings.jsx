@@ -187,15 +187,6 @@ export default function InvestmentSettings() {
           <p className="mt-1 text-sm text-slate-500">Defina o comportamento padrão do painel e observações para os relatórios.</p>
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <label className="text-sm font-medium text-slate-700">
-              Data de criação do histórico
-              <input
-                type="date"
-                value={creationDate}
-                onChange={(event) => updateCreatedAt(event.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400"
-              />
-            </label>
-            <label className="text-sm font-medium text-slate-700">
               Aba inicial
               <select
                 value={settings.defaultTab}

@@ -21,17 +21,19 @@ export function KPICard({ title, value, secondaryValue, subtitle, tone = "neutra
       )}
       {hasHoverDetails && (
         <div className="hidden group-hover:block">
-          <ul className="mt-2 space-y-1 text-xs">
-            {details.map((detail) => (
-              <li key={detail.name} className="flex items-center justify-between text-slate-600">
-                <span className="font-medium text-slate-700">{detail.name}</span>
-                <span className="font-semibold text-slate-900">
-                  {fmtBRL(detail.invested ?? detail.total ?? 0)}
-                  {detail.percentage != null ? ` (${detail.percentage}%)` : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-2 max-h-32 overflow-y-auto">
+            <ul className="space-y-1 text-xs">
+              {details.map((detail) => (
+                <li key={detail.name} className="flex items-center justify-between text-slate-600">
+                  <span className="font-medium text-slate-700">{detail.name}</span>
+                  <span className="font-semibold text-slate-900">
+                    {fmtBRL(detail.invested ?? detail.total ?? 0)}
+                    {detail.percentage != null ? ` (${detail.percentage}%)` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
       {subtitle && <div className="mt-1 text-[0.7rem] text-slate-500">{subtitle}</div>}

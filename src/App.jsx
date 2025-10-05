@@ -680,15 +680,6 @@ export default function App() {
           />
         </section>
 
-        <section className="mb-6 flex flex-wrap items-center gap-2">
-          <button
-            onClick={loadDemo}
-            className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-600"
-            title="Preenche o painel com dados fictícios para demonstração"
-          >
-            Carregar dados de exemplo
-          </button>
-        </section>
 
         {tab === "dashboard" && <Dashboard monthly={timeline} sourceSummary={sourceSummary} sources={sources} />}
 
