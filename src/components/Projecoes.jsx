@@ -86,9 +86,8 @@ export function Projecoes({ timeline = [], defaults = {} }) {
     ),
     horizonMonths: 60,
     monthlyReturnPct: decimalToPercent(
-      safeDefaults.historicalMonthlyReturn ?? safeDefaults.monthlyReturn ?? trailingStats.yieldAverage ?? 0.005
+      safeDefaults.monthlyReturn ?? trailingStats.yieldAverage ?? 0.005
     ),
-    useHistoricalReturn: safeDefaults.historicalMonthlyReturn !== null && safeDefaults.historicalMonthlyReturn !== undefined,
     inflationPct: decimalToPercent(safeDefaults.inflationRate ?? 0.04),
     contributionGrowthPct: decimalToPercent(safeDefaults.contributionGrowth ?? 0.02),
     goalAmount:
@@ -115,17 +114,11 @@ export function Projecoes({ timeline = [], defaults = {} }) {
         safeDefaults.goalAmount !== undefined && safeDefaults.goalAmount !== null
           ? Math.max(safeDefaults.goalAmount, 0)
           : prev.goalAmount,
-      monthlyReturnPct:
-        prev.useHistoricalReturn && safeDefaults.historicalMonthlyReturn !== null &&
-        safeDefaults.historicalMonthlyReturn !== undefined
-          ? decimalToPercent(safeDefaults.historicalMonthlyReturn)
-          : prev.monthlyReturnPct,
     }));
   }, [
     safeDefaults.initialBalance,
     safeDefaults.monthlyContribution,
     safeDefaults.goalAmount,
-    safeDefaults.historicalMonthlyReturn,
   ]);
 
   useEffect(() => {
@@ -140,11 +133,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
 
   const projection = useMemo(() => {
     const horizon = Math.max(Math.floor(readNumber(form.horizonMonths, 0)), 0);
-    const monthlyRate =
-      form.useHistoricalReturn && safeDefaults.historicalMonthlyReturn !== null &&
-      safeDefaults.historicalMonthlyReturn !== undefined
-        ? safeDefaults.historicalMonthlyReturn
-        : percentToDecimal(form.monthlyReturnPct);
+    const monthlyRate = percentToDecimal(form.monthlyReturnPct);
     const contributionGrowthAnnual = percentToDecimal(form.contributionGrowthPct);
     const inflationAnnual = percentToDecimal(form.inflationPct);
     const withdrawalRate = percentToDecimal(form.withdrawalRatePct);
@@ -234,7 +223,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
       passiveIncomeMonthly,
       withdrawalRate,
     };
-  }, [form, safeDefaults.historicalMonthlyReturn]);
+  }, [form]);
 
   const goalMessage = projection.goal > 0 ? formatGoalMessage(projection.goalMonths) : null;
 
@@ -270,7 +259,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, initialBalance: Math.max(readNumber(event.target.value, 0), 0) }))
               }
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </label>
 
@@ -290,7 +279,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   monthlyContribution: Math.max(readNumber(event.target.value, 0), 0),
                 }))
               }
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
             {trailingStats.monthsConsidered > 0 && (
               <span className="text-xs text-slate-500">
@@ -313,7 +302,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, horizonMonths: Math.max(readNumber(event.target.value, 1), 1) }))
               }
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </label>
 
@@ -321,26 +310,13 @@ export function Projecoes({ timeline = [], defaults = {} }) {
             <label
               className="flex items-center justify-between"
               title="Rentabilidade mensal líquida utilizada na projeção"
+              htmlFor="monthlyReturnPct"
             >
               <span>Rentabilidade mensal (%)</span>
-              <span className="flex items-center gap-1 text-xs text-slate-500">
-                <input
-                  type="checkbox"
-                  checked={form.useHistoricalReturn}
-                  onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      useHistoricalReturn: event.target.checked,
-                      monthlyReturnPct: event.target.checked
-                        ? decimalToPercent(
-                            safeDefaults.historicalMonthlyReturn ?? trailingStats.yieldAverage ?? percentToDecimal(prev.monthlyReturnPct)
-                          )
-                        : prev.monthlyReturnPct,
-                    }))
-                  }
-                  title="Utiliza a média dos rendimentos mensais registrados"
-                />
-                Média histórica
+              <span className="text-xs text-slate-500">
+                {safeTimeline.length && safeTimeline[safeTimeline.length - 1].yieldPct !== null && safeTimeline[safeTimeline.length - 1].yieldPct !== undefined
+                  ? `Último mês: ${fmtPct(safeTimeline[safeTimeline.length - 1].yieldPct)}`
+                  : ""}
               </span>
             </label>
             <input
@@ -348,18 +324,15 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               min="-50"
               max="50"
               step="0.01"
-              value={form.useHistoricalReturn && trailingStats.yieldAverage !== null
-                ? decimalToPercent(trailingStats.yieldAverage)
-                : form.monthlyReturnPct}
+              id="monthlyReturnPct"
+              value={form.monthlyReturnPct}
               onChange={(event) =>
                 setForm((prev) => ({
                   ...prev,
-                  monthlyReturnPct: readNumber(event.target.value, prev.monthlyReturnPct),
-                  useHistoricalReturn: false,
+                  monthlyReturnPct: Math.round(readNumber(event.target.value, prev.monthlyReturnPct) * 100) / 100,
                 }))
               }
-              disabled={form.useHistoricalReturn && trailingStats.yieldAverage !== null}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:bg-slate-100"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
             {trailingStats.monthsConsidered > 0 && (
               <span className="text-xs text-slate-500">
@@ -387,7 +360,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, inflationPct: Math.max(readNumber(event.target.value, 0), 0) }))
                 }
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
 
@@ -408,7 +381,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                     contributionGrowthPct: readNumber(event.target.value, prev.contributionGrowthPct),
                   }))
                 }
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
 
@@ -425,7 +398,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, goalAmount: Math.max(readNumber(event.target.value, 0), 0) }))
                 }
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
 
@@ -443,7 +416,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, withdrawalRatePct: Math.max(readNumber(event.target.value, 0), 0) }))
                 }
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
           </div>
