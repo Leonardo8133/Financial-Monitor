@@ -29,28 +29,16 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
 
   const domain = safeMonthly.length ? ["dataMin", "dataMax"] : [0, 1];
 
-  const flowChart = safeMonthly.map((m) => ({
-    ts: m.midDateValue,
-    label: m.label,
-    Entradas: m.cashFlow > 0 ? m.cashFlow : 0,
-    Saidas: m.cashFlow < 0 ? m.cashFlow : 0,
-  }));
-  const hasFlowData = flowChart.some((row) => row.Entradas !== 0 || row.Saidas !== 0);
-
-  let cumulativeYield = 0;
-  const yieldChart = safeMonthly.map((m) => {
-    const monthlyYield = m.yieldValue ?? 0;
-    cumulativeYield += monthlyYield;
-    return {
-      ts: m.midDateValue,
-      label: m.label,
-      RendimentoMensal: monthlyYield,
-      RendimentoAcumulado: cumulativeYield,
-    };
-  });
-  const hasYieldData = yieldChart.some(
-    (row) => row.RendimentoMensal !== 0 || row.RendimentoAcumulado !== 0
-  );
+  const formatShortK = (value) => {
+    const numeric = Number(value) || 0;
+    const abs = Math.abs(numeric);
+    if (abs >= 1000) {
+      const short = abs / 1000;
+      const rounded = Math.round(short * 10) / 10;
+      return `${rounded}k`;
+    }
+    return `${abs}`;
+  };
 
   const sourceLibrary = Array.isArray(sources) ? sources : [];
   const extraSourceNames = safeMonthly
@@ -64,6 +52,36 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
     uniqueSourceNames.map((name) => [name, resolveSourceVisual(name, sourceLibrary).color])
   );
 
+  // Diferença líquida por fonte: uma linha por fonte com valor absoluto de (entradas - saídas)
+  const perSourceNet = safeMonthly.map((m) => {
+    const perSource = new Map();
+    (Array.isArray(m.sources) ? m.sources : []).forEach((s) => {
+      const name = s.name;
+      const cf = s.cashFlow ?? 0;
+      perSource.set(name, (perSource.get(name) ?? 0) + cf);
+    });
+    const row = { ts: m.midDateValue, label: m.label };
+    uniqueSourceNames.forEach((name) => {
+      row[name] = Math.abs(perSource.get(name) ?? 0);
+    });
+    return row;
+  });
+  const hasFlowData = perSourceNet.some((row) => uniqueSourceNames.some((name) => (row[name] ?? 0) !== 0));
+
+  // Apenas rendimento mensal por fonte
+  const yieldChart = safeMonthly.map((m) => {
+    const row = { ts: m.midDateValue, label: m.label };
+    (Array.isArray(m.sources) ? m.sources : []).forEach((s) => {
+      const name = s.name;
+      const yv = s.yieldValue ?? 0;
+      row[name] = yv;
+    });
+    return row;
+  });
+  const hasYieldData = yieldChart.some((row) => uniqueSourceNames.some((name) => (row[name] ?? 0) !== 0));
+
+  
+
   const cumulativeBySource = new Map(uniqueSourceNames.map((name) => [name, 0]));
   let cumulativeTotal = 0;
   const investmentChart = safeMonthly.map((m) => {
@@ -76,27 +94,25 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
     uniqueSourceNames.forEach((name) => {
       const monthValue = monthlySources.get(name) ?? 0;
       monthInvestedSum += monthValue;
-      const updated = (cumulativeBySource.get(name) ?? 0) + monthValue;
-      cumulativeBySource.set(name, updated);
-      row[name] = updated;
+      row[name] = monthValue;
     });
 
-    cumulativeTotal += monthInvestedSum;
-    row.Total = cumulativeTotal;
+    row.Total = monthInvestedSum;
 
     return row;
   });
   const hasInvestmentData = investmentChart.some((row) => row.Total > 0);
 
-  const sourceChart = Array.isArray(sourceSummary)
-    ? sourceSummary
-        .filter((item) => item.invested > 0)
+  const lastMonthSources = safeMonthly.length ? safeMonthly[safeMonthly.length - 1].sources || [] : [];
+  const sourceChart = Array.isArray(lastMonthSources)
+    ? lastMonthSources
+        .filter((item) => (item.invested ?? 0) > 0)
         .map((item) => {
           const visual = resolveSourceVisual(item.name, sourceLibrary);
           return {
             name: item.name,
-            value: item.invested,
-            percentage: item.percentage,
+            value: item.invested ?? 0,
+            percentage: 0,
             color: visual.color,
           };
         })
@@ -104,49 +120,24 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
   const hasSourceData = sourceChart.length > 0;
 
   const totalGradientId = "total-invested-area";
-  const flowInGradientId = "flow-in-gradient";
-  const flowOutGradientId = "flow-out-gradient";
 
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <div className="rounded-2xl bg-white p-4 shadow">
-        <h3 className="mb-2 text-sm font-semibold">Entrada e saída ao longo do tempo</h3>
+        <h3 className="mb-2 text-sm font-semibold">Fluxo líquido por fonte ao longo do tempo</h3>
         <div className="h-72">
           {hasFlowData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={flowChart}>
-                <defs>
-                  <linearGradient id={flowInGradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id={flowOutGradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
+              <ComposedChart data={perSourceNet}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={(value) => fmtBRL(value)} />
+                <YAxis tickFormatter={formatShortK} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="Entradas"
-                  name="Entradas"
-                  stroke="#10b981"
-                  fill={`url(#${flowInGradientId})`}
-                  strokeWidth={2}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="Saidas"
-                  name="Saídas"
-                  stroke="#ef4444"
-                  fill={`url(#${flowOutGradientId})`}
-                  strokeWidth={2}
-                />
-              </AreaChart>
+                {uniqueSourceNames.map((name) => (
+                  <Line key={name} type="monotone" dataKey={name} name={name} stroke={colorBySource.get(name)} strokeWidth={2} dot={false} />
+                ))}
+              </ComposedChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
@@ -157,49 +148,31 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
       </div>
 
       <div className="rounded-2xl bg-white p-4 shadow">
-        <h3 className="mb-2 text-sm font-semibold">Rendimento ao longo do tempo</h3>
+        <h3 className="mb-2 text-sm font-semibold">Rendimento mensal por fonte</h3>
         <div className="h-72">
           {hasYieldData ? (
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={yieldChart}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis yAxisId="left" tickFormatter={(value) => fmtBRL(value)} width={70} />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  tickFormatter={(value) => fmtBRL(value)}
-                  width={70}
-                />
+                <YAxis tickFormatter={formatShortK} width={70} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
-                <Bar
-                  yAxisId="left"
-                  dataKey="RendimentoMensal"
-                  name="Rendimento mensal"
-                  fill="#6366f1"
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="RendimentoAcumulado"
-                  name="Rendimento acumulado"
-                  stroke="#0f172a"
-                  strokeWidth={2}
-                  dot={false}
-                />
+                {uniqueSourceNames.map((name) => (
+                  <Bar key={name} dataKey={name} name={name} fill={colorBySource.get(name)} />
+                ))}
               </ComposedChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-              Registre lançamentos consecutivos para calcular rendimentos mensais e acumulados.
+              Registre lançamentos consecutivos para calcular rendimentos mensais por fonte.
             </div>
           )}
         </div>
       </div>
 
       <div className="rounded-2xl bg-white p-4 shadow xl:col-span-2">
-        <h3 className="mb-2 text-sm font-semibold">Total investido ao longo do tempo</h3>
+        <h3 className="mb-2 text-sm font-semibold">Total investido por mês</h3>
         <div className="h-80">
           {hasInvestmentData ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -222,13 +195,13 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={(value) => fmtBRL(value)} />
+                <YAxis tickFormatter={formatShortK} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
                 <Area
                   type="monotone"
                   dataKey="Total"
-                  name="Total acumulado"
+                  name="Total do mês"
                   stroke="#0f172a"
                   strokeWidth={2}
                   fill={`url(#${totalGradientId})`}
@@ -240,6 +213,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
                     dataKey={name}
                     stroke={colorBySource.get(name)}
                     strokeWidth={1.5}
+                    stackId="sources"
                     fill={`url(#source-area-${index})`}
                   />
                 ))}

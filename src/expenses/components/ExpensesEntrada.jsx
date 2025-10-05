@@ -106,7 +106,7 @@ export function ExpensesEntrada({ drafts, setDrafts, onSubmit, categories, sourc
               <Field className="w-full sm:w-56" label="Fonte">
                 <input type="text" list={sourceOptionsId} placeholder="ex.: Pessoal" value={row.source} disabled={row.locked} onChange={(e) => updateRow(row.id, "source", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
               </Field>
-              <Field className="w-full sm:w-40" label="Valor (R$)">
+              <Field className="w-full sm:w-40" label="Valor (R$)" title="Valor da despesa em reais; use decimais com vírgula ou ponto">
                 <input type="number" step="0.01" inputMode="decimal" value={row.value} disabled={row.locked} onChange={(e) => updateRow(row.id, "value", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
               </Field>
             </div>

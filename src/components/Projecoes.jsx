@@ -69,35 +69,40 @@ export function Projecoes({ timeline = [], defaults = {} }) {
         : 0;
     const volatility = variance > 0 ? Math.sqrt(variance) : 0;
 
+    const last = safeTimeline[safeTimeline.length - 1] || {};
     return {
       monthsConsidered: trailing.length,
       contributionAverage,
       yieldAverage,
       cashFlowAverage,
       volatility,
+      lastMonth: {
+        invested: Math.max(last.invested ?? 0, 0),
+        yieldPct: last.yieldPct ?? null,
+      },
     };
   }, [safeTimeline]);
 
   const [form, setForm] = useState(() => ({
-    initialBalance: Math.max(safeDefaults.initialBalance ?? 0, 0),
-    monthlyContribution: Math.max(
-      safeDefaults.monthlyContribution ?? trailingStats.contributionAverage ?? 0,
-      0
-    ),
+    initialBalance: Math.round(Math.max(safeDefaults.initialBalance ?? 0, 0) * 100) / 100,
+    monthlyContribution: Math.round(
+      Math.max(
+        safeDefaults.monthlyContribution ?? trailingStats.lastMonth.invested ?? trailingStats.contributionAverage ?? 0,
+        0
+      ) * 100
+    ) / 100,
     horizonMonths: 60,
-    monthlyReturnPct: decimalToPercent(
-      safeDefaults.monthlyReturn ?? trailingStats.yieldAverage ?? 0.005
-    ),
+    monthlyReturnPct: Math.round(
+      decimalToPercent(
+        safeDefaults.monthlyReturn ?? trailingStats.lastMonth.yieldPct ?? trailingStats.yieldAverage ?? 0.005
+      ) * 100
+    ) / 100,
     inflationPct: decimalToPercent(safeDefaults.inflationRate ?? 0.04),
     contributionGrowthPct: decimalToPercent(safeDefaults.contributionGrowth ?? 0.02),
-    goalAmount:
-      Math.max(
-        safeDefaults.goalAmount ??
-          (safeDefaults.initialBalance && safeDefaults.initialBalance > 0
-            ? safeDefaults.initialBalance * 2
-            : (trailingStats.contributionAverage || 500) * 200),
-        0
-      ),
+    goalAmount: Math.max(
+      safeDefaults.goalAmount ?? Math.max(safeDefaults.initialBalance ?? 0, 0) * 2 || (trailingStats.lastMonth.invested || 500) * 200,
+      0
+    ),
     withdrawalRatePct: decimalToPercent(0.04),
   }));
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -105,11 +110,13 @@ export function Projecoes({ timeline = [], defaults = {} }) {
   useEffect(() => {
     setForm((prev) => ({
       ...prev,
-      initialBalance: Math.max(safeDefaults.initialBalance ?? prev.initialBalance, 0),
-      monthlyContribution: Math.max(
-        safeDefaults.monthlyContribution ?? prev.monthlyContribution,
-        0
-      ),
+      initialBalance: Math.round(Math.max(safeDefaults.initialBalance ?? prev.initialBalance, 0) * 100) / 100,
+      monthlyContribution: Math.round(
+        Math.max(
+          safeDefaults.monthlyContribution ?? trailingStats.lastMonth.invested ?? prev.monthlyContribution,
+          0
+        ) * 100
+      ) / 100,
       goalAmount:
         safeDefaults.goalAmount !== undefined && safeDefaults.goalAmount !== null
           ? Math.max(safeDefaults.goalAmount, 0)
@@ -119,6 +126,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
     safeDefaults.initialBalance,
     safeDefaults.monthlyContribution,
     safeDefaults.goalAmount,
+    trailingStats.lastMonth.invested,
   ]);
 
   useEffect(() => {
@@ -205,7 +213,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
       }
     }
 
-    const passiveIncomeMonthly = realBalance * withdrawalRate / 12;
+    const passiveIncomeMonthly = balance * withdrawalRate / 12;
 
     return {
       horizon,
@@ -306,6 +314,23 @@ export function Projecoes({ timeline = [], defaults = {} }) {
             />
           </label>
 
+          <label
+            className="flex flex-col gap-1 text-sm"
+            title="Valor objetivo que você deseja alcançar ao final da projeção"
+          >
+            Meta de patrimônio (R$)
+            <input
+              type="number"
+              min="0"
+              step="1000"
+              value={form.goalAmount}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, goalAmount: Math.max(readNumber(event.target.value, 0), 0) }))
+              }
+              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </label>
+
           <div className="flex flex-col gap-1 text-sm">
             <label
               className="flex items-center justify-between"
@@ -385,22 +410,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               />
             </label>
 
-            <label
-              className="flex flex-col gap-1 text-sm"
-              title="Valor objetivo que você deseja alcançar ao final da projeção"
-            >
-              Meta de patrimônio (R$)
-              <input
-                type="number"
-                min="0"
-                step="1000"
-                value={form.goalAmount}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, goalAmount: Math.max(readNumber(event.target.value, 0), 0) }))
-                }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              />
-            </label>
+            
 
             <label
               className="flex flex-col gap-1 text-sm"
