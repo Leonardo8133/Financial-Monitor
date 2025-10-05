@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { resolveBankVisual } from "../config/banks.js";
+import { resolveSourceVisual } from "../config/sources.js";
 import { fmtBRL, fmtPct, monthLabel, toNumber, yyyymm } from "../utils/formatters.js";
 import { Td, Th } from "./TableCells.jsx";
 
-export function Historico({ entries, computedEntries, setEntries, banks }) {
+export function Historico({ entries, computedEntries, setEntries, banks, sources, onClearAll }) {
   const [q, setQ] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const sourceOptionsId = "source-library";
 
   const baseLookup = useMemo(() => new Map(entries.map((entry) => [entry.id, entry])), [entries]);
 
@@ -71,6 +73,7 @@ export function Historico({ entries, computedEntries, setEntries, banks }) {
     setEditingId(id);
     setDraft({
       bank: original.bank ?? "",
+      source: original.source ?? "",
       date: original.date ? original.date.slice(0, 10) : "",
       inAccount: original.inAccount ?? 0,
       invested: original.invested ?? 0,
@@ -95,6 +98,7 @@ export function Historico({ entries, computedEntries, setEntries, banks }) {
         return {
           ...item,
           bank: draft.bank,
+          source: draft.source?.trim() || "",
           date: draft.date,
           inAccount: toNumber(draft.inAccount),
           invested: toNumber(draft.invested),
@@ -109,6 +113,12 @@ export function Historico({ entries, computedEntries, setEntries, banks }) {
     setDraft((prev) => (prev ? { ...prev, [name]: value } : prev));
   }
 
+  const handleClearAll = () => {
+    if (typeof onClearAll === "function") {
+      onClearAll();
+    }
+  };
+
   return (
     <div className="rounded-2xl bg-white p-4 shadow">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -118,11 +128,22 @@ export function Historico({ entries, computedEntries, setEntries, banks }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          {typeof onClearAll === "function" && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="rounded-lg border border-red-200 px-2 py-1 font-semibold text-red-600 transition hover:bg-red-50"
+              title="Remove todos os lançamentos armazenados"
+            >
+              Limpar tudo
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setCollapsed((prev) => !prev)}
             className="rounded-lg border border-slate-200 px-2 py-1 font-semibold text-slate-600 transition hover:bg-slate-100"
+            title={collapsed ? "Expandir os detalhes das linhas" : "Ocultar detalhes das linhas"}
           >
             {collapsed ? "Expandir tudo" : "Colapsar tudo"}
           </button>
@@ -135,6 +156,12 @@ export function Historico({ entries, computedEntries, setEntries, banks }) {
           Sem lançamentos. Adicione na aba "Nova Entrada" ou importe um .json.
         </div>
       )}
+
+      <datalist id={sourceOptionsId}>
+        {(Array.isArray(sources) ? sources : []).map((source) => (
+          <option key={source.name} value={source.name} />
+        ))}
+      </datalist>
 
       <div className="space-y-6">
         {groups.map((group) => {
@@ -172,6 +199,8 @@ export function Historico({ entries, computedEntries, setEntries, banks }) {
                   onSaveEdit={saveEdit}
                   onRemove={removeEntry}
                   banks={banks}
+                  sources={sources}
+                  sourceOptionsId={sourceOptionsId}
                 />
               )}
             </div>
@@ -182,7 +211,8 @@ export function Historico({ entries, computedEntries, setEntries, banks }) {
   );
 }
 
-function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove, banks }) {
+function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove, banks, sources, sourceOptionsId = "source-library" }) {
+  const library = Array.isArray(sources) ? sources : [];
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-100 text-sm">
@@ -190,6 +220,7 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
           <tr>
             <Th>Data</Th>
             <Th>Banco</Th>
+            <Th>Fonte</Th>
             <Th className="text-right">Valor na Conta</Th>
             <Th className="text-right">Valor em Investimentos</Th>
             <Th className="text-right">Entrada/Saída</Th>
@@ -218,18 +249,31 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
                       new Date(entry.date).toLocaleDateString("pt-BR")
                     )}
                   </Td>
-                  <Td>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={draft?.bank ?? ""}
-                        onChange={(e) => onUpdateDraft("bank", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
-                      />
-                    ) : (
-                      <BankBadge name={entry.bank} banks={banks} />
-                    )}
-                  </Td>
+              <Td>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={draft?.bank ?? ""}
+                    onChange={(e) => onUpdateDraft("bank", e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
+                  />
+                ) : (
+                  <BankBadge name={entry.bank} banks={banks} />
+                )}
+              </Td>
+              <Td>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    list={sourceOptionsId}
+                    value={draft?.source ?? ""}
+                    onChange={(e) => onUpdateDraft("source", e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
+                  />
+                ) : (
+                  <SourceBadge name={entry.source} sources={library} />
+                )}
+              </Td>
                   <Td align="right">
                     {isEditing ? (
                       <input
@@ -391,6 +435,25 @@ function toneClass(value) {
 
 function BankBadge({ name, banks }) {
   const visual = resolveBankVisual(name, banks);
+  return (
+    <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+      <span
+        className="h-2.5 w-2.5 rounded-full"
+        style={{ backgroundColor: visual.color }}
+        aria-hidden="true"
+      ></span>
+      <span className="text-base" aria-hidden="true">
+        {visual.icon}
+      </span>
+      <span>{name}</span>
+    </span>
+  );
+}
+
+function SourceBadge({ name, sources }) {
+  if (!name) return <span className="text-sm text-slate-500">—</span>;
+  const library = Array.isArray(sources) ? sources : [];
+  const visual = resolveSourceVisual(name, library);
   return (
     <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
       <span

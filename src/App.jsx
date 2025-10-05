@@ -1,20 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
 import { KPICard } from "./components/KPICard.jsx";
 import { Tabs } from "./components/Tab.jsx";
 import { ActionButton } from "./components/ActionButton.jsx";
-import { demoBanks, demoCreatedAt, demoEntries } from "./data/demoEntries.js";
+import { PersonalInfoModal } from "./components/PersonalInfoModal.jsx";
+import { ImportModal } from "./components/ImportModal.jsx";
+import { Projecoes } from "./components/Projecoes.jsx";
+import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  DocumentIcon,
-  TrashIcon,
   ChartBarIcon,
   TableCellsIcon,
   PlusIcon,
-} from '@heroicons/react/24/outline';
+  DocumentArrowDownIcon,
+  TrendingUpIcon,
+  UserCircleIcon,
+} from "./components/icons.jsx";
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
 import {
   download,
@@ -35,10 +39,14 @@ import {
   withId,
 } from "./utils/entries.js";
 import { DEFAULT_BANKS, ensureBankInLibrary } from "./config/banks.js";
+import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
+import { createPdfReport } from "./utils/pdf.js";
 
 const STORAGE_SEED = {
   entries: [],
   banks: DEFAULT_BANKS,
+  sources: DEFAULT_SOURCES,
+  personalInfo: {},
   createdAt: new Date().toISOString(),
 };
 
@@ -46,11 +54,15 @@ export default function App() {
   const [store, setStore] = useLocalStorageState(LS_KEY, STORAGE_SEED);
   const entries = Array.isArray(store.entries) ? store.entries : [];
   const banks = Array.isArray(store.banks) && store.banks.length ? store.banks : DEFAULT_BANKS;
+  const sources = Array.isArray(store.sources) && store.sources.length ? store.sources : DEFAULT_SOURCES;
+  const personalInfo = store.personalInfo || {};
   const createdAt = store.createdAt ?? STORAGE_SEED.createdAt;
 
   const [tab, setTab] = useState("dashboard");
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
-  const fileRef = useRef(null);
+  const [personalModalOpen, setPersonalModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [focusArea, setFocusArea] = useState("investimentos");
 
   const setEntries = (updater) => {
     setStore((prev) => {
@@ -58,13 +70,19 @@ export default function App() {
       const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
       const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
       const currentBanks = Array.isArray(prev.banks) && prev.banks.length ? prev.banks : DEFAULT_BANKS;
+      const currentSources = Array.isArray(prev.sources) && prev.sources.length ? prev.sources : DEFAULT_SOURCES;
       const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
-      return { ...prev, entries: nextEntries, banks: mergedBanks };
+      const mergedSources = mergeSourcesFromEntries(nextEntries, currentSources);
+      return { ...prev, entries: nextEntries, banks: mergedBanks, sources: mergedSources };
     });
   };
 
   const setCreatedAt = (value) => {
     setStore((prev) => ({ ...prev, createdAt: value }));
+  };
+
+  const setPersonalInfo = (value) => {
+    setStore((prev) => ({ ...prev, personalInfo: { ...value } }));
   };
 
   useEffect(() => {
@@ -73,6 +91,8 @@ export default function App() {
       setStore({
         entries: normalized,
         banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
+        sources: mergeSourcesFromEntries(normalized, DEFAULT_SOURCES),
+        personalInfo: {},
         createdAt: new Date().toISOString(),
       });
     }
@@ -99,6 +119,13 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store.createdAt]);
 
+  useEffect(() => {
+    if (focusArea === "gastos") {
+      setTab("historico");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusArea]);
+
   const derivedEntries = useMemo(
     () => computeDerivedEntries(entriesWithIds),
     [entriesWithIds]
@@ -117,6 +144,7 @@ export default function App() {
           cashFlow: 0,
           yieldValue: 0,
           previousTotal: 0,
+          sources: new Map(),
         };
       base.invested += toNumber(entry.invested);
       base.inAccount += toNumber(entry.inAccount);
@@ -125,14 +153,24 @@ export default function App() {
         base.yieldValue += entry.yieldValue;
         base.previousTotal += entry.previousTotal ?? 0;
       }
+      const sourceKey = (entry.source || "Outros").trim() || "Outros";
+      const sourceBucket = base.sources.get(sourceKey) || { name: sourceKey, invested: 0, total: 0 };
+      sourceBucket.invested += toNumber(entry.invested);
+      sourceBucket.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
+      base.sources.set(sourceKey, sourceBucket);
       byMonth.set(key, base);
     }
 
     return Array.from(byMonth.values())
-      .map((month) => ({
-        ...month,
-        yieldPct: month.previousTotal ? month.yieldValue / month.previousTotal : null,
-      }))
+      .map((month) => {
+        const { sources, ...rest } = month;
+        const sourceList = sources ? Array.from(sources.values()) : [];
+        return {
+          ...rest,
+          sources: sourceList,
+          yieldPct: rest.previousTotal ? rest.yieldValue / rest.previousTotal : null,
+        };
+      })
       .sort((a, b) => (a.ym < b.ym ? -1 : 1));
   }, [derivedEntries]);
 
@@ -152,10 +190,12 @@ export default function App() {
         cashFlow: 0,
         yieldValue: 0,
         yieldPct: null,
+        sources: [],
       };
       const midDate = midOfMonth(ym);
       return {
         ...data,
+        sources: Array.isArray(data.sources) ? data.sources : [],
         label: monthLabel(ym),
         midDate,
         midDateValue: midDate.getTime(),
@@ -164,7 +204,105 @@ export default function App() {
   }, [monthly, monthlyLookup]);
 
   const totals = useMemo(() => computeTotals(derivedEntries), [derivedEntries]);
+
+  const sourceSummary = useMemo(() => {
+    const map = new Map();
+    for (const entry of derivedEntries) {
+      const key = (entry.source || "Outros").trim() || "Outros";
+      const current = map.get(key) || { name: key, invested: 0, total: 0 };
+      current.invested += toNumber(entry.invested);
+      current.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
+      map.set(key, current);
+    }
+    const totalInvested = Array.from(map.values()).reduce((acc, item) => acc + item.invested, 0);
+    return Array.from(map.values())
+      .map((item) => ({
+        name: item.name,
+        invested: item.invested,
+        total: item.total,
+        percentage: totalInvested ? Math.round((item.invested / totalInvested) * 100) : 0,
+      }))
+      .sort((a, b) => b.invested - a.invested);
+  }, [derivedEntries]);
+
   const lastMonth = timeline.at(-1);
+  const lastMonthSources = useMemo(() => {
+    if (!lastMonth || !Array.isArray(lastMonth.sources)) return [];
+    const totalMonthInvested = lastMonth.sources.reduce(
+      (acc, item) => acc + (item?.invested ?? 0),
+      0
+    );
+    return lastMonth.sources
+      .filter((item) => (item?.invested ?? 0) > 0)
+      .map((item) => ({
+        name: item.name || "Outros",
+        invested: item.invested ?? 0,
+        percentage: totalMonthInvested
+          ? Math.round(((item.invested ?? 0) / totalMonthInvested) * 100)
+          : null,
+      }))
+      .sort((a, b) => (b.invested ?? 0) - (a.invested ?? 0));
+  }, [lastMonth]);
+  const hoverSourceDetails = lastMonthSources.length ? lastMonthSources : sourceSummary;
+
+  const averageMonthlyInvested = useMemo(() => {
+    if (!timeline.length) return 0;
+    const positiveMonths = timeline
+      .map((month) => month.invested ?? 0)
+      .filter((value) => value > 0);
+    if (!positiveMonths.length) return 0;
+    const sum = positiveMonths.reduce((acc, value) => acc + value, 0);
+    return sum / positiveMonths.length;
+  }, [timeline]);
+
+  const averageMonthlyYield = useMemo(() => {
+    if (!timeline.length) return null;
+    const validYields = timeline
+      .map((month) =>
+        month.yieldPct !== null && month.yieldPct !== undefined ? month.yieldPct : null
+      )
+      .filter((value) => value !== null && Number.isFinite(value));
+    if (!validYields.length) return null;
+    const sum = validYields.reduce((acc, value) => acc + value, 0);
+    return sum / validYields.length;
+  }, [timeline]);
+
+  const projectionDefaults = useMemo(
+    () => ({
+      initialBalance: totals.total_invested ?? 0,
+      monthlyContribution:
+        averageMonthlyInvested > 0
+          ? averageMonthlyInvested
+          : Math.max(lastMonth?.invested ?? 0, 0),
+      monthlyReturn: averageMonthlyYield ?? 0.005,
+      historicalMonthlyReturn: averageMonthlyYield,
+      inflationRate: 0.04,
+      contributionGrowth: 0.02,
+      goalAmount:
+        totals.total_invested && totals.total_invested > 0
+          ? totals.total_invested * 2
+          : Math.max(lastMonth?.invested ?? 0, 25000),
+    }),
+    [
+      averageMonthlyInvested,
+      averageMonthlyYield,
+      lastMonth?.invested,
+      totals.total_invested,
+    ]
+  );
+
+  const focusOptions = [
+    {
+      key: "investimentos",
+      label: "Investimentos",
+      tooltip: "Visualize os indicadores e gráficos dos seus investimentos",
+    },
+    {
+      key: "gastos",
+      label: "Gastos",
+      tooltip: "Atalho para o histórico para revisar entradas negativas",
+    },
+  ];
 
   function handleSubmitDrafts(rows) {
     const prepared = rows
@@ -172,6 +310,7 @@ export default function App() {
       .map((row) => ({
         id: makeId(),
         bank: row.bank.trim(),
+        source: row.source?.trim() || "",
         date: row.date,
         invested: toNumber(row.invested),
         inAccount: toNumber(row.inAccount),
@@ -192,6 +331,8 @@ export default function App() {
       created_at: createdAt,
       exported_at: new Date().toISOString(),
       banks,
+      sources,
+      personal_info: personalInfo,
       inputs: [
         {
           summary,
@@ -212,6 +353,13 @@ export default function App() {
       banks: [
         { name: "Banco Exemplo", color: "#2563EB", icon: "🏦" },
       ],
+      sources: [
+        { name: "Salário", color: "#0EA5E9", icon: "💼" },
+      ],
+      personal_info: {
+        fullName: "Nome do Investidor",
+        email: "investidor@email.com",
+      },
       inputs: [
         {
           summary: {
@@ -223,6 +371,7 @@ export default function App() {
           entries: [
             {
               bank: "Banco Exemplo",
+              source: "Salário",
               date: "2025-01-15",
               inAccount: 0,
               invested: 1000,
@@ -246,24 +395,32 @@ export default function App() {
             ...prev,
             entries: normalized,
             banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
+            sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
           }));
+          setImportModalOpen(false);
         } else if (data && Array.isArray(data.inputs)) {
           const inputEntries = data.inputs.flatMap((section) => section.entries || []);
           const normalized = inputEntries.map(withId);
           const incomingBanks = Array.isArray(data.banks) && data.banks.length ? data.banks : banks;
+          const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
           const created = data.created_at || createdAt || new Date().toISOString();
           setStore({
             entries: normalized,
             banks: mergeBanksFromEntries(normalized, incomingBanks),
+            sources: mergeSourcesFromEntries(normalized, incomingSources),
+            personalInfo: data.personal_info || personalInfo,
             createdAt: created,
           });
+          setImportModalOpen(false);
         } else if (data && Array.isArray(data.entries)) {
           const normalized = data.entries.map(withId);
           setStore((prev) => ({
             ...prev,
             entries: normalized,
             banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
+            sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
           }));
+          setImportModalOpen(false);
         } else {
           window.alert(
             "Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de lançamentos."
@@ -282,68 +439,138 @@ export default function App() {
       setStore({
         entries: normalized,
         banks: mergeBanksFromEntries(normalized, demoBanks),
+        sources: mergeSourcesFromEntries(normalized, demoSources),
+        personalInfo,
         createdAt: demoCreatedAt,
       });
     }
   }
 
+  function handleClearEntries() {
+    if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) {
+      setEntries([]);
+    }
+  }
+
+  function handleGeneratePdf() {
+    createPdfReport({
+      personalInfo,
+      totals,
+      sources: sourceSummary.map((source) => ({
+        name: source.name,
+        total: source.invested,
+        percentage: source.percentage,
+      })),
+      entries: entriesWithIds,
+      exportedAt: new Date(),
+    });
+  }
+
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold">Monitor de Investimentos – Leo</h1>
-            <p className="text-sm text-slate-600">
-              Adicione lançamentos, visualize o histórico por mês e gere gráficos. Seus dados ficam apenas no seu navegador
-              (localStorage).
-            </p>
-          </div>
-          <div className="flex items-center justify-end gap-4">
-            <div className="flex items-center gap-2">
-              <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>
-                Exportar
-              </ActionButton>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
-                <ArrowUpTrayIcon className="h-5 w-5" />
-                Importar
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="application/json"
-                  className="hidden"
-                  onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
-                />
-              </label>
-              <ActionButton icon={DocumentIcon} onClick={downloadTemplate}>
-                Template
-              </ActionButton>
-              <ActionButton
-                icon={TrashIcon}
-                onClick={() => {
-                  if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) setEntries([]);
-                }}
-              >
-                Limpar
-              </ActionButton>
+        <header className="mb-6 space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold text-slate-900">Monitor de Investimentos</h1>
+                <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-[0.7rem] font-semibold text-slate-600 shadow-sm">
+                  {focusOptions.map((option) => {
+                    const active = option.key === focusArea;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => setFocusArea(option.key)}
+                        className={`rounded-full px-3 py-1 transition ${
+                          active ? "bg-slate-900 text-white shadow" : "hover:bg-slate-100"
+                        }`}
+                        title={option.tooltip}
+                        aria-pressed={active}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <p className="text-sm text-slate-600">
+                Adicione lançamentos, visualize o histórico por mês e gere gráficos. Seus dados ficam apenas no seu navegador
+                (localStorage).
+              </p>
+            </div>
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2">
+                <ActionButton
+                  icon={ArrowDownTrayIcon}
+                  onClick={exportJson}
+                  title="Baixe um arquivo JSON com todos os lançamentos e configurações"
+                >
+                  Exportar
+                </ActionButton>
+                <ActionButton
+                  icon={ArrowUpTrayIcon}
+                  onClick={() => setImportModalOpen(true)}
+                  title="Importe um arquivo JSON salvo anteriormente"
+                >
+                  Importar
+                </ActionButton>
+                <ActionButton
+                  icon={DocumentArrowDownIcon}
+                  onClick={handleGeneratePdf}
+                  title="Gere um relatório em PDF com seus indicadores atuais"
+                >
+                  Relatório PDF
+                </ActionButton>
+                <ActionButton
+                  icon={UserCircleIcon}
+                  onClick={() => setPersonalModalOpen(true)}
+                  title="Edite os dados pessoais exibidos nos relatórios"
+                >
+                  Dados pessoais
+                </ActionButton>
+              </div>
             </div>
           </div>
           <Tabs
             tabs={[
-              { key: 'dashboard', label: 'Dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
-              { key: 'historico', label: 'Histórico', icon: <TableCellsIcon className="h-5 w-5" /> },
-              { key: 'entrada', label: 'Nova Entrada', icon: <PlusIcon className="h-5 w-5" /> },
+              {
+                key: 'dashboard',
+                label: 'Dashboard',
+                icon: <ChartBarIcon className="h-5 w-5" />,
+                tooltip: 'Resumo visual com indicadores e gráficos',
+              },
+              {
+                key: 'historico',
+                label: 'Histórico',
+                icon: <TableCellsIcon className="h-5 w-5" />,
+                tooltip: 'Lista completa dos lançamentos realizados',
+              },
+              {
+                key: 'entrada',
+                label: 'Nova Entrada',
+                icon: <PlusIcon className="h-5 w-5" />,
+                tooltip: 'Adicionar um novo conjunto de valores',
+              },
+              {
+                key: 'projecoes',
+                label: 'Projeções',
+                icon: <TrendingUpIcon className="h-5 w-5" />,
+                tooltip: 'Simule cenários futuros considerando aportes e rentabilidade média',
+              },
             ]}
             activeTab={tab}
             onChange={setTab}
           />
         </header>
 
-        <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <KPICard title="Total Investido" value={fmtBRL(totals.total_invested)} subtitle="Soma atual de 'Valor em Investimentos'" />
+        <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard
             title="Investido último mês"
             value={fmtBRL(lastMonth?.invested ?? 0)}
             subtitle={lastMonth ? `Referente a ${lastMonth.label}` : "Sem dados do mês"}
+            hoverDetails={hoverSourceDetails}
+            tooltip="Soma dos aportes registrados no mês selecionado; passe o mouse para ver o detalhe por fonte"
           />
           <KPICard
             title="Rendimento último mês"
@@ -359,27 +586,34 @@ export default function App() {
             }
             tone={resolveTone(lastMonth?.yieldValue)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
+            tooltip="Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais"
           />
           <KPICard
             title="Entrada/Saída último mês"
             value={fmtBRL(lastMonth?.cashFlow ?? 0)}
             tone={(lastMonth?.cashFlow ?? 0) >= 0 ? "positive" : "negative"}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
+            tooltip="Somatório das entradas (positivas) e saídas (negativas) informadas no mês"
           />
           <KPICard
             title="Total em Conta último mês"
             value={fmtBRL(lastMonth?.inAccount ?? 0)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
+            tooltip="Soma do campo 'Valor na Conta' para o mês selecionado"
           />
         </section>
 
         <section className="mb-6 flex flex-wrap items-center gap-2">
-          <button onClick={loadDemo} className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-600">
+          <button
+            onClick={loadDemo}
+            className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-600"
+            title="Preenche o painel com dados fictícios para demonstração"
+          >
             Carregar dados de exemplo
           </button>
         </section>
 
-        {tab === "dashboard" && <Dashboard monthly={timeline} />}
+        {tab === "dashboard" && <Dashboard monthly={timeline} sourceSummary={sourceSummary} sources={sources} />}
 
         {tab === "historico" && (
           <Historico
@@ -387,11 +621,17 @@ export default function App() {
             computedEntries={derivedEntries}
             setEntries={setEntries}
             banks={banks}
+            sources={sources}
+            onClearAll={handleClearEntries}
           />
         )}
 
         {tab === "entrada" && (
-          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} />
+          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} sources={sources} />
+        )}
+
+        {tab === "projecoes" && (
+          <Projecoes timeline={timeline} defaults={projectionDefaults} />
         )}
 
         <footer className="mt-10 text-center text-xs text-slate-500">
@@ -401,6 +641,18 @@ export default function App() {
           </p>
         </footer>
       </div>
+      <ImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={importJsonFile}
+        onDownloadTemplate={downloadTemplate}
+      />
+      <PersonalInfoModal
+        open={personalModalOpen}
+        onClose={() => setPersonalModalOpen(false)}
+        initialValue={personalInfo}
+        onSave={setPersonalInfo}
+      />
     </div>
   );
 }
@@ -416,6 +668,14 @@ function mergeBanksFromEntries(entries, baseBanks = DEFAULT_BANKS) {
   let next = Array.isArray(baseBanks) ? [...baseBanks] : [...DEFAULT_BANKS];
   for (const entry of entries) {
     next = ensureBankInLibrary(entry.bank, next);
+  }
+  return next;
+}
+
+function mergeSourcesFromEntries(entries, baseSources = DEFAULT_SOURCES) {
+  let next = Array.isArray(baseSources) ? [...baseSources] : [...DEFAULT_SOURCES];
+  for (const entry of entries) {
+    next = ensureSourceInLibrary(entry.source, next);
   }
   return next;
 }
