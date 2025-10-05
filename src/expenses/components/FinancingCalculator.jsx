@@ -10,6 +10,12 @@ export function FinancingCalculator() {
     termMonths: 0,
   });
 
+  function formatCurrency(value) {
+    if (!value || value === '0') return 'R$ 0,00';
+    const numValue = Number(value);
+    return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
   const [results, setResults] = useState(null);
 
   const calculateFinancing = () => {
@@ -77,60 +83,94 @@ export function FinancingCalculator() {
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                 Valor Principal (R$)
+                <button
+                  type="button"
+                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
+                  title="Valor total do financiamento"
+                >
+                  ?
+                </button>
               </label>
               <input
-                type="number"
-                value={formData.principal}
-                onChange={(e) => handleInputChange('principal', e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Ex: 100000"
+                type="text"
+                value={formatCurrency(formData.principal)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                  handleInputChange('principal', value || '0');
+                }}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Ex: R$ 100.000,00"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                 Pagamento Mensal (R$)
+                <button
+                  type="button"
+                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
+                  title="Valor fixo pago mensalmente"
+                >
+                  ?
+                </button>
               </label>
               <input
-                type="number"
-                value={formData.monthlyPayment}
-                onChange={(e) => handleInputChange('monthlyPayment', e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Ex: 1500"
+                type="text"
+                value={formatCurrency(formData.monthlyPayment)}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+                  handleInputChange('monthlyPayment', value || '0');
+                }}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Ex: R$ 1.500,00"
               />
             </div>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <ChartBarIcon className="inline h-4 w-4 mr-1" />
                 Taxa de Juros Anual (%)
+                <button
+                  type="button"
+                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
+                  title="Taxa de juros anual em percentual"
+                >
+                  ?
+                </button>
               </label>
               <input
                 type="number"
                 step="0.01"
                 value={formData.interestRate}
                 onChange={(e) => handleInputChange('interestRate', e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Ex: 12.5"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <CalendarIcon className="inline h-4 w-4 mr-1" />
                 Prazo Total (meses)
+                <button
+                  type="button"
+                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
+                  title="Número total de meses para quitar o financiamento"
+                >
+                  ?
+                </button>
               </label>
               <input
                 type="number"
                 value={formData.termMonths}
                 onChange={(e) => handleInputChange('termMonths', e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Ex: 60"
               />
             </div>
