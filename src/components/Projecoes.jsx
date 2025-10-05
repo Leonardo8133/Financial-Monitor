@@ -1,6 +1,66 @@
 import { useEffect, useMemo, useState } from "react";
 import { fmtBRL, fmtPct } from "../utils/formatters.js";
 
+// Componente para input de moeda formatado
+function CurrencyInput({ value, onChange, placeholder = "0,00", ...props }) {
+  const formatCurrency = (val) => {
+    if (val === "" || val === null || val === undefined) return "";
+    const numeric = Number(val);
+    if (isNaN(numeric)) return "";
+    return new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(numeric);
+  };
+
+  const parseCurrency = (str) => {
+    if (!str) return 0;
+    // Remove R$ e espaços, substitui vírgula por ponto
+    const cleaned = str.replace(/[R$\s]/g, '').replace(',', '.');
+    const numeric = parseFloat(cleaned);
+    return isNaN(numeric) ? 0 : numeric;
+  };
+
+  const [displayValue, setDisplayValue] = useState(formatCurrency(value));
+
+  useEffect(() => {
+    setDisplayValue(formatCurrency(value));
+  }, [value]);
+
+  const handleChange = (e) => {
+    const inputValue = e.target.value;
+    const numericValue = parseCurrency(inputValue);
+    
+    setDisplayValue(inputValue);
+    onChange(numericValue);
+  };
+
+  const handleBlur = () => {
+    setDisplayValue(formatCurrency(value));
+  };
+
+  const handleFocus = () => {
+    // Remove formatação ao focar para facilitar edição
+    setDisplayValue(value.toString().replace(/\./g, ''));
+  };
+
+  return (
+    <div className="relative">
+      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">R$</span>
+      <input
+        {...props}
+        type="text"
+        value={displayValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+        placeholder={placeholder}
+        className="w-full rounded-lg border border-slate-200 px-6 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+      />
+    </div>
+  );
+}
+
 const MAX_GOAL_MONTHS = 600;
 
 function withPrecision(value, decimals = 2, fallback = 0) {
@@ -285,21 +345,18 @@ export function Projecoes({ timeline = [], defaults = {} }) {
         </div>
 
         <div className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 grid-cols-5">
             <label className="flex min-w-0 flex-col gap-1 text-sm" title="Valor já aplicado atualmente (base para a projeção)">
-              Patrimônio atual (R$)
-              <input
-                type="number"
-                min="0"
-                step="100"
+              Patrimônio atual
+              <CurrencyInput
                 value={form.initialBalance}
-                onChange={(event) =>
+                onChange={(value) =>
                   setForm((prev) => {
-                    const nextValue = Math.max(readNumber(event.target.value, prev.initialBalance), 0);
+                    const nextValue = Math.max(value, 0);
                     return { ...prev, initialBalance: withPrecision(nextValue, 2, prev.initialBalance) };
                   })
                 }
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder="0,00"
               />
             </label>
 
@@ -307,19 +364,16 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               className="flex min-w-0 flex-col gap-1 text-sm"
               title="Aporte médio mensal considerado. Você pode usar o valor sugerido pelos últimos meses."
             >
-              Aporte mensal médio (R$)
-              <input
-                type="number"
-                min="0"
-                step="50"
+              Aporte mensal médio
+              <CurrencyInput
                 value={form.monthlyContribution}
-                onChange={(event) =>
+                onChange={(value) =>
                   setForm((prev) => {
-                    const nextValue = Math.max(readNumber(event.target.value, prev.monthlyContribution), 0);
+                    const nextValue = Math.max(value, 0);
                     return { ...prev, monthlyContribution: withPrecision(nextValue, 2, prev.monthlyContribution) };
                   })
                 }
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder="0,00"
               />
               {trailingStats.monthsConsidered > 0 && (
                 <span className="text-xs text-slate-500">
@@ -353,43 +407,29 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               className="flex min-w-0 flex-col gap-1 text-sm"
               title="Valor objetivo que você deseja alcançar ao final da projeção"
             >
-              Meta de patrimônio (R$)
-              <input
-                type="number"
-                min="0"
-                step="1000"
+              Meta de patrimônio
+              <CurrencyInput
                 value={form.goalAmount}
-                onChange={(event) =>
+                onChange={(value) =>
                   setForm((prev) => {
-                    const nextValue = Math.max(readNumber(event.target.value, prev.goalAmount), 0);
+                    const nextValue = Math.max(value, 0);
                     return { ...prev, goalAmount: withPrecision(nextValue, 2, prev.goalAmount) };
                   })
                 }
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                placeholder="0,00"
               />
             </label>
-          </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="flex min-w-0 flex-col gap-1 text-sm lg:col-span-2 lg:max-w-sm">
-              <label
-                className="flex items-center justify-between"
-                title="Rentabilidade mensal líquida utilizada na projeção"
-                htmlFor="monthlyReturnPct"
-              >
-                <span>Rentabilidade mensal (%)</span>
-                <span className="text-xs text-slate-500">
-                  {safeTimeline.length && safeTimeline[safeTimeline.length - 1].yieldPct !== null && safeTimeline[safeTimeline.length - 1].yieldPct !== undefined
-                    ? `Último mês: ${fmtPct(safeTimeline[safeTimeline.length - 1].yieldPct)}`
-                    : ""}
-                </span>
-              </label>
+            <label
+              className="flex min-w-0 flex-col gap-1 text-sm"
+              title="Rentabilidade mensal líquida utilizada na projeção"
+            >
+              Rentabilidade mensal (%)
               <input
                 type="number"
                 min="-50"
                 max="50"
                 step="0.01"
-                id="monthlyReturnPct"
                 value={form.monthlyReturnPct}
                 onChange={(event) =>
                   setForm((prev) => {
@@ -406,12 +446,13 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   {trailingStats.volatility > 0 ? ` · Volatilidade: ${fmtPct(trailingStats.volatility)}` : ""}
                 </span>
               )}
-            </div>
+            </label>
           </div>
+
         </div>
 
         {showAdvanced && (
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-3 grid-cols-5">
             <label
               className="flex min-w-0 flex-col gap-1 text-sm"
               title="Inflação anual estimada para descontar o poder de compra no resultado"

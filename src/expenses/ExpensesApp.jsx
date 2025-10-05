@@ -213,12 +213,11 @@ export default function ExpensesApp() {
       settings,
       inputs: [
         {
-          summary: totals,
           expenses: expensesWithIds.map(({ id, ...rest }) => rest),
         },
       ],
     };
-    download(`gastos_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
+    download(`export-gastos-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
   }
 
   function validateExpensesPayload(data) {
@@ -332,7 +331,6 @@ export default function ExpensesApp() {
       ],
       inputs: [
         {
-          summary: { total_spent: 123.45 },
           expenses: [
             {
               date: "2025-01-31",
