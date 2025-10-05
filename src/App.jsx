@@ -46,7 +46,7 @@ import {
   ensureInvestmentDefaults,
   INVESTMENT_STORAGE_SEED,
 } from "./config/investmentStorage.js";
-import { createPdfReport } from "./utils/pdf.js";
+import { exportVisualPdfReport } from "./utils/pdf.js";
 import { Link } from "react-router-dom";
 
 export default function App() {
@@ -532,14 +532,12 @@ export default function App() {
   }
 
   function handleGeneratePdf() {
-    createPdfReport({
+    exportVisualPdfReport({
       personalInfo,
       totals,
-      sources: sourceSummary.map((source) => ({
-        name: source.name,
-        total: source.invested,
-        percentage: source.percentage,
-      })),
+      sources,
+      timeline,
+      sourceSummary,
       entries: entriesWithIds,
       exportedAt: new Date(),
       notes: settings.reportNotes,
