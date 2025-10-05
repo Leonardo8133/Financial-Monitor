@@ -8,7 +8,6 @@ import { ActionButton } from "../components/ActionButton.jsx";
 import { BackToHomeButton } from "../components/BackToHomeButton.jsx";
 import { Tabs } from "../components/Tab.jsx";
 import { ImportModal } from "../components/ImportModal.jsx";
-import { OfflineIndicator } from "../components/OfflineIndicator.jsx";
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { useOfflineMode } from "../hooks/useOfflineMode.js";
 import { DEFAULT_CATEGORIES, ensureCategoryInLibrary } from "./config/categories.js";
@@ -380,7 +379,6 @@ export default function ExpensesApp() {
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
-      <OfflineIndicator />
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 space-y-4">
           <BackToHomeButton />

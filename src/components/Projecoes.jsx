@@ -1,65 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { fmtBRL, fmtPct } from "../utils/formatters.js";
-
-// Componente para input de moeda formatado
-function CurrencyInput({ value, onChange, placeholder = "0,00", ...props }) {
-  const formatCurrency = (val) => {
-    if (val === "" || val === null || val === undefined) return "";
-    const numeric = Number(val);
-    if (isNaN(numeric)) return "";
-    return new Intl.NumberFormat('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(numeric);
-  };
-
-  const parseCurrency = (str) => {
-    if (!str) return 0;
-    // Remove R$ e espaços, substitui vírgula por ponto
-    const cleaned = str.replace(/[R$\s]/g, '').replace(',', '.');
-    const numeric = parseFloat(cleaned);
-    return isNaN(numeric) ? 0 : numeric;
-  };
-
-  const [displayValue, setDisplayValue] = useState(formatCurrency(value));
-
-  useEffect(() => {
-    setDisplayValue(formatCurrency(value));
-  }, [value]);
-
-  const handleChange = (e) => {
-    const inputValue = e.target.value;
-    const numericValue = parseCurrency(inputValue);
-    
-    setDisplayValue(inputValue);
-    onChange(numericValue);
-  };
-
-  const handleBlur = () => {
-    setDisplayValue(formatCurrency(value));
-  };
-
-  const handleFocus = () => {
-    // Remove formatação ao focar para facilitar edição
-    setDisplayValue(value.toString().replace(/\./g, ''));
-  };
-
-  return (
-    <div className="relative">
-      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">R$</span>
-      <input
-        {...props}
-        type="text"
-        value={displayValue}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        onFocus={handleFocus}
-        placeholder={placeholder}
-        className="w-full rounded-lg border border-slate-200 px-6 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-      />
-    </div>
-  );
-}
+import { CurrencyInput } from "./CurrencyInput.jsx";
 
 const MAX_GOAL_MONTHS = 600;
 
@@ -357,6 +298,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   })
                 }
                 placeholder="0,00"
+                inputClassName="px-6 py-1 text-xs"
               />
             </label>
 
@@ -374,6 +316,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   })
                 }
                 placeholder="0,00"
+                inputClassName="px-6 py-1 text-xs"
               />
               {trailingStats.monthsConsidered > 0 && (
                 <span className="text-xs text-slate-500">
@@ -417,6 +360,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   })
                 }
                 placeholder="0,00"
+                inputClassName="px-6 py-1 text-xs"
               />
             </label>
 
