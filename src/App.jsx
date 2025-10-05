@@ -8,7 +8,7 @@ import { ActionButton } from "./components/ActionButton.jsx";
 import { PersonalInfoModal } from "./components/PersonalInfoModal.jsx";
 import { ImportModal } from "./components/ImportModal.jsx";
 import { Projecoes } from "./components/Projecoes.jsx";
-import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
+// import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -194,9 +194,14 @@ export default function App() {
         base.previousTotal += entry.previousTotal ?? 0;
       }
       const sourceKey = (entry.source || "Outros").trim() || "Outros";
-      const sourceBucket = base.sources.get(sourceKey) || { name: sourceKey, invested: 0, total: 0 };
+      const sourceBucket =
+        base.sources.get(sourceKey) || { name: sourceKey, invested: 0, total: 0, cashFlow: 0, yieldValue: 0 };
       sourceBucket.invested += toNumber(entry.invested);
       sourceBucket.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
+      sourceBucket.cashFlow += toNumber(entry.cashFlow);
+      if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
+        sourceBucket.yieldValue += toNumber(entry.yieldValue);
+      }
       base.sources.set(sourceKey, sourceBucket);
       byMonth.set(key, base);
     }
@@ -497,23 +502,7 @@ export default function App() {
     reader.readAsText(file);
   }
 
-  function loadDemo() {
-    if (!entries.length && window.confirm("Carregar dados de exemplo? Você pode apagar depois.")) {
-      const normalized = demoEntries.map(withId);
-      setStore((prev) => {
-        const safePrev = ensureInvestmentDefaults(prev);
-        return {
-          ...safePrev,
-          entries: normalized,
-          banks: mergeBanksFromEntries(normalized, demoBanks),
-          sources: mergeSourcesFromEntries(normalized, demoSources),
-          personalInfo: safePrev.personalInfo,
-          settings: safePrev.settings,
-          createdAt: demoCreatedAt,
-        };
-      });
-    }
-  }
+  // Botão/ação para carregar dados de exemplo removidos
 
   function handleClearEntries() {
     if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) {
@@ -664,6 +653,7 @@ export default function App() {
             tone={resolveTone(lastMonth?.yieldValue)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
             tooltip="Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais"
+            hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.yieldValue })) || []}
           />
           <KPICard
             title="Entrada/Saída último mês"
@@ -671,6 +661,7 @@ export default function App() {
             tone={(lastMonth?.cashFlow ?? 0) >= 0 ? "positive" : "negative"}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
             tooltip="Somatório das entradas (positivas) e saídas (negativas) informadas no mês"
+            hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.cashFlow })) || []}
           />
           <KPICard
             title="Total em Conta último mês"
@@ -680,15 +671,7 @@ export default function App() {
           />
         </section>
 
-        <section className="mb-6 flex flex-wrap items-center gap-2">
-          <button
-            onClick={loadDemo}
-            className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-600"
-            title="Preenche o painel com dados fictícios para demonstração"
-          >
-            Carregar dados de exemplo
-          </button>
-        </section>
+        {/* Seção de "Carregar dados de exemplo" removida */}
 
         {tab === "dashboard" && <Dashboard monthly={timeline} sourceSummary={sourceSummary} sources={sources} />}
 
