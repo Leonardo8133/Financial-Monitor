@@ -340,7 +340,7 @@ export default function ExpensesApp() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold">Controle de Gastos – Leo</h1>
+            <h1 className="text-2xl font-bold">Controle de Gastos</h1>
             <p className="text-sm text-slate-600">Suba arquivos (CSV/XLSX/PDF), categorize e acompanhe seus gastos por mês. Seus dados ficam no navegador.</p>
           </div>
           <div className="flex items-center justify-end gap-4">

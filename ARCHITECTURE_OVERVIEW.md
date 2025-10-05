@@ -4,12 +4,12 @@ Este repositório contém duas aplicações SPA (Vite + React + Tailwind) que co
 
 - App de Investimentos (rotas `/` e `/investimentos`)
   - Arquivos principais: `src/App.jsx`, `src/components/*`, `src/utils/*`, `src/config/banks.js`
-  - Persistência: `localStorage` com chave `leo-investments-v1`
+  - Persistência: `localStorage` com chave `financial-monitor-investments-v1`
   - Exporta/Importa JSON com lista de lançamentos e bancos
 
 - App de Gastos (rota `/gastos`)
   - Arquivos principais: `src/expenses/ExpensesApp.jsx`, `src/expenses/components/*`, `src/expenses/utils/*`, `src/expenses/config/*`
-  - Persistência: `localStorage` com chave `leo-expenses-v1`
+  - Persistência: `localStorage` com chave `financial-monitor-expenses-v1`
   - Exporta/Importa JSON com lista de despesas, categorias e fontes
 
 ## Navegação
