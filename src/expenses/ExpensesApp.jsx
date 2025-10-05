@@ -218,7 +218,7 @@ export default function ExpensesApp() {
         },
       ],
     };
-    download(`gastos_${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
+    download(`export-gastos-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
   }
 
   function validateExpensesPayload(data) {

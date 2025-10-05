@@ -411,7 +411,7 @@ export default function App() {
       ],
     };
     download(
-      `investimentos_${new Date().toISOString().slice(0, 10)}.json`,
+      `export-investimentos-${new Date().toISOString().slice(0, 10)}.json`,
       JSON.stringify(payload, null, 2)
     );
   }
