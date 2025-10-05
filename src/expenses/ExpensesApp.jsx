@@ -213,7 +213,6 @@ export default function ExpensesApp() {
       settings,
       inputs: [
         {
-          summary: totals,
           expenses: expensesWithIds.map(({ id, ...rest }) => rest),
         },
       ],
@@ -332,7 +331,6 @@ export default function ExpensesApp() {
       ],
       inputs: [
         {
-          summary: { total_spent: 123.45 },
           expenses: [
             {
               date: "2025-01-31",

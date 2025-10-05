@@ -393,7 +393,6 @@ export default function App() {
   }
 
   function exportJson() {
-    const summary = computeTotals(derivedEntries);
     const strippedEntries = entriesWithIds.map(({ id, yieldValue, yieldPct, previousTotal, computedTotal, ...rest }) => rest);
     const payload = {
       version: 2,
@@ -405,7 +404,6 @@ export default function App() {
       settings,
       inputs: [
         {
-          summary,
           entries: strippedEntries,
         },
       ],
@@ -437,12 +435,6 @@ export default function App() {
       },
       inputs: [
         {
-          summary: {
-            total_invested: 1000,
-            total_in_account: 0,
-            total_input: 1000,
-            total_yield_value: 0,
-          },
           entries: [
             {
               bank: "Banco Exemplo",
