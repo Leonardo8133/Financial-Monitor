@@ -439,6 +439,11 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 }
                 className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
+              {trailingStats.lastMonth.yieldPct !== null && (
+                <span className="text-xs text-slate-500">
+                  Último mês: {fmtPct(trailingStats.lastMonth.yieldPct)}
+                </span>
+              )}
               {trailingStats.monthsConsidered > 0 && (
                 <span className="text-xs text-slate-500">
                   Média últimos {trailingStats.monthsConsidered} meses:{" "}
