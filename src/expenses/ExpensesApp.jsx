@@ -321,7 +321,7 @@ export default function ExpensesApp() {
 
   function downloadTemplate() {
     const template = {
-      version: 1,
+      version: 2,
       created_at: new Date().toISOString(),
       categories: [
         { name: "Alimentação", color: "", icon: "🍔" },
@@ -329,6 +329,16 @@ export default function ExpensesApp() {
       sources: [
         { name: "Pessoal", color: "", icon: "💼" },
       ],
+      personal_info: {
+        fullName: "Nome do Usuário",
+        email: "usuario@exemplo.com",
+        householdSize: 1,
+      },
+      settings: {
+        defaultTab: "dashboard",
+        monthlyBudget: 0,
+        currency: "BRL",
+      },
       inputs: [
         {
           expenses: [

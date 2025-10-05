@@ -25,7 +25,7 @@ describe("ExpensesApp", () => {
         <ExpensesApp />
       </MemoryRouter>
     );
-    fireEvent.click(screen.getAllByText(/Importar/)[1]);
+    fireEvent.click(screen.getByRole('button', { name: /Importar/ }));
     // Modal mounts; verify presence by dialog role
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
