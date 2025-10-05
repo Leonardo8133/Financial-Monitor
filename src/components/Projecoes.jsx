@@ -100,7 +100,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
     inflationPct: decimalToPercent(safeDefaults.inflationRate ?? 0.04),
     contributionGrowthPct: decimalToPercent(safeDefaults.contributionGrowth ?? 0.02),
     goalAmount: Math.max(
-      safeDefaults.goalAmount ?? Math.max(safeDefaults.initialBalance ?? 0, 0) * 2 || (trailingStats.lastMonth.invested || 500) * 200,
+      safeDefaults.goalAmount ?? (Math.max(safeDefaults.initialBalance ?? 0, 0) * 2 || (trailingStats.lastMonth.invested || 500) * 200),
       0
     ),
     withdrawalRatePct: decimalToPercent(0.04),
