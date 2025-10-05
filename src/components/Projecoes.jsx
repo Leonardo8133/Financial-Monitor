@@ -441,8 +441,10 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               />
               {trailingStats.monthsConsidered > 0 && (
                 <span className="text-xs text-slate-500">
-                  Média últimos {trailingStats.monthsConsidered} meses:{" "}
-                  {trailingStats.yieldAverage !== null ? fmtPct(trailingStats.yieldAverage) : "–"}
+                  {trailingStats.lastMonth.yieldPct !== null && trailingStats.lastMonth.yieldPct !== undefined
+                    ? `Último mês: ${fmtPct(trailingStats.lastMonth.yieldPct)} · `
+                    : ""}
+                  Média últimos {trailingStats.monthsConsidered} meses: {trailingStats.yieldAverage !== null ? fmtPct(trailingStats.yieldAverage) : "–"}
                   {trailingStats.volatility > 0 ? ` · Volatilidade: ${fmtPct(trailingStats.volatility)}` : ""}
                 </span>
               )}
