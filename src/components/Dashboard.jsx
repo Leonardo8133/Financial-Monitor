@@ -40,47 +40,6 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
 
   const domain = safeMonthly.length ? ["dataMin", "dataMax"] : [0, 1];
 
-  // Preparar dados do fluxo por fonte
-  const flowChartBySource = safeMonthly.map((m) => {
-    const row = { ts: m.midDateValue, label: m.label };
-    const monthlySources = new Map(
-      (Array.isArray(m.sources) ? m.sources : []).map((source) => [source.name, source.invested])
-    );
-    
-    // Calcular fluxo líquido por fonte (entrada - saída)
-    uniqueSourceNames.forEach((name) => {
-      const sourceValue = monthlySources.get(name) ?? 0;
-      row[name] = sourceValue; // Valor absoluto do fluxo por fonte
-    });
-    
-    return row;
-  });
-  const hasFlowData = flowChartBySource.some((row) => 
-    uniqueSourceNames.some(name => row[name] !== 0)
-  );
-
-  // Preparar dados do rendimento mensal por fonte
-  const yieldChartBySource = safeMonthly.map((m) => {
-    const row = { ts: m.midDateValue, label: m.label };
-    const monthlySources = new Map(
-      (Array.isArray(m.sources) ? m.sources : []).map((source) => [source.name, source.invested])
-    );
-    
-    // Calcular rendimento mensal por fonte (assumindo que o yieldValue é proporcional ao investido)
-    const totalInvested = m.invested || 1; // Evitar divisão por zero
-    const yieldPct = m.yieldPct || 0;
-    
-    uniqueSourceNames.forEach((name) => {
-      const sourceInvested = monthlySources.get(name) ?? 0;
-      const sourceYield = sourceInvested * yieldPct;
-      row[name] = sourceYield;
-    });
-    
-    return row;
-  });
-  const hasYieldData = yieldChartBySource.some((row) => 
-    uniqueSourceNames.some(name => row[name] !== 0)
-  );
   const formatShortK = (value) => {
     const numeric = Number(value) || 0;
     const abs = Math.abs(numeric);
@@ -180,7 +139,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
         <div className="h-72">
           {hasFlowData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={flowChartBySource}>
+              <AreaChart data={perSourceNet}>
                 <defs>
                   {uniqueSourceNames.map((name, index) => {
                     const gradientId = `flow-source-${index}`;
@@ -224,7 +183,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
         <div className="h-72">
           {hasYieldData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={yieldChartBySource}>
+              <AreaChart data={yieldChart}>
                 <defs>
                   {uniqueSourceNames.map((name, index) => {
                     const gradientId = `yield-source-${index}`;
