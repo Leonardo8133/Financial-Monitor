@@ -1,0 +1,36 @@
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { Projecoes } from "./Projecoes.jsx";
+
+function makeTimeline({ months = 6, invested = 1000, yieldPct = 0.01 } = {}) {
+  const start = new Date(2024, 0, 15);
+  const items = [];
+  for (let i = 0; i < months; i += 1) {
+    const d = new Date(start.getFullYear(), start.getMonth() + i, 15);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    items.push({ ym, label: ym, invested, cashFlow: invested, yieldPct });
+  }
+  return items;
+}
+
+describe("Projecoes", () => {
+  it("renders results with two-decimal percentages and BRL", () => {
+    render(<Projecoes timeline={makeTimeline()} defaults={{ initialBalance: 10000, monthlyReturn: 0.01, monthlyContribution: 1000 }} />);
+
+    expect(screen.getByText(/Patrimônio projetado/)).toBeInTheDocument();
+    // Check a known percentage field to have two decimals
+    expect(screen.getAllByText(/%/).length).toBeGreaterThan(0);
+  });
+
+  it("rounds monthly return input to 2 decimals", () => {
+    render(<Projecoes timeline={makeTimeline()} defaults={{ monthlyReturn: 0.01234 }} />);
+    const input = screen.getByLabelText(/Rentabilidade mensal/);
+    fireEvent.change(input, { target: { value: "1.239" } });
+    expect(input).toHaveValue(1.24);
+  });
+
+  it("uses last month yield when available in hint", () => {
+    render(<Projecoes timeline={makeTimeline({ yieldPct: 0.023 })} defaults={{}} />);
+    expect(screen.getAllByText(/Último mês:/).length).toBeGreaterThan(0);
+  });
+});

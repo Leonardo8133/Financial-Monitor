@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
 import App from "./App.jsx";
 import ExpensesApp from "./expenses/ExpensesApp.jsx";
 import InvestmentSettings from "./pages/InvestmentSettings.jsx";
@@ -14,7 +14,7 @@ const router = createBrowserRouter([
     element: <Outlet />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <App /> },
+      { index: true, element: <Navigate to="/investimentos" replace /> },
       { path: "investimentos", element: <App /> },
       { path: "investimentos/configuracoes", element: <InvestmentSettings /> },
       { path: "gastos", element: <ExpensesApp /> },

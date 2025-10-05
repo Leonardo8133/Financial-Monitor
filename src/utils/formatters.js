@@ -11,7 +11,7 @@ export function fmtBRL(value) {
 
 export function fmtPct(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return "–";
-  return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 2 }).format(value);
+  return new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 }
 
 export function toNumber(v) {

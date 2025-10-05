@@ -18,16 +18,9 @@ import {
   ensureExpensesDefaults,
 } from "./config/storage.js";
 
-import { ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentIcon, PlusIcon, TableCellsIcon, ChartBarIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+// merge artifact removed: duplicate icon import
 
-const EXPENSES_LS_KEY = "leo-expenses-v1";
-
-const STORAGE_SEED = {
-  expenses: [],
-  categories: DEFAULT_CATEGORIES,
-  sources: DEFAULT_SOURCES,
-  createdAt: new Date().toISOString(),
-};
+// removed duplicated local storage constants to use values from config/storage
 
 export default function ExpensesApp() {
   const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
@@ -261,22 +254,7 @@ export default function ExpensesApp() {
           });
         } else {
           window.alert("Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de despesas.");
-        const { errors, items, incomingCategories, incomingSources, created } = validateExpensesPayload(data);
-        if (errors.length) {
-          window.alert(`Erros ao validar JSON:\n- ${errors.join("\n- ")}`);
-          return;
         }
-        const normalized = items.map((e) => withId({ ...e, value: Number(String(e.value).replace(/\./g, "").replace(/,/g, ".")) }));
-        const cats = incomingCategories && incomingCategories.length ? incomingCategories : categories;
-        const srcs = incomingSources && incomingSources.length ? incomingSources : sources;
-        const createdAtValue = created || createdAt || new Date().toISOString();
-        setStore({
-          expenses: normalized,
-          categories: mergeCategoriesFromExpenses(normalized, cats),
-          sources: mergeSourcesFromExpenses(normalized, srcs),
-          createdAt: createdAtValue,
-        });
-        setImportModalOpen(false);
       } catch (e) {
         window.alert("Falha ao ler JSON: " + e.message);
       }

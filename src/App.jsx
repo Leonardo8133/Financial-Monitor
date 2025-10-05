@@ -310,12 +310,10 @@ export default function App() {
   const projectionDefaults = useMemo(
     () => ({
       initialBalance: totals.total_invested ?? 0,
-      monthlyContribution:
-        averageMonthlyInvested > 0
-          ? averageMonthlyInvested
-          : Math.max(lastMonth?.invested ?? 0, 0),
-      monthlyReturn: averageMonthlyYield ?? 0.005,
-      historicalMonthlyReturn: averageMonthlyYield,
+      monthlyContribution: Math.max(lastMonth?.invested ?? (averageMonthlyInvested || 0), 0),
+      monthlyReturn: (lastMonth?.yieldPct !== null && lastMonth?.yieldPct !== undefined)
+        ? lastMonth.yieldPct
+        : (averageMonthlyYield ?? 0.005),
       inflationRate: 0.04,
       contributionGrowth: 0.02,
       goalAmount:
@@ -327,6 +325,7 @@ export default function App() {
       averageMonthlyInvested,
       averageMonthlyYield,
       lastMonth?.invested,
+      lastMonth?.yieldPct,
       totals.total_invested,
     ]
   );
