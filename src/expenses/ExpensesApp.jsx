@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ExpensesDashboard } from "./components/ExpensesDashboard.jsx";
 import { ExpensesEntrada } from "./components/ExpensesEntrada.jsx";
 import { ExpensesHistorico } from "./components/ExpensesHistorico.jsx";
+import { FinancingCalculator } from "./components/FinancingCalculator.jsx";
 import { ActionButton } from "../components/ActionButton.jsx";
 import { Tabs } from "../components/Tab.jsx";
 import { ImportModal } from "../components/ImportModal.jsx";
@@ -10,7 +11,7 @@ import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { DEFAULT_CATEGORIES, ensureCategoryInLibrary } from "./config/categories.js";
 import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
 import { computeDerivedExpenses, computeTotals, withId, makeId } from "./utils/expenses.js";
-import { ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentIcon, PlusIcon, TableCellsIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentIcon, PlusIcon, TableCellsIcon, ChartBarIcon, CalculatorIcon } from "@heroicons/react/24/outline";
 import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm, toNumber } from "../utils/formatters.js";
 import {
   EXPENSES_LS_KEY,
@@ -23,6 +24,8 @@ import {
 // removed duplicated local storage constants to use values from config/storage
 
 export default function ExpensesApp() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
   const store = ensureExpensesDefaults(storeState);
   const expenses = store.expenses;
@@ -32,7 +35,16 @@ export default function ExpensesApp() {
   const personalInfo = store.personalInfo;
   const settings = store.settings;
 
-  const [tab, setTab] = useState(settings.defaultTab || "dashboard");
+  // Determinar a aba ativa baseada na URL
+  const getCurrentTab = () => {
+    const path = location.pathname;
+    if (path.includes('/gastos/configuracoes')) return 'configuracoes';
+    if (path.includes('/gastos/financiamentos')) return 'financiamentos';
+    if (path.includes('/gastos')) return 'dashboard';
+    return 'dashboard';
+  };
+
+  const [tab, setTab] = useState(getCurrentTab());
   const [drafts, setDrafts] = useState(() => [createDraftExpense()]);
   const fileRef = useRef(null);
   const defaultsRef = useRef(settings.defaultTab);
@@ -44,6 +56,11 @@ export default function ExpensesApp() {
       setTab(settings.defaultTab);
     }
   }, [settings.defaultTab]);
+
+  // Atualizar aba quando a URL mudar
+  useEffect(() => {
+    setTab(getCurrentTab());
+  }, [location.pathname]);
 
   useEffect(() => {
     if (Array.isArray(storeState)) {
@@ -143,6 +160,17 @@ export default function ExpensesApp() {
   }, [monthly]);
 
   const totals = useMemo(() => computeTotals(derived), [derived]);
+
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    if (newTab === 'configuracoes') {
+      navigate('/gastos/configuracoes');
+    } else if (newTab === 'financiamentos') {
+      navigate('/gastos/financiamentos');
+    } else {
+      navigate('/gastos');
+    }
+  };
 
   function exportJson() {
     const payload = {
@@ -345,9 +373,10 @@ export default function ExpensesApp() {
               { key: 'dashboard', label: 'Dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
               { key: 'historico', label: 'Histórico', icon: <TableCellsIcon className="h-5 w-5" /> },
               { key: 'entrada', label: 'Nova Despesa', icon: <PlusIcon className="h-5 w-5" /> },
+              { key: 'financiamentos', label: 'Financiamentos', icon: <CalculatorIcon className="h-5 w-5" /> },
             ]}
             activeTab={tab}
-            onChange={setTab}
+            onChange={handleTabChange}
           />
         </header>
 
@@ -358,6 +387,7 @@ export default function ExpensesApp() {
         {tab === 'entrada' && (
           <ExpensesEntrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} categories={categories} sources={sources} setStore={setStore} />
         )}
+        {tab === 'financiamentos' && <FinancingCalculator />}
 
         <footer className="mt-10 text-center text-xs text-slate-500">
           <p>Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.</p>
