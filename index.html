@@ -3,11 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Monitor de Investimentos – Leo</title>
+    <title>Monitor de Investimentos</title>
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   </head>
   <body class="bg-slate-50">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script type="text/javascript">
+      // Script para lidar com redirecionamento do 404.html
+      (function (l) {
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          var basePath = l.pathname.replace(/\/$/, "");
+          var target = basePath + decoded + l.hash;
+          if (!basePath && target.charAt(0) !== "/") {
+            target = "/" + target;
+          }
+          window.history.replaceState(null, null, target || "/");
+        }
+      })(window.location);
+    </script>
   </body>
 </html>

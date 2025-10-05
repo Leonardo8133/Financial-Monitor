@@ -1,16 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ExpensesDashboard } from "./components/ExpensesDashboard.jsx";
 import { ExpensesEntrada } from "./components/ExpensesEntrada.jsx";
 import { ExpensesHistorico } from "./components/ExpensesHistorico.jsx";
+import { FinancingCalculator } from "./components/FinancingCalculator.jsx";
 import { ActionButton } from "../components/ActionButton.jsx";
+import { BackToHomeButton } from "../components/BackToHomeButton.jsx";
 import { Tabs } from "../components/Tab.jsx";
 import { ImportModal } from "../components/ImportModal.jsx";
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { DEFAULT_CATEGORIES, ensureCategoryInLibrary } from "./config/categories.js";
 import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
 import { computeDerivedExpenses, computeTotals, withId, makeId } from "./utils/expenses.js";
-import { ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentIcon, PlusIcon, TableCellsIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  PlusIcon,
+  TableCellsIcon,
+  ChartBarIcon,
+  SettingsIcon,
+} from "../components/icons.jsx";
+import { CalculatorIcon } from "@heroicons/react/24/outline";
 import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm, toNumber } from "../utils/formatters.js";
 import {
   EXPENSES_LS_KEY,
@@ -23,6 +33,8 @@ import {
 // removed duplicated local storage constants to use values from config/storage
 
 export default function ExpensesApp() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
   const store = ensureExpensesDefaults(storeState);
   const expenses = store.expenses;
@@ -32,9 +44,31 @@ export default function ExpensesApp() {
   const personalInfo = store.personalInfo;
   const settings = store.settings;
 
-  const [tab, setTab] = useState(settings.defaultTab || "dashboard");
+  const focusOptions = [
+    {
+      key: "investimentos",
+      label: "Investimentos",
+      tooltip: "Ir para o painel de investimentos",
+    },
+    {
+      key: "gastos",
+      label: "Gastos",
+      tooltip: "Você está na área de gastos",
+    },
+  ];
+  const focusArea = "gastos";
+
+  // Determinar a aba ativa baseada na URL
+  const getCurrentTab = () => {
+    const path = location.pathname;
+    if (path.includes('/gastos/configuracoes')) return 'configuracoes';
+    if (path.includes('/gastos/financiamentos')) return 'financiamentos';
+    if (path.includes('/gastos')) return 'dashboard';
+    return 'dashboard';
+  };
+
+  const [tab, setTab] = useState(getCurrentTab());
   const [drafts, setDrafts] = useState(() => [createDraftExpense()]);
-  const fileRef = useRef(null);
   const defaultsRef = useRef(settings.defaultTab);
   const [importModalOpen, setImportModalOpen] = useState(false);
   
@@ -44,6 +78,11 @@ export default function ExpensesApp() {
       setTab(settings.defaultTab);
     }
   }, [settings.defaultTab]);
+
+  // Atualizar aba quando a URL mudar
+  useEffect(() => {
+    setTab(getCurrentTab());
+  }, [location.pathname]);
 
   useEffect(() => {
     if (Array.isArray(storeState)) {
@@ -143,6 +182,25 @@ export default function ExpensesApp() {
   }, [monthly]);
 
   const totals = useMemo(() => computeTotals(derived), [derived]);
+
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    if (newTab === 'configuracoes') {
+      navigate('/gastos/configuracoes');
+    } else if (newTab === 'financiamentos') {
+      navigate('/gastos/financiamentos');
+    } else {
+      navigate('/gastos');
+    }
+  };
+
+  const handleFocusChange = (newFocus) => {
+    if (newFocus === 'investimentos') {
+      navigate('/investimentos');
+      return;
+    }
+    navigate('/gastos');
+  };
 
   function exportJson() {
     const payload = {
@@ -310,34 +368,56 @@ export default function ExpensesApp() {
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold">Controle de Gastos – Leo</h1>
-            <p className="text-sm text-slate-600">Suba arquivos (CSV/XLSX/PDF), categorize e acompanhe seus gastos por mês. Seus dados ficam no navegador.</p>
-          </div>
-          <div className="flex items-center justify-end gap-4">
-            <div className="flex items-center gap-2">
-              <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson}>Exportar</ActionButton>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:border-slate-300 hover:text-slate-900">
-                <ArrowUpTrayIcon className="h-5 w-5" />
-                Importar
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="application/json"
-                  className="hidden"
-                  onChange={(e) => e.target.files && e.target.files[0] && importJsonFile(e.target.files[0])}
-                />
-              </label>
-              <Link
-                to="/gastos/configuracoes"
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-              >
-                <span aria-hidden="true">⚙️</span>
-                Configurações
-              </Link>
-              <ActionButton icon={ArrowUpTrayIcon} onClick={() => setImportModalOpen(true)}>Importar</ActionButton>
-              <Link to="/investimentos" className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-slate-50">Ir para Investimentos</Link>
+        <header className="mb-6 space-y-4">
+          <BackToHomeButton />
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold text-slate-900">Controle de Gastos</h1>
+                <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-[0.7rem] font-semibold text-slate-600 shadow-sm">
+                  {focusOptions.map((option) => {
+                    const active = option.key === focusArea;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        onClick={() => handleFocusChange(option.key)}
+                        className={`rounded-full px-3 py-1 transition ${
+                          active ? "bg-slate-900 text-white shadow" : "hover:bg-slate-100"
+                        }`}
+                        title={option.tooltip}
+                        aria-pressed={active}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <p className="text-sm text-slate-600">
+                Suba arquivos (CSV/XLSX/PDF), categorize e acompanhe seus gastos por mês. Seus dados ficam no navegador.
+              </p>
+            </div>
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2">
+                <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson} title="Baixe um arquivo JSON com os gastos registrados">
+                  Exportar
+                </ActionButton>
+                <ActionButton
+                  icon={ArrowUpTrayIcon}
+                  onClick={() => setImportModalOpen(true)}
+                  title="Importe um arquivo JSON previamente exportado"
+                >
+                  Importar
+                </ActionButton>
+                <Link
+                  to="/gastos/configuracoes"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  <SettingsIcon className="h-5 w-5" />
+                  Configurações
+                </Link>
+              </div>
             </div>
           </div>
           <Tabs
@@ -345,9 +425,10 @@ export default function ExpensesApp() {
               { key: 'dashboard', label: 'Dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
               { key: 'historico', label: 'Histórico', icon: <TableCellsIcon className="h-5 w-5" /> },
               { key: 'entrada', label: 'Nova Despesa', icon: <PlusIcon className="h-5 w-5" /> },
+              { key: 'financiamentos', label: 'Financiamentos', icon: <CalculatorIcon className="h-5 w-5" /> },
             ]}
             activeTab={tab}
-            onChange={setTab}
+            onChange={handleTabChange}
           />
         </header>
 
@@ -358,6 +439,7 @@ export default function ExpensesApp() {
         {tab === 'entrada' && (
           <ExpensesEntrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} categories={categories} sources={sources} setStore={setStore} />
         )}
+        {tab === 'financiamentos' && <FinancingCalculator />}
 
         <footer className="mt-10 text-center text-xs text-slate-500">
           <p>Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.</p>

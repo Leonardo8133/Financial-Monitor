@@ -108,8 +108,8 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
-              <Field className="md:col-span-2" label="Data">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-12" title="Preencha a data do lançamento; use dias do mês para agrupar corretamente">
+              <Field className="md:col-span-2" label="Data" >
                 <input
                   type="date"
                   required={!row.locked}
@@ -119,7 +119,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-3" label="Banco">
+              <Field className="md:col-span-3" label="Banco" >
                 <input
                   type="text"
                   list={bankOptionsId}
@@ -131,7 +131,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-2" label="Fonte">
+              <Field className="md:col-span-2" label="Fonte" >
                 <input
                   type="text"
                   list={sourceOptionsId}
@@ -142,7 +142,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-2" label="Conta (R$)">
+              <Field className="md:col-span-2" label="Conta (R$)" >
                 <input
                   type="number"
                   step="0.01"
@@ -153,7 +153,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-2" label="Investido (R$)">
+              <Field className="md:col-span-1" label="Investido (R$)" title="Aporte do mês que vai para investimentos; use 0 se não houve">
                 <input
                   type="number"
                   step="0.01"
@@ -164,7 +164,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
-              <Field className="md:col-span-1" label="Fluxo (R$)">
+              <Field className="md:col-span-4" label="Fluxo (R$)" title="Positivo para entradas (depósitos), negativo para saídas (retiradas). Afeta o gráfico de fluxo.">
                 <input
                   type="number"
                   step="0.01"

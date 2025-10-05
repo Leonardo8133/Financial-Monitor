@@ -56,6 +56,7 @@ export default function InvestmentSettings() {
     });
   }
 
+  // Campo de "Data de criação do histórico" removido da UI conforme solicitação
   function updateCreatedAt(value) {
     if (!value) return;
     const iso = new Date(value).toISOString();

@@ -1,7 +1,7 @@
 import { DEFAULT_CATEGORIES } from "./categories.js";
 import { DEFAULT_SOURCES } from "./sources.js";
 
-export const EXPENSES_LS_KEY = "leo-expenses-v1";
+export const EXPENSES_LS_KEY = "financial-monitor-expenses-v1";
 
 export const EXPENSES_STORAGE_SEED = {
   expenses: [],

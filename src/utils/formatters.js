@@ -1,4 +1,4 @@
-export const LS_KEY = "leo-investments-v1";
+export const LS_KEY = "financial-monitor-investments-v1";
 
 export function fmtBRL(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return "–";

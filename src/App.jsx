@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
 import { KPICard } from "./components/KPICard.jsx";
 import { Tabs } from "./components/Tab.jsx";
 import { ActionButton } from "./components/ActionButton.jsx";
-import { PersonalInfoModal } from "./components/PersonalInfoModal.jsx";
+import { BackToHomeButton } from "./components/BackToHomeButton.jsx";
 import { ImportModal } from "./components/ImportModal.jsx";
 import { Projecoes } from "./components/Projecoes.jsx";
-import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
+// import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
@@ -17,7 +18,6 @@ import {
   PlusIcon,
   DocumentArrowDownIcon,
   TrendingUpIcon,
-  UserCircleIcon,
   SettingsIcon,
 } from "./components/icons.jsx";
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
@@ -49,6 +49,8 @@ import { createPdfReport } from "./utils/pdf.js";
 import { Link } from "react-router-dom";
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [storeState, setStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
   const store = ensureInvestmentDefaults(storeState);
   const entries = store.entries;
@@ -58,9 +60,16 @@ export default function App() {
   const settings = store.settings;
   const createdAt = store.createdAt;
 
-  const [tab, setTab] = useState(settings.defaultTab || "dashboard");
+  // Determinar a aba ativa baseada na URL
+  const getCurrentTab = () => {
+    const path = location.pathname;
+    if (path.includes('/investimentos/configuracoes')) return 'configuracoes';
+    if (path.includes('/investimentos')) return 'dashboard';
+    return 'dashboard';
+  };
+
+  const [tab, setTab] = useState(getCurrentTab());
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
-  const [personalModalOpen, setPersonalModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [focusArea, setFocusArea] = useState(settings.defaultFocusArea || "investimentos");
   const defaultsRef = useRef({
@@ -82,6 +91,11 @@ export default function App() {
       setFocusArea(settings.defaultFocusArea);
     }
   }, [settings.defaultFocusArea]);
+
+  // Atualizar aba quando a URL mudar
+  useEffect(() => {
+    setTab(getCurrentTab());
+  }, [location.pathname]);
 
   const setEntries = (updater) => {
     setStore((prev) => {
@@ -110,13 +124,6 @@ export default function App() {
     setStore((prev) => {
       const safePrev = ensureInvestmentDefaults(prev);
       return { ...safePrev, createdAt: value };
-    });
-  };
-
-  const setPersonalInfo = (value) => {
-    setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      return { ...safePrev, personalInfo: { ...safePrev.personalInfo, ...(value || {}) } };
     });
   };
 
@@ -194,9 +201,14 @@ export default function App() {
         base.previousTotal += entry.previousTotal ?? 0;
       }
       const sourceKey = (entry.source || "Outros").trim() || "Outros";
-      const sourceBucket = base.sources.get(sourceKey) || { name: sourceKey, invested: 0, total: 0 };
+      const sourceBucket =
+        base.sources.get(sourceKey) || { name: sourceKey, invested: 0, total: 0, cashFlow: 0, yieldValue: 0 };
       sourceBucket.invested += toNumber(entry.invested);
       sourceBucket.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
+      sourceBucket.cashFlow += toNumber(entry.cashFlow);
+      if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
+        sourceBucket.yieldValue += toNumber(entry.yieldValue);
+      }
       base.sources.set(sourceKey, sourceBucket);
       byMonth.set(key, base);
     }
@@ -342,6 +354,24 @@ export default function App() {
       tooltip: "Atalho para o histórico para revisar entradas negativas",
     },
   ];
+
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    if (newTab === 'configuracoes') {
+      navigate('/investimentos/configuracoes');
+    } else {
+      navigate('/investimentos');
+    }
+  };
+
+  const handleFocusChange = (newFocus) => {
+    setFocusArea(newFocus);
+    if (newFocus === 'gastos') {
+      navigate('/gastos');
+    } else {
+      navigate('/investimentos');
+    }
+  };
 
   function handleSubmitDrafts(rows) {
     const prepared = rows
@@ -497,23 +527,7 @@ export default function App() {
     reader.readAsText(file);
   }
 
-  function loadDemo() {
-    if (!entries.length && window.confirm("Carregar dados de exemplo? Você pode apagar depois.")) {
-      const normalized = demoEntries.map(withId);
-      setStore((prev) => {
-        const safePrev = ensureInvestmentDefaults(prev);
-        return {
-          ...safePrev,
-          entries: normalized,
-          banks: mergeBanksFromEntries(normalized, demoBanks),
-          sources: mergeSourcesFromEntries(normalized, demoSources),
-          personalInfo: safePrev.personalInfo,
-          settings: safePrev.settings,
-          createdAt: demoCreatedAt,
-        };
-      });
-    }
-  }
+  // Botão/ação para carregar dados de exemplo removidos
 
   function handleClearEntries() {
     if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) {
@@ -540,6 +554,7 @@ export default function App() {
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 space-y-4">
+          <BackToHomeButton />
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
@@ -551,7 +566,7 @@ export default function App() {
                       <button
                         key={option.key}
                         type="button"
-                        onClick={() => setFocusArea(option.key)}
+                        onClick={() => handleFocusChange(option.key)}
                         className={`rounded-full px-3 py-1 transition ${
                           active ? "bg-slate-900 text-white shadow" : "hover:bg-slate-100"
                         }`}
@@ -585,30 +600,23 @@ export default function App() {
                 >
                   Importar
                 </ActionButton>
-              <ActionButton
-                icon={DocumentArrowDownIcon}
-                onClick={handleGeneratePdf}
-                title="Gere um relatório em PDF com seus indicadores atuais"
-              >
-                Relatório PDF
-              </ActionButton>
-              <ActionButton
-                icon={UserCircleIcon}
-                onClick={() => setPersonalModalOpen(true)}
-                title="Edite os dados pessoais exibidos nos relatórios"
-              >
-                Dados pessoais
-              </ActionButton>
-              <Link
-                to="/investimentos/configuracoes"
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-              >
-                <SettingsIcon className="h-5 w-5" />
-                Configurações
-              </Link>
+                <ActionButton
+                  icon={DocumentArrowDownIcon}
+                  onClick={handleGeneratePdf}
+                  title="Gere um relatório em PDF com seus indicadores atuais"
+                >
+                  Relatório PDF
+                </ActionButton>
+                <Link
+                  to="/investimentos/configuracoes"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  <SettingsIcon className="h-5 w-5" />
+                  Configurações
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
           <Tabs
             tabs={[
               {
@@ -637,7 +645,7 @@ export default function App() {
               },
             ]}
             activeTab={tab}
-            onChange={setTab}
+            onChange={handleTabChange}
           />
         </header>
 
@@ -664,6 +672,7 @@ export default function App() {
             tone={resolveTone(lastMonth?.yieldValue)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
             tooltip="Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais"
+            hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.yieldValue })) || []}
           />
           <KPICard
             title="Entrada/Saída último mês"
@@ -671,6 +680,7 @@ export default function App() {
             tone={(lastMonth?.cashFlow ?? 0) >= 0 ? "positive" : "negative"}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
             tooltip="Somatório das entradas (positivas) e saídas (negativas) informadas no mês"
+            hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.cashFlow })) || []}
           />
           <KPICard
             title="Total em Conta último mês"
@@ -680,6 +690,7 @@ export default function App() {
           />
         </section>
 
+        {/* Seção de "Carregar dados de exemplo" removida */}
 
         {tab === "dashboard" && <Dashboard monthly={timeline} sourceSummary={sourceSummary} sources={sources} />}
 
@@ -714,12 +725,6 @@ export default function App() {
         onClose={() => setImportModalOpen(false)}
         onImport={importJsonFile}
         onDownloadTemplate={downloadTemplate}
-      />
-      <PersonalInfoModal
-        open={personalModalOpen}
-        onClose={() => setPersonalModalOpen(false)}
-        initialValue={personalInfo}
-        onSave={setPersonalInfo}
       />
     </div>
   );

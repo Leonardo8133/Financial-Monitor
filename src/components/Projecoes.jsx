@@ -3,9 +3,16 @@ import { fmtBRL, fmtPct } from "../utils/formatters.js";
 
 const MAX_GOAL_MONTHS = 600;
 
+function withPrecision(value, decimals = 2, fallback = 0) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  const factor = 10 ** decimals;
+  return Math.round(numeric * factor) / factor;
+}
+
 function decimalToPercent(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return 0;
-  return Math.round(value * 10000) / 100;
+  return withPrecision(value * 100, 2, 0);
 }
 
 function percentToDecimal(value) {
@@ -69,64 +76,93 @@ export function Projecoes({ timeline = [], defaults = {} }) {
         : 0;
     const volatility = variance > 0 ? Math.sqrt(variance) : 0;
 
+    const last = safeTimeline[safeTimeline.length - 1] || {};
     return {
       monthsConsidered: trailing.length,
       contributionAverage,
       yieldAverage,
       cashFlowAverage,
       volatility,
+      lastMonth: {
+        invested: Math.max(last.invested ?? 0, 0),
+        yieldPct: last.yieldPct ?? null,
+      },
     };
   }, [safeTimeline]);
 
   const [form, setForm] = useState(() => ({
-    initialBalance: Math.max(safeDefaults.initialBalance ?? 0, 0),
-    monthlyContribution: Math.max(
-      safeDefaults.monthlyContribution ?? trailingStats.contributionAverage ?? 0,
-      0
+    initialBalance: withPrecision(Math.max(safeDefaults.initialBalance ?? 0, 0)),
+    monthlyContribution: withPrecision(
+      Math.max(
+        safeDefaults.monthlyContribution ??
+          trailingStats.lastMonth.invested ??
+          trailingStats.contributionAverage ??
+          0,
+        0
+      )
     ),
     horizonMonths: 60,
-    monthlyReturnPct: decimalToPercent(
-      safeDefaults.monthlyReturn ?? trailingStats.yieldAverage ?? 0.005
+    monthlyReturnPct: withPrecision(
+      decimalToPercent(
+        safeDefaults.monthlyReturn ?? trailingStats.lastMonth.yieldPct ?? trailingStats.yieldAverage ?? 0.005
+      )
     ),
-    inflationPct: decimalToPercent(safeDefaults.inflationRate ?? 0.04),
-    contributionGrowthPct: decimalToPercent(safeDefaults.contributionGrowth ?? 0.02),
-    goalAmount:
+    inflationPct: withPrecision(decimalToPercent(safeDefaults.inflationRate ?? 0.04)),
+    contributionGrowthPct: withPrecision(decimalToPercent(safeDefaults.contributionGrowth ?? 0.02)),
+    goalAmount: withPrecision(
       Math.max(
         safeDefaults.goalAmount ??
-          (safeDefaults.initialBalance && safeDefaults.initialBalance > 0
-            ? safeDefaults.initialBalance * 2
-            : (trailingStats.contributionAverage || 500) * 200),
+          (Math.max(safeDefaults.initialBalance ?? 0, 0) * 2 || (trailingStats.lastMonth.invested || 500) * 200),
         0
-      ),
-    withdrawalRatePct: decimalToPercent(0.04),
+      )
+    ),
+    withdrawalRatePct: withPrecision(decimalToPercent(0.04)),
   }));
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     setForm((prev) => ({
       ...prev,
-      initialBalance: Math.max(safeDefaults.initialBalance ?? prev.initialBalance, 0),
-      monthlyContribution: Math.max(
-        safeDefaults.monthlyContribution ?? prev.monthlyContribution,
-        0
+      initialBalance: withPrecision(
+        Math.max(safeDefaults.initialBalance ?? prev.initialBalance, 0),
+        2,
+        prev.initialBalance
       ),
-      goalAmount:
+      monthlyContribution: withPrecision(
+        Math.max(
+          safeDefaults.monthlyContribution ?? trailingStats.lastMonth.invested ?? prev.monthlyContribution,
+          0
+        ),
+        2,
+        prev.monthlyContribution
+      ),
+      goalAmount: withPrecision(
         safeDefaults.goalAmount !== undefined && safeDefaults.goalAmount !== null
           ? Math.max(safeDefaults.goalAmount, 0)
           : prev.goalAmount,
+        2,
+        prev.goalAmount
+      ),
     }));
   }, [
     safeDefaults.initialBalance,
     safeDefaults.monthlyContribution,
     safeDefaults.goalAmount,
+    trailingStats.lastMonth.invested,
   ]);
 
   useEffect(() => {
     setForm((prev) => ({
       ...prev,
-      inflationPct: decimalToPercent(safeDefaults.inflationRate ?? percentToDecimal(prev.inflationPct)),
-      contributionGrowthPct: decimalToPercent(
-        safeDefaults.contributionGrowth ?? percentToDecimal(prev.contributionGrowthPct)
+      inflationPct: withPrecision(
+        decimalToPercent(safeDefaults.inflationRate ?? percentToDecimal(prev.inflationPct)),
+        2,
+        prev.inflationPct
+      ),
+      contributionGrowthPct: withPrecision(
+        decimalToPercent(safeDefaults.contributionGrowth ?? percentToDecimal(prev.contributionGrowthPct)),
+        2,
+        prev.contributionGrowthPct
       ),
     }));
   }, [safeDefaults.inflationRate, safeDefaults.contributionGrowth]);
@@ -205,7 +241,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
       }
     }
 
-    const passiveIncomeMonthly = realBalance * withdrawalRate / 12;
+    const passiveIncomeMonthly = balance * withdrawalRate / 12;
 
     return {
       horizon,
@@ -248,106 +284,136 @@ export function Projecoes({ timeline = [], defaults = {} }) {
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="flex flex-col gap-1 text-sm" title="Valor já aplicado atualmente (base para a projeção)">
-            Patrimônio atual (R$)
-            <input
-              type="number"
-              min="0"
-              step="100"
-              value={form.initialBalance}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, initialBalance: Math.max(readNumber(event.target.value, 0), 0) }))
-              }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-          </label>
-
-          <label
-            className="flex flex-col gap-1 text-sm"
-            title="Aporte médio mensal considerado. Você pode usar o valor sugerido pelos últimos meses."
-          >
-            Aporte mensal médio (R$)
-            <input
-              type="number"
-              min="0"
-              step="50"
-              value={form.monthlyContribution}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  monthlyContribution: Math.max(readNumber(event.target.value, 0), 0),
-                }))
-              }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-            {trailingStats.monthsConsidered > 0 && (
-              <span className="text-xs text-slate-500">
-                Média últimos {trailingStats.monthsConsidered} meses: {fmtBRL(trailingStats.contributionAverage || 0)}
-              </span>
-            )}
-          </label>
-
-          <label
-            className="flex flex-col gap-1 text-sm"
-            title="Quantidade de meses que o patrimônio ficará investido nesta simulação"
-          >
-            Horizonte (meses)
-            <input
-              type="number"
-              min="1"
-              max="600"
-              step="1"
-              value={form.horizonMonths}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, horizonMonths: Math.max(readNumber(event.target.value, 1), 1) }))
-              }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-          </label>
-
-          <div className="flex flex-col gap-1 text-sm">
-            <label
-              className="flex items-center justify-between"
-              title="Rentabilidade mensal líquida utilizada na projeção"
-              htmlFor="monthlyReturnPct"
-            >
-              <span>Rentabilidade mensal (%)</span>
-              <span className="text-xs text-slate-500">
-                {safeTimeline.length && safeTimeline[safeTimeline.length - 1].yieldPct !== null && safeTimeline[safeTimeline.length - 1].yieldPct !== undefined
-                  ? `Último mês: ${fmtPct(safeTimeline[safeTimeline.length - 1].yieldPct)}`
-                  : ""}
-              </span>
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <label className="flex min-w-0 flex-col gap-1 text-sm" title="Valor já aplicado atualmente (base para a projeção)">
+              Patrimônio atual (R$)
+              <input
+                type="number"
+                min="0"
+                step="100"
+                value={form.initialBalance}
+                onChange={(event) =>
+                  setForm((prev) => {
+                    const nextValue = Math.max(readNumber(event.target.value, prev.initialBalance), 0);
+                    return { ...prev, initialBalance: withPrecision(nextValue, 2, prev.initialBalance) };
+                  })
+                }
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
             </label>
-            <input
-              type="number"
-              min="-50"
-              max="50"
-              step="0.01"
-              id="monthlyReturnPct"
-              value={form.monthlyReturnPct}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  monthlyReturnPct: Math.round(readNumber(event.target.value, prev.monthlyReturnPct) * 100) / 100,
-                }))
-              }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-            {trailingStats.monthsConsidered > 0 && (
-              <span className="text-xs text-slate-500">
-                Média últimos {trailingStats.monthsConsidered} meses:{" "}
-                {trailingStats.yieldAverage !== null ? fmtPct(trailingStats.yieldAverage) : "–"}
-                {trailingStats.volatility > 0 ? ` · Volatilidade: ${fmtPct(trailingStats.volatility)}` : ""}
-              </span>
-            )}
+
+            <label
+              className="flex min-w-0 flex-col gap-1 text-sm"
+              title="Aporte médio mensal considerado. Você pode usar o valor sugerido pelos últimos meses."
+            >
+              Aporte mensal médio (R$)
+              <input
+                type="number"
+                min="0"
+                step="50"
+                value={form.monthlyContribution}
+                onChange={(event) =>
+                  setForm((prev) => {
+                    const nextValue = Math.max(readNumber(event.target.value, prev.monthlyContribution), 0);
+                    return { ...prev, monthlyContribution: withPrecision(nextValue, 2, prev.monthlyContribution) };
+                  })
+                }
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+              {trailingStats.monthsConsidered > 0 && (
+                <span className="text-xs text-slate-500">
+                  Média últimos {trailingStats.monthsConsidered} meses: {fmtBRL(trailingStats.contributionAverage || 0)}
+                </span>
+              )}
+            </label>
+
+            <label
+              className="flex min-w-0 flex-col gap-1 text-sm"
+              title="Quantidade de meses que o patrimônio ficará investido nesta simulação"
+            >
+              Horizonte (meses)
+              <input
+                type="number"
+                min="1"
+                max="600"
+                step="1"
+                value={form.horizonMonths}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    horizonMonths: Math.max(Math.floor(readNumber(event.target.value, prev.horizonMonths) || 1), 1),
+                  }))
+                }
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </label>
+
+            <label
+              className="flex min-w-0 flex-col gap-1 text-sm"
+              title="Valor objetivo que você deseja alcançar ao final da projeção"
+            >
+              Meta de patrimônio (R$)
+              <input
+                type="number"
+                min="0"
+                step="1000"
+                value={form.goalAmount}
+                onChange={(event) =>
+                  setForm((prev) => {
+                    const nextValue = Math.max(readNumber(event.target.value, prev.goalAmount), 0);
+                    return { ...prev, goalAmount: withPrecision(nextValue, 2, prev.goalAmount) };
+                  })
+                }
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="flex min-w-0 flex-col gap-1 text-sm lg:col-span-2 lg:max-w-sm">
+              <label
+                className="flex items-center justify-between"
+                title="Rentabilidade mensal líquida utilizada na projeção"
+                htmlFor="monthlyReturnPct"
+              >
+                <span>Rentabilidade mensal (%)</span>
+                <span className="text-xs text-slate-500">
+                  {safeTimeline.length && safeTimeline[safeTimeline.length - 1].yieldPct !== null && safeTimeline[safeTimeline.length - 1].yieldPct !== undefined
+                    ? `Último mês: ${fmtPct(safeTimeline[safeTimeline.length - 1].yieldPct)}`
+                    : ""}
+                </span>
+              </label>
+              <input
+                type="number"
+                min="-50"
+                max="50"
+                step="0.01"
+                id="monthlyReturnPct"
+                value={form.monthlyReturnPct}
+                onChange={(event) =>
+                  setForm((prev) => {
+                    const nextValue = readNumber(event.target.value, prev.monthlyReturnPct);
+                    return { ...prev, monthlyReturnPct: withPrecision(nextValue, 2, prev.monthlyReturnPct) };
+                  })
+                }
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+              {trailingStats.monthsConsidered > 0 && (
+                <span className="text-xs text-slate-500">
+                  Média últimos {trailingStats.monthsConsidered} meses:{" "}
+                  {trailingStats.yieldAverage !== null ? fmtPct(trailingStats.yieldAverage) : "–"}
+                  {trailingStats.volatility > 0 ? ` · Volatilidade: ${fmtPct(trailingStats.volatility)}` : ""}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
         {showAdvanced && (
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <label
-              className="flex flex-col gap-1 text-sm"
+              className="flex min-w-0 flex-col gap-1 text-sm"
               title="Inflação anual estimada para descontar o poder de compra no resultado"
             >
               Inflação anual (%)
@@ -358,14 +424,17 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 step="0.1"
                 value={form.inflationPct}
                 onChange={(event) =>
-                  setForm((prev) => ({ ...prev, inflationPct: Math.max(readNumber(event.target.value, 0), 0) }))
+                  setForm((prev) => {
+                    const nextValue = Math.max(readNumber(event.target.value, prev.inflationPct), 0);
+                    return { ...prev, inflationPct: withPrecision(nextValue, 2, prev.inflationPct) };
+                  })
                 }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
 
             <label
-              className="flex flex-col gap-1 text-sm"
+              className="flex min-w-0 flex-col gap-1 text-sm"
               title="Crescimento esperado dos aportes ano a ano, útil para reajustes salariais"
             >
               Crescimento anual dos aportes (%)
@@ -376,34 +445,19 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 step="0.1"
                 value={form.contributionGrowthPct}
                 onChange={(event) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    contributionGrowthPct: readNumber(event.target.value, prev.contributionGrowthPct),
-                  }))
+                  setForm((prev) => {
+                    const nextValue = readNumber(event.target.value, prev.contributionGrowthPct);
+                    return { ...prev, contributionGrowthPct: withPrecision(nextValue, 2, prev.contributionGrowthPct) };
+                  })
                 }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
 
-            <label
-              className="flex flex-col gap-1 text-sm"
-              title="Valor objetivo que você deseja alcançar ao final da projeção"
-            >
-              Meta de patrimônio (R$)
-              <input
-                type="number"
-                min="0"
-                step="1000"
-                value={form.goalAmount}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, goalAmount: Math.max(readNumber(event.target.value, 0), 0) }))
-                }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              />
-            </label>
+            
 
             <label
-              className="flex flex-col gap-1 text-sm"
+              className="flex min-w-0 flex-col gap-1 text-sm"
               title="Taxa de retirada segura usada para estimar renda passiva futura"
             >
               Taxa de retirada anual (%)
@@ -414,9 +468,12 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 step="0.1"
                 value={form.withdrawalRatePct}
                 onChange={(event) =>
-                  setForm((prev) => ({ ...prev, withdrawalRatePct: Math.max(readNumber(event.target.value, 0), 0) }))
+                  setForm((prev) => {
+                    const nextValue = Math.max(readNumber(event.target.value, prev.withdrawalRatePct), 0);
+                    return { ...prev, withdrawalRatePct: withPrecision(nextValue, 2, prev.withdrawalRatePct) };
+                  })
                 }
-              className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
           </div>

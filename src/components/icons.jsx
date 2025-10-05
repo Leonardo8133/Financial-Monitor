@@ -35,6 +35,15 @@ export function ArrowUpTrayIcon(props) {
   );
 }
 
+export function ArrowLeftIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M10 7l-5 5 5 5" />
+      <path d="M19 12H5" />
+    </Icon>
+  );
+}
+
 export function DocumentIcon(props) {
   return (
     <Icon {...props}>
