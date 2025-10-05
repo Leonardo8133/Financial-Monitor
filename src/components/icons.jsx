@@ -117,3 +117,12 @@ export function TrendingUpIcon(props) {
     </Icon>
   );
 }
+
+export function SettingsIcon(props) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1 1 0 0 0 .2-1.1l-1-1.7a1 1 0 0 1 0-.9l1-1.7a1 1 0 0 0-.2-1.1l-1.2-1.2a1 1 0 0 0-1.1-.2l-1.7 1a1 1 0 0 1-.9 0l-1.7-1a1 1 0 0 0-1.1.2L9 8.6a1 1 0 0 0-.2 1.1l1 1.7a1 1 0 0 1 0 .9l-1 1.7a1 1 0 0 0 .2 1.1l1.2 1.2a1 1 0 0 0 1.1.2l1.7-1a1 1 0 0 1 .9 0l1.7 1a1 1 0 0 0 1.1-.2z" />
+    </Icon>
+  );
+}

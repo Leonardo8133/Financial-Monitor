@@ -4,7 +4,14 @@ const LINE_HEIGHT = 16;
 const TOP_MARGIN = 800;
 const MAX_ENTRY_LINES = 25;
 
-export function createPdfReport({ personalInfo = {}, totals = {}, sources = [], entries = [], exportedAt = new Date() }) {
+export function createPdfReport({
+  personalInfo = {},
+  totals = {},
+  sources = [],
+  entries = [],
+  exportedAt = new Date(),
+  notes = "",
+}) {
   const lines = [];
   const dateLabel = new Date(exportedAt).toLocaleString("pt-BR");
 
@@ -38,6 +45,21 @@ export function createPdfReport({ personalInfo = {}, totals = {}, sources = [], 
       const percentage = source.percentage != null ? `${source.percentage}%` : "";
       lines.push(`- ${source.name}: ${fmtBRL(total)} ${percentage}`.trim());
     });
+    lines.push("");
+  }
+
+  const trimmedNotes = String(notes).trim();
+  if (trimmedNotes) {
+    lines.push("Observações:");
+    const splitted = trimmedNotes
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (splitted.length) {
+      splitted.forEach((line) => lines.push(`- ${line}`));
+    } else {
+      lines.push(`- ${trimmedNotes}`);
+    }
     lines.push("");
   }
 

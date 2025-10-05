@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
@@ -18,6 +18,7 @@ import {
   DocumentArrowDownIcon,
   TrendingUpIcon,
   UserCircleIcon,
+  SettingsIcon,
 } from "./components/icons.jsx";
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
 import {
@@ -40,62 +41,99 @@ import {
 } from "./utils/entries.js";
 import { DEFAULT_BANKS, ensureBankInLibrary } from "./config/banks.js";
 import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
+import {
+  ensureInvestmentDefaults,
+  INVESTMENT_STORAGE_SEED,
+} from "./config/investmentStorage.js";
 import { createPdfReport } from "./utils/pdf.js";
 import { Link } from "react-router-dom";
 
-const STORAGE_SEED = {
-  entries: [],
-  banks: DEFAULT_BANKS,
-  sources: DEFAULT_SOURCES,
-  personalInfo: {},
-  createdAt: new Date().toISOString(),
-};
-
 export default function App() {
-  const [store, setStore] = useLocalStorageState(LS_KEY, STORAGE_SEED);
-  const entries = Array.isArray(store.entries) ? store.entries : [];
-  const banks = Array.isArray(store.banks) && store.banks.length ? store.banks : DEFAULT_BANKS;
-  const sources = Array.isArray(store.sources) && store.sources.length ? store.sources : DEFAULT_SOURCES;
-  const personalInfo = store.personalInfo || {};
-  const createdAt = store.createdAt ?? STORAGE_SEED.createdAt;
+  const [storeState, setStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
+  const store = ensureInvestmentDefaults(storeState);
+  const entries = store.entries;
+  const banks = store.banks;
+  const sources = store.sources;
+  const personalInfo = store.personalInfo;
+  const settings = store.settings;
+  const createdAt = store.createdAt;
 
-  const [tab, setTab] = useState("dashboard");
+  const [tab, setTab] = useState(settings.defaultTab || "dashboard");
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
   const [personalModalOpen, setPersonalModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [focusArea, setFocusArea] = useState("investimentos");
+  const [focusArea, setFocusArea] = useState(settings.defaultFocusArea || "investimentos");
+  const defaultsRef = useRef({
+    tab: settings.defaultTab,
+    focus: settings.defaultFocusArea,
+  });
   const fileRef = useRef(null);
+
+  useEffect(() => {
+    if (settings.defaultTab && defaultsRef.current.tab !== settings.defaultTab) {
+      defaultsRef.current.tab = settings.defaultTab;
+      setTab(settings.defaultTab);
+    }
+  }, [settings.defaultTab]);
+
+  useEffect(() => {
+    if (settings.defaultFocusArea && defaultsRef.current.focus !== settings.defaultFocusArea) {
+      defaultsRef.current.focus = settings.defaultFocusArea;
+      setFocusArea(settings.defaultFocusArea);
+    }
+  }, [settings.defaultFocusArea]);
 
   const setEntries = (updater) => {
     setStore((prev) => {
-      const currentEntries = Array.isArray(prev.entries) ? prev.entries : [];
+      const safePrev = ensureInvestmentDefaults(prev);
+      const currentEntries = Array.isArray(safePrev.entries) ? safePrev.entries : [];
       const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
       const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
-      const currentBanks = Array.isArray(prev.banks) && prev.banks.length ? prev.banks : DEFAULT_BANKS;
-      const currentSources = Array.isArray(prev.sources) && prev.sources.length ? prev.sources : DEFAULT_SOURCES;
+      const currentBanks =
+        Array.isArray(safePrev.banks) && safePrev.banks.length ? safePrev.banks : DEFAULT_BANKS;
+      const currentSources =
+        Array.isArray(safePrev.sources) && safePrev.sources.length
+          ? safePrev.sources
+          : DEFAULT_SOURCES;
       const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
       const mergedSources = mergeSourcesFromEntries(nextEntries, currentSources);
-      return { ...prev, entries: nextEntries, banks: mergedBanks, sources: mergedSources };
+      return {
+        ...safePrev,
+        entries: nextEntries,
+        banks: mergedBanks,
+        sources: mergedSources,
+      };
     });
   };
 
   const setCreatedAt = (value) => {
-    setStore((prev) => ({ ...prev, createdAt: value }));
+    setStore((prev) => {
+      const safePrev = ensureInvestmentDefaults(prev);
+      return { ...safePrev, createdAt: value };
+    });
   };
 
   const setPersonalInfo = (value) => {
-    setStore((prev) => ({ ...prev, personalInfo: { ...value } }));
+    setStore((prev) => {
+      const safePrev = ensureInvestmentDefaults(prev);
+      return { ...safePrev, personalInfo: { ...safePrev.personalInfo, ...(value || {}) } };
+    });
   };
 
   useEffect(() => {
-    if (Array.isArray(store)) {
-      const normalized = store.map(withId);
-      setStore({
-        entries: normalized,
-        banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
-        sources: mergeSourcesFromEntries(normalized, DEFAULT_SOURCES),
-        personalInfo: {},
-        createdAt: new Date().toISOString(),
+    if (Array.isArray(storeState)) {
+      const normalized = storeState.map(withId);
+      setStore((prev) => {
+        const safePrev = ensureInvestmentDefaults(prev);
+        return {
+          ...safePrev,
+          entries: normalized,
+          banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
+          sources: mergeSourcesFromEntries(normalized, DEFAULT_SOURCES),
+          personalInfo: safePrev.personalInfo,
+          settings: safePrev.settings,
+          createdAt: safePrev.createdAt || new Date().toISOString(),
+        };
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -335,6 +373,7 @@ export default function App() {
       banks,
       sources,
       personal_info: personalInfo,
+      settings,
       inputs: [
         {
           summary,
@@ -361,6 +400,11 @@ export default function App() {
       personal_info: {
         fullName: "Nome do Investidor",
         email: "investidor@email.com",
+      },
+      settings: {
+        defaultTab: "dashboard",
+        defaultFocusArea: "investimentos",
+        reportNotes: "",
       },
       inputs: [
         {
@@ -393,12 +437,15 @@ export default function App() {
         const data = JSON.parse(reader.result);
         if (Array.isArray(data)) {
           const normalized = data.map(withId);
-          setStore((prev) => ({
-            ...prev,
-            entries: normalized,
-            banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
-            sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
-          }));
+          setStore((prev) => {
+            const safePrev = ensureInvestmentDefaults(prev);
+            return {
+              ...safePrev,
+              entries: normalized,
+              banks: mergeBanksFromEntries(normalized, safePrev.banks),
+              sources: mergeSourcesFromEntries(normalized, safePrev.sources),
+            };
+          });
           setImportModalOpen(false);
         } else if (data && Array.isArray(data.inputs)) {
           const inputEntries = data.inputs.flatMap((section) => section.entries || []);
@@ -406,22 +453,38 @@ export default function App() {
           const incomingBanks = Array.isArray(data.banks) && data.banks.length ? data.banks : banks;
           const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
           const created = data.created_at || createdAt || new Date().toISOString();
-          setStore({
-            entries: normalized,
-            banks: mergeBanksFromEntries(normalized, incomingBanks),
-            sources: mergeSourcesFromEntries(normalized, incomingSources),
-            personalInfo: data.personal_info || personalInfo,
-            createdAt: created,
+          setStore((prev) => {
+            const safePrev = ensureInvestmentDefaults(prev);
+            const nextPersonal = {
+              ...safePrev.personalInfo,
+              ...(data.personal_info || {}),
+            };
+            const nextSettings = {
+              ...safePrev.settings,
+              ...(data.settings || {}),
+            };
+            return {
+              ...safePrev,
+              entries: normalized,
+              banks: mergeBanksFromEntries(normalized, incomingBanks),
+              sources: mergeSourcesFromEntries(normalized, incomingSources),
+              personalInfo: nextPersonal,
+              settings: nextSettings,
+              createdAt: created,
+            };
           });
           setImportModalOpen(false);
         } else if (data && Array.isArray(data.entries)) {
           const normalized = data.entries.map(withId);
-          setStore((prev) => ({
-            ...prev,
-            entries: normalized,
-            banks: mergeBanksFromEntries(normalized, prev.banks || DEFAULT_BANKS),
-            sources: mergeSourcesFromEntries(normalized, prev.sources || DEFAULT_SOURCES),
-          }));
+          setStore((prev) => {
+            const safePrev = ensureInvestmentDefaults(prev);
+            return {
+              ...safePrev,
+              entries: normalized,
+              banks: mergeBanksFromEntries(normalized, safePrev.banks),
+              sources: mergeSourcesFromEntries(normalized, safePrev.sources),
+            };
+          });
           setImportModalOpen(false);
         } else {
           window.alert(
@@ -438,12 +501,17 @@ export default function App() {
   function loadDemo() {
     if (!entries.length && window.confirm("Carregar dados de exemplo? Você pode apagar depois.")) {
       const normalized = demoEntries.map(withId);
-      setStore({
-        entries: normalized,
-        banks: mergeBanksFromEntries(normalized, demoBanks),
-        sources: mergeSourcesFromEntries(normalized, demoSources),
-        personalInfo,
-        createdAt: demoCreatedAt,
+      setStore((prev) => {
+        const safePrev = ensureInvestmentDefaults(prev);
+        return {
+          ...safePrev,
+          entries: normalized,
+          banks: mergeBanksFromEntries(normalized, demoBanks),
+          sources: mergeSourcesFromEntries(normalized, demoSources),
+          personalInfo: safePrev.personalInfo,
+          settings: safePrev.settings,
+          createdAt: demoCreatedAt,
+        };
       });
     }
   }
@@ -465,6 +533,7 @@ export default function App() {
       })),
       entries: entriesWithIds,
       exportedAt: new Date(),
+      notes: settings.reportNotes,
     });
   }
 
@@ -517,23 +586,30 @@ export default function App() {
                 >
                   Importar
                 </ActionButton>
-                <ActionButton
-                  icon={DocumentArrowDownIcon}
-                  onClick={handleGeneratePdf}
-                  title="Gere um relatório em PDF com seus indicadores atuais"
-                >
-                  Relatório PDF
-                </ActionButton>
-                <ActionButton
-                  icon={UserCircleIcon}
-                  onClick={() => setPersonalModalOpen(true)}
-                  title="Edite os dados pessoais exibidos nos relatórios"
-                >
-                  Dados pessoais
-                </ActionButton>
-              </div>
+              <ActionButton
+                icon={DocumentArrowDownIcon}
+                onClick={handleGeneratePdf}
+                title="Gere um relatório em PDF com seus indicadores atuais"
+              >
+                Relatório PDF
+              </ActionButton>
+              <ActionButton
+                icon={UserCircleIcon}
+                onClick={() => setPersonalModalOpen(true)}
+                title="Edite os dados pessoais exibidos nos relatórios"
+              >
+                Dados pessoais
+              </ActionButton>
+              <Link
+                to="/investimentos/configuracoes"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+              >
+                <SettingsIcon className="h-5 w-5" />
+                Configurações
+              </Link>
             </div>
           </div>
+        </div>
           <Tabs
             tabs={[
               {
