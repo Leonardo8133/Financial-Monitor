@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { CalculatorIcon, CurrencyDollarIcon, CalendarIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 import { fmtBRL } from "../../utils/formatters.js";
+import { CurrencyInput } from "../../components/CurrencyInput.jsx";
 
 export function FinancingCalculator() {
   const [formData, setFormData] = useState({
@@ -10,11 +11,7 @@ export function FinancingCalculator() {
     termMonths: 0,
   });
 
-  function formatCurrency(value) {
-    if (!value || value === '0') return 'R$ 0,00';
-    const numValue = Number(value);
-    return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
+  
 
   const [results, setResults] = useState(null);
 
@@ -68,7 +65,7 @@ export function FinancingCalculator() {
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [field]: parseFloat(value) || 0
+      [field]: Number(value) || 0
     }));
   };
 
@@ -94,15 +91,10 @@ export function FinancingCalculator() {
                   ?
                 </button>
               </label>
-              <input
-                type="text"
-                value={formatCurrency(formData.principal)}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
-                  handleInputChange('principal', value || '0');
-                }}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Ex: R$ 100.000,00"
+              <CurrencyInput
+                value={formData.principal}
+                onChange={(num) => handleInputChange('principal', num)}
+                className=""
               />
             </div>
 
@@ -118,15 +110,9 @@ export function FinancingCalculator() {
                   ?
                 </button>
               </label>
-              <input
-                type="text"
-                value={formatCurrency(formData.monthlyPayment)}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
-                  handleInputChange('monthlyPayment', value || '0');
-                }}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Ex: R$ 1.500,00"
+              <CurrencyInput
+                value={formData.monthlyPayment}
+                onChange={(num) => handleInputChange('monthlyPayment', num)}
               />
             </div>
           </div>

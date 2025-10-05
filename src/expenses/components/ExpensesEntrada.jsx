@@ -1,4 +1,5 @@
 import { Field } from "../../components/Field.jsx";
+import { CurrencyInput } from "../../components/CurrencyInput.jsx";
 import { useState } from "react";
 import { Uploader } from "./Uploader.jsx";
 import { ensureExpensesDefaults } from "../config/storage.js";
@@ -7,11 +8,7 @@ export function ExpensesEntrada({ drafts, setDrafts, onSubmit, categories, sourc
   const categoryOptionsId = "category-options";
   const sourceOptionsId = "source-options";
 
-  function formatCurrency(value) {
-    if (!value || value === '0') return 'R$ 0,00';
-    const numValue = Number(value);
-    return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
+  
 
   function updateRow(id, name, value) {
     setDrafts((prev) => prev.map((row) => (row.id === id && !row.locked ? { ...row, [name]: value } : row)));
@@ -113,15 +110,10 @@ export function ExpensesEntrada({ drafts, setDrafts, onSubmit, categories, sourc
                 <input type="text" list={sourceOptionsId} placeholder="ex.: Pessoal" value={row.source} disabled={row.locked} onChange={(e) => updateRow(row.id, "source", e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" />
               </Field>
               <Field className="w-full sm:w-40" label="Valor (R$)" helpText="Valor da despesa em reais; use decimais com vírgula ou ponto">
-                <input 
-                  type="text" 
-                  value={formatCurrency(row.value)} 
-                  disabled={row.locked} 
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
-                    updateRow(row.id, "value", value || '0');
-                  }} 
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100" 
+                <CurrencyInput
+                  value={Number(row.value) || 0}
+                  disabled={row.locked}
+                  onChange={(num) => updateRow(row.id, "value", num)}
                 />
               </Field>
             </div>

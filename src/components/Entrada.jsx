@@ -1,16 +1,13 @@
 import { createDraftEntry } from "../utils/entries.js";
 import { Field } from "./Field.jsx";
+import { CurrencyInput } from "./CurrencyInput.jsx";
 
 export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
   const bankOptionsId = "bank-options";
   const sourceOptionsId = "source-options";
   const sourceLibrary = Array.isArray(sources) ? sources : [];
 
-  function formatCurrency(value) {
-    if (!value || value === '0') return 'R$ 0,00';
-    const numValue = Number(value);
-    return `R$ ${numValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
+  
 
   function updateRow(id, name, value) {
     setDrafts((prev) =>
@@ -149,41 +146,25 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                 />
               </Field>
               <Field className="md:col-span-2" label="Conta (R$)" helpText="Valor que fica na conta corrente">
-                <input
-                  type="text"
-                  value={formatCurrency(row.inAccount)}
+                <CurrencyInput
+                  value={Number(row.inAccount) || 0}
                   disabled={row.locked}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
-                    updateRow(row.id, "inAccount", value || '0');
-                  }}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  onChange={(num) => updateRow(row.id, "inAccount", num)}
                 />
               </Field>
               <Field className="md:col-span-2" label="Investido (R$)" helpText="Aporte do mês que vai para investimentos; use 0 se não houve">
-                <input
-                  type="text"
-                  value={formatCurrency(row.invested)}
+                <CurrencyInput
+                  value={Number(row.invested) || 0}
                   disabled={row.locked}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
-                    updateRow(row.id, "invested", value || '0');
-                  }}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  onChange={(num) => updateRow(row.id, "invested", num)}
                 />
               </Field>
               <Field className="md:col-span-2" label="Fluxo (R$)" helpText="Positivo para entradas (depósitos), negativo para saídas (retiradas). Afeta o gráfico de fluxo.">
-                <input
-                  type="text"
-                  className={`w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 ${
-                    row.locked ? "bg-slate-100" : ""
-                  }`}
-                  value={formatCurrency(row.cashFlow)}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
-                    updateRow(row.id, "cashFlow", value || '0');
-                  }}
+                <CurrencyInput
+                  value={Number(row.cashFlow) || 0}
+                  allowNegative
                   disabled={row.locked}
+                  onChange={(num) => updateRow(row.id, "cashFlow", num)}
                 />
               </Field>
             </div>
