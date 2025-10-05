@@ -17,6 +17,17 @@ import {
 import { fmtBRL } from "../utils/formatters.js";
 import { resolveSourceVisual } from "../config/sources.js";
 
+// Função para formatar valores em K
+const formatValueInK = (value) => {
+  if (value === 0) return "0";
+  const absValue = Math.abs(value);
+  if (absValue >= 1000) {
+    const kValue = (value / 1000).toFixed(1);
+    return kValue.endsWith('.0') ? kValue.slice(0, -2) + 'k' : kValue + 'k';
+  }
+  return value.toString();
+};
+
 export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
   const safeMonthly = Array.isArray(monthly) ? monthly : [];
 
@@ -29,6 +40,47 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
 
   const domain = safeMonthly.length ? ["dataMin", "dataMax"] : [0, 1];
 
+  // Preparar dados do fluxo por fonte
+  const flowChartBySource = safeMonthly.map((m) => {
+    const row = { ts: m.midDateValue, label: m.label };
+    const monthlySources = new Map(
+      (Array.isArray(m.sources) ? m.sources : []).map((source) => [source.name, source.invested])
+    );
+    
+    // Calcular fluxo líquido por fonte (entrada - saída)
+    uniqueSourceNames.forEach((name) => {
+      const sourceValue = monthlySources.get(name) ?? 0;
+      row[name] = sourceValue; // Valor absoluto do fluxo por fonte
+    });
+    
+    return row;
+  });
+  const hasFlowData = flowChartBySource.some((row) => 
+    uniqueSourceNames.some(name => row[name] !== 0)
+  );
+
+  // Preparar dados do rendimento mensal por fonte
+  const yieldChartBySource = safeMonthly.map((m) => {
+    const row = { ts: m.midDateValue, label: m.label };
+    const monthlySources = new Map(
+      (Array.isArray(m.sources) ? m.sources : []).map((source) => [source.name, source.invested])
+    );
+    
+    // Calcular rendimento mensal por fonte (assumindo que o yieldValue é proporcional ao investido)
+    const totalInvested = m.invested || 1; // Evitar divisão por zero
+    const yieldPct = m.yieldPct || 0;
+    
+    uniqueSourceNames.forEach((name) => {
+      const sourceInvested = monthlySources.get(name) ?? 0;
+      const sourceYield = sourceInvested * yieldPct;
+      row[name] = sourceYield;
+    });
+    
+    return row;
+  });
+  const hasYieldData = yieldChartBySource.some((row) => 
+    uniqueSourceNames.some(name => row[name] !== 0)
+  );
   const formatShortK = (value) => {
     const numeric = Number(value) || 0;
     const abs = Math.abs(numeric);
@@ -124,24 +176,44 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <div className="rounded-2xl bg-white p-4 shadow">
-        <h3 className="mb-2 text-sm font-semibold">Fluxo líquido por fonte ao longo do tempo</h3>
+        <h3 className="mb-2 text-sm font-semibold">Fluxo por fonte ao longo do tempo</h3>
         <div className="h-72">
           {hasFlowData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={perSourceNet}>
+              <AreaChart data={flowChartBySource}>
+                <defs>
+                  {uniqueSourceNames.map((name, index) => {
+                    const gradientId = `flow-source-${index}`;
+                    const color = colorBySource.get(name);
+                    return (
+                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+                      </linearGradient>
+                    );
+                  })}
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={formatShortK} />
+                <YAxis tickFormatter={(value) => formatValueInK(value)} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
-                {uniqueSourceNames.map((name) => (
-                  <Line key={name} type="monotone" dataKey={name} name={name} stroke={colorBySource.get(name)} strokeWidth={2} dot={false} />
+                {uniqueSourceNames.map((name, index) => (
+                  <Area
+                    key={name}
+                    type="monotone"
+                    dataKey={name}
+                    name={name}
+                    stroke={colorBySource.get(name)}
+                    fill={`url(#flow-source-${index})`}
+                    strokeWidth={2}
+                  />
                 ))}
-              </ComposedChart>
+              </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-              Adicione lançamentos com entradas ou saídas para visualizar este gráfico.
+              Adicione lançamentos com fontes para visualizar este gráfico.
             </div>
           )}
         </div>
@@ -152,16 +224,36 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
         <div className="h-72">
           {hasYieldData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={yieldChart}>
+              <AreaChart data={yieldChartBySource}>
+                <defs>
+                  {uniqueSourceNames.map((name, index) => {
+                    const gradientId = `yield-source-${index}`;
+                    const color = colorBySource.get(name);
+                    return (
+                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
+                      </linearGradient>
+                    );
+                  })}
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={formatShortK} width={70} />
+                <YAxis tickFormatter={(value) => formatValueInK(value)} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
-                {uniqueSourceNames.map((name) => (
-                  <Bar key={name} dataKey={name} name={name} fill={colorBySource.get(name)} />
+                {uniqueSourceNames.map((name, index) => (
+                  <Area
+                    key={name}
+                    type="monotone"
+                    dataKey={name}
+                    name={name}
+                    stroke={colorBySource.get(name)}
+                    fill={`url(#yield-source-${index})`}
+                    strokeWidth={2}
+                  />
                 ))}
-              </ComposedChart>
+              </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
@@ -195,7 +287,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={formatShortK} />
+                <YAxis tickFormatter={(value) => formatValueInK(value)} />
                 <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
                 <Legend />
                 <Area
