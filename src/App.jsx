@@ -6,7 +6,7 @@ import { Historico } from "./components/Historico.jsx";
 import { KPICard } from "./components/KPICard.jsx";
 import { Tabs } from "./components/Tab.jsx";
 import { ActionButton } from "./components/ActionButton.jsx";
-import { PersonalInfoModal } from "./components/PersonalInfoModal.jsx";
+import { BackToHomeButton } from "./components/BackToHomeButton.jsx";
 import { ImportModal } from "./components/ImportModal.jsx";
 import { Projecoes } from "./components/Projecoes.jsx";
 // import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
@@ -18,7 +18,6 @@ import {
   PlusIcon,
   DocumentArrowDownIcon,
   TrendingUpIcon,
-  UserCircleIcon,
   SettingsIcon,
 } from "./components/icons.jsx";
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
@@ -71,7 +70,6 @@ export default function App() {
 
   const [tab, setTab] = useState(getCurrentTab());
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
-  const [personalModalOpen, setPersonalModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [focusArea, setFocusArea] = useState(settings.defaultFocusArea || "investimentos");
   const defaultsRef = useRef({
@@ -126,13 +124,6 @@ export default function App() {
     setStore((prev) => {
       const safePrev = ensureInvestmentDefaults(prev);
       return { ...safePrev, createdAt: value };
-    });
-  };
-
-  const setPersonalInfo = (value) => {
-    setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      return { ...safePrev, personalInfo: { ...safePrev.personalInfo, ...(value || {}) } };
     });
   };
 
@@ -563,6 +554,7 @@ export default function App() {
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 space-y-4">
+          <BackToHomeButton />
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
@@ -608,30 +600,23 @@ export default function App() {
                 >
                   Importar
                 </ActionButton>
-              <ActionButton
-                icon={DocumentArrowDownIcon}
-                onClick={handleGeneratePdf}
-                title="Gere um relatório em PDF com seus indicadores atuais"
-              >
-                Relatório PDF
-              </ActionButton>
-              <ActionButton
-                icon={UserCircleIcon}
-                onClick={() => setPersonalModalOpen(true)}
-                title="Edite os dados pessoais exibidos nos relatórios"
-              >
-                Dados pessoais
-              </ActionButton>
-              <Link
-                to="/investimentos/configuracoes"
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-              >
-                <SettingsIcon className="h-5 w-5" />
-                Configurações
-              </Link>
+                <ActionButton
+                  icon={DocumentArrowDownIcon}
+                  onClick={handleGeneratePdf}
+                  title="Gere um relatório em PDF com seus indicadores atuais"
+                >
+                  Relatório PDF
+                </ActionButton>
+                <Link
+                  to="/investimentos/configuracoes"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  <SettingsIcon className="h-5 w-5" />
+                  Configurações
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
           <Tabs
             tabs={[
               {
@@ -740,12 +725,6 @@ export default function App() {
         onClose={() => setImportModalOpen(false)}
         onImport={importJsonFile}
         onDownloadTemplate={downloadTemplate}
-      />
-      <PersonalInfoModal
-        open={personalModalOpen}
-        onClose={() => setPersonalModalOpen(false)}
-        initialValue={personalInfo}
-        onSave={setPersonalInfo}
       />
     </div>
   );
