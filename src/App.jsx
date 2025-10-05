@@ -41,6 +41,7 @@ import {
 import { DEFAULT_BANKS, ensureBankInLibrary } from "./config/banks.js";
 import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
 import { createPdfReport } from "./utils/pdf.js";
+import { Link } from "react-router-dom";
 
 const STORAGE_SEED = {
   entries: [],
@@ -63,6 +64,7 @@ export default function App() {
   const [personalModalOpen, setPersonalModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [focusArea, setFocusArea] = useState("investimentos");
+  const fileRef = useRef(null);
 
   const setEntries = (updater) => {
     setStore((prev) => {
