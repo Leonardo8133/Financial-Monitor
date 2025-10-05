@@ -20,7 +20,6 @@ const router = createBrowserRouter([
       { path: "investimentos/configuracoes", element: <InvestmentSettings /> },
       { path: "gastos", element: <ExpensesApp /> },
       { path: "gastos/configuracoes", element: <ExpensesSettings /> },
-      { path: "gastos/financiamentos", element: <ExpensesApp /> },
       { path: "*", element: <ErrorPage /> },
     ],
   },

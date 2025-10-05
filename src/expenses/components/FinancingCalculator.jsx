@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { CalculatorIcon, CurrencyDollarIcon, CalendarIcon, PercentIcon } from "@heroicons/react/24/outline";
+import { CalculatorIcon, CurrencyDollarIcon, CalendarIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 import { fmtBRL } from "../../utils/formatters.js";
 
 export function FinancingCalculator() {
@@ -108,7 +108,7 @@ export function FinancingCalculator() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                <PercentIcon className="inline h-4 w-4 mr-1" />
+                <ChartBarIcon className="inline h-4 w-4 mr-1" />
                 Taxa de Juros Anual (%)
               </label>
               <input
