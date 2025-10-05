@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
@@ -49,6 +50,8 @@ import { createPdfReport } from "./utils/pdf.js";
 import { Link } from "react-router-dom";
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [storeState, setStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
   const store = ensureInvestmentDefaults(storeState);
   const entries = store.entries;
@@ -58,7 +61,15 @@ export default function App() {
   const settings = store.settings;
   const createdAt = store.createdAt;
 
-  const [tab, setTab] = useState(settings.defaultTab || "dashboard");
+  // Determinar a aba ativa baseada na URL
+  const getCurrentTab = () => {
+    const path = location.pathname;
+    if (path.includes('/investimentos/configuracoes')) return 'configuracoes';
+    if (path.includes('/investimentos')) return 'dashboard';
+    return 'dashboard';
+  };
+
+  const [tab, setTab] = useState(getCurrentTab());
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
   const [personalModalOpen, setPersonalModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -82,6 +93,11 @@ export default function App() {
       setFocusArea(settings.defaultFocusArea);
     }
   }, [settings.defaultFocusArea]);
+
+  // Atualizar aba quando a URL mudar
+  useEffect(() => {
+    setTab(getCurrentTab());
+  }, [location.pathname]);
 
   const setEntries = (updater) => {
     setStore((prev) => {
@@ -348,6 +364,24 @@ export default function App() {
     },
   ];
 
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    if (newTab === 'configuracoes') {
+      navigate('/investimentos/configuracoes');
+    } else {
+      navigate('/investimentos');
+    }
+  };
+
+  const handleFocusChange = (newFocus) => {
+    setFocusArea(newFocus);
+    if (newFocus === 'gastos') {
+      navigate('/gastos');
+    } else {
+      navigate('/investimentos');
+    }
+  };
+
   function handleSubmitDrafts(rows) {
     const prepared = rows
       .filter((row) => row.bank && row.date)
@@ -540,7 +574,7 @@ export default function App() {
                       <button
                         key={option.key}
                         type="button"
-                        onClick={() => setFocusArea(option.key)}
+                        onClick={() => handleFocusChange(option.key)}
                         className={`rounded-full px-3 py-1 transition ${
                           active ? "bg-slate-900 text-white shadow" : "hover:bg-slate-100"
                         }`}
@@ -626,7 +660,7 @@ export default function App() {
               },
             ]}
             activeTab={tab}
-            onChange={setTab}
+            onChange={handleTabChange}
           />
         </header>
 
