@@ -7,6 +7,7 @@ import { Tabs } from "./components/Tab.jsx";
 import { ActionButton } from "./components/ActionButton.jsx";
 import { PersonalInfoModal } from "./components/PersonalInfoModal.jsx";
 import { ImportModal } from "./components/ImportModal.jsx";
+import { Projecoes } from "./components/Projecoes.jsx";
 import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
@@ -15,6 +16,7 @@ import {
   TableCellsIcon,
   PlusIcon,
   DocumentArrowDownIcon,
+  TrendingUpIcon,
   UserCircleIcon,
 } from "./components/icons.jsx";
 import { useLocalStorageState } from "./hooks/useLocalStorageState.js";
@@ -226,6 +228,71 @@ export default function App() {
   }, [derivedEntries]);
 
   const lastMonth = timeline.at(-1);
+  const lastMonthSources = useMemo(() => {
+    if (!lastMonth || !Array.isArray(lastMonth.sources)) return [];
+    const totalMonthInvested = lastMonth.sources.reduce(
+      (acc, item) => acc + (item?.invested ?? 0),
+      0
+    );
+    return lastMonth.sources
+      .filter((item) => (item?.invested ?? 0) > 0)
+      .map((item) => ({
+        name: item.name || "Outros",
+        invested: item.invested ?? 0,
+        percentage: totalMonthInvested
+          ? Math.round(((item.invested ?? 0) / totalMonthInvested) * 100)
+          : null,
+      }))
+      .sort((a, b) => (b.invested ?? 0) - (a.invested ?? 0));
+  }, [lastMonth]);
+  const hoverSourceDetails = lastMonthSources.length ? lastMonthSources : sourceSummary;
+
+  const averageMonthlyInvested = useMemo(() => {
+    if (!timeline.length) return 0;
+    const positiveMonths = timeline
+      .map((month) => month.invested ?? 0)
+      .filter((value) => value > 0);
+    if (!positiveMonths.length) return 0;
+    const sum = positiveMonths.reduce((acc, value) => acc + value, 0);
+    return sum / positiveMonths.length;
+  }, [timeline]);
+
+  const averageMonthlyYield = useMemo(() => {
+    if (!timeline.length) return null;
+    const validYields = timeline
+      .map((month) =>
+        month.yieldPct !== null && month.yieldPct !== undefined ? month.yieldPct : null
+      )
+      .filter((value) => value !== null && Number.isFinite(value));
+    if (!validYields.length) return null;
+    const sum = validYields.reduce((acc, value) => acc + value, 0);
+    return sum / validYields.length;
+  }, [timeline]);
+
+  const projectionDefaults = useMemo(
+    () => ({
+      initialBalance: totals.total_invested ?? 0,
+      monthlyContribution:
+        averageMonthlyInvested > 0
+          ? averageMonthlyInvested
+          : Math.max(lastMonth?.invested ?? 0, 0),
+      monthlyReturn: averageMonthlyYield ?? 0.005,
+      historicalMonthlyReturn: averageMonthlyYield,
+      inflationRate: 0.04,
+      contributionGrowth: 0.02,
+      goalAmount:
+        totals.total_invested && totals.total_invested > 0
+          ? totals.total_invested * 2
+          : Math.max(lastMonth?.invested ?? 0, 25000),
+    }),
+    [
+      averageMonthlyInvested,
+      averageMonthlyYield,
+      lastMonth?.invested,
+      totals.total_invested,
+    ]
+  );
+
   const focusOptions = [
     {
       key: "investimentos",
@@ -487,25 +554,25 @@ export default function App() {
                 icon: <PlusIcon className="h-5 w-5" />,
                 tooltip: 'Adicionar um novo conjunto de valores',
               },
+              {
+                key: 'projecoes',
+                label: 'Projeções',
+                icon: <TrendingUpIcon className="h-5 w-5" />,
+                tooltip: 'Simule cenários futuros considerando aportes e rentabilidade média',
+              },
             ]}
             activeTab={tab}
             onChange={setTab}
           />
         </header>
 
-        <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <KPICard
-            title="Total Investido"
-            value={fmtBRL(totals.total_invested)}
-            subtitle="Soma atual de 'Valor em Investimentos'"
-            hoverDetails={sourceSummary}
-            tooltip="Soma de todos os valores preenchidos em 'Valor em Investimentos' nos lançamentos"
-          />
+        <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard
             title="Investido último mês"
             value={fmtBRL(lastMonth?.invested ?? 0)}
             subtitle={lastMonth ? `Referente a ${lastMonth.label}` : "Sem dados do mês"}
-            tooltip="Total investido registrado no mês selecionado"
+            hoverDetails={hoverSourceDetails}
+            tooltip="Soma dos aportes registrados no mês selecionado; passe o mouse para ver o detalhe por fonte"
           />
           <KPICard
             title="Rendimento último mês"
@@ -563,6 +630,10 @@ export default function App() {
 
         {tab === "entrada" && (
           <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} sources={sources} />
+        )}
+
+        {tab === "projecoes" && (
+          <Projecoes timeline={timeline} defaults={projectionDefaults} />
         )}
 
         <footer className="mt-10 text-center text-xs text-slate-500">

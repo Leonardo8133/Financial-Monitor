@@ -107,22 +107,6 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
   const flowInGradientId = "flow-in-gradient";
   const flowOutGradientId = "flow-out-gradient";
 
-  const sourceLibrary = Array.isArray(sources) ? sources : [];
-  const sourceChart = Array.isArray(sourceSummary)
-    ? sourceSummary
-        .filter((item) => item.invested > 0)
-        .map((item) => {
-          const visual = resolveSourceVisual(item.name, sourceLibrary);
-          return {
-            name: item.name,
-            value: item.invested,
-            percentage: item.percentage,
-            color: visual.color,
-          };
-        })
-    : [];
-  const hasSourceData = sourceChart.length > 0;
-
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <div className="rounded-2xl bg-white p-4 shadow">

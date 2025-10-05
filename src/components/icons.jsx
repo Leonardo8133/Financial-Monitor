@@ -107,3 +107,13 @@ export function UserCircleIcon(props) {
     </Icon>
   );
 }
+
+export function TrendingUpIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4 19h16" />
+      <path d="M4 11l5 5 4-4 5 5 2-2" />
+      <path d="M14 7h6v6" />
+    </Icon>
+  );
+}
