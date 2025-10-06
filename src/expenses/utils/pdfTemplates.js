@@ -80,7 +80,11 @@ export function detectExpenseTemplate(text) {
 export function parseExpensePdfWithTemplates(text) {
   const tpl = detectExpenseTemplate(text);
   if (!tpl) return null;
-  try { return { templateId: tpl.id, items: tpl.parse(text) }; } catch { return null; }
+  try {
+    return { templateId: tpl.id, templateName: tpl.displayName, items: tpl.parse(text) };
+  } catch {
+    return null;
+  }
 }
 
 

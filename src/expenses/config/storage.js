@@ -1,5 +1,6 @@
 import { DEFAULT_CATEGORIES } from "./categories.js";
 import { DEFAULT_SOURCES } from "./sources.js";
+import { DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS, mergeDescriptionMappings } from "./descriptionMappings.js";
 
 export const EXPENSES_LS_KEY = "financial-monitor-expenses-v1";
 
@@ -7,6 +8,7 @@ export const EXPENSES_STORAGE_SEED = {
   expenses: [],
   categories: DEFAULT_CATEGORIES,
   sources: DEFAULT_SOURCES,
+  descriptionCategoryMappings: DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
   personalInfo: {
     fullName: "",
     email: "",
@@ -21,6 +23,10 @@ export const EXPENSES_STORAGE_SEED = {
 };
 
 export function ensureExpensesDefaults(store = {}) {
+  const mergedMappings = mergeDescriptionMappings(
+    DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
+    Array.isArray(store?.descriptionCategoryMappings) ? store.descriptionCategoryMappings : []
+  );
   return {
     ...EXPENSES_STORAGE_SEED,
     ...store,
@@ -33,6 +39,7 @@ export function ensureExpensesDefaults(store = {}) {
       Array.isArray(store?.sources) && store.sources.length
         ? store.sources
         : EXPENSES_STORAGE_SEED.sources,
+    descriptionCategoryMappings: mergedMappings,
     personalInfo: { ...EXPENSES_STORAGE_SEED.personalInfo, ...(store?.personalInfo || {}) },
     settings: { ...EXPENSES_STORAGE_SEED.settings, ...(store?.settings || {}) },
     createdAt: store?.createdAt || EXPENSES_STORAGE_SEED.createdAt,
