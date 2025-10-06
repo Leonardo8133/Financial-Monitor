@@ -224,6 +224,7 @@ export default function ExpensesApp() {
     download(`export-gastos-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
   }
 
+
   function validateExpensesPayload(data) {
     const errors = [];
     let items = [];

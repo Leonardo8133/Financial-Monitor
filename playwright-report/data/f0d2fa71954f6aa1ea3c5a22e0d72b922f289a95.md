@@ -1,0 +1,59 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - link "Voltar para a página principal" [ref=e6] [cursor=pointer]:
+      - /url: /Financial-Monitor
+      - img [ref=e7] [cursor=pointer]
+      - generic [ref=e9] [cursor=pointer]: Início
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - heading "Controle de Gastos" [level=1] [ref=e13]
+          - generic [ref=e14]:
+            - button "Investimentos" [ref=e15] [cursor=pointer]
+            - button "Gastos" [pressed] [ref=e16] [cursor=pointer]
+        - paragraph [ref=e17]: Suba arquivos (CSV/XLSX/PDF), categorize e acompanhe seus gastos por mês. Seus dados ficam no navegador.
+      - generic [ref=e19]:
+        - button "Exportar" [ref=e20] [cursor=pointer]:
+          - img [ref=e21] [cursor=pointer]
+          - text: Exportar
+        - button "Importar" [ref=e23] [cursor=pointer]:
+          - img [ref=e24] [cursor=pointer]
+          - text: Importar
+        - link "Configurações" [ref=e26] [cursor=pointer]:
+          - /url: /Financial-Monitor/gastos/configuracoes
+          - img [ref=e27] [cursor=pointer]
+          - text: Configurações
+    - generic [ref=e31]:
+      - button "Dashboard" [pressed] [ref=e32] [cursor=pointer]:
+        - img [ref=e33] [cursor=pointer]
+        - text: Dashboard
+      - button "Histórico" [ref=e34] [cursor=pointer]:
+        - img [ref=e35] [cursor=pointer]
+        - text: Histórico
+      - button "Nova Despesa" [active] [ref=e37] [cursor=pointer]:
+        - img [ref=e38] [cursor=pointer]
+        - text: Nova Despesa
+      - button "Financiamentos" [ref=e39] [cursor=pointer]:
+        - img [ref=e40] [cursor=pointer]
+        - text: Financiamentos
+  - generic [ref=e42]:
+    - generic [ref=e43]:
+      - heading "Gasto total por mês" [level=3] [ref=e44]
+      - generic [ref=e47]:
+        - img [ref=e48]
+        - list [ref=e50]:
+          - listitem [ref=e51]:
+            - img [ref=e52]
+            - generic [ref=e54]: Total
+    - generic [ref=e55]:
+      - heading "Distribuição por categoria (mês mais recente)" [level=3] [ref=e56]
+      - img [ref=e60]
+    - generic [ref=e61]:
+      - heading "Total acumulado" [level=3] [ref=e62]
+      - generic [ref=e63]: R$ 0,00
+  - contentinfo [ref=e64]:
+    - paragraph [ref=e65]: Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.
+```

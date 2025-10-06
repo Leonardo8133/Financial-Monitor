@@ -46,7 +46,6 @@ import {
   ensureInvestmentDefaults,
   INVESTMENT_STORAGE_SEED,
 } from "./config/investmentStorage.js";
-import { exportVisualPdfReport } from "./utils/pdf.js";
 import { Link } from "react-router-dom";
 
 export default function App() {
@@ -531,18 +530,6 @@ export default function App() {
     }
   }
 
-  function handleGeneratePdf() {
-    exportVisualPdfReport({
-      personalInfo,
-      totals,
-      sources,
-      timeline,
-      sourceSummary,
-      entries: entriesWithIds,
-      exportedAt: new Date(),
-      notes: settings.reportNotes,
-    });
-  }
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
@@ -594,13 +581,6 @@ export default function App() {
                 >
                   Importar
                 </ActionButton>
-                <ActionButton
-                  icon={DocumentArrowDownIcon}
-                  onClick={handleGeneratePdf}
-                  title="Gere um relatório em PDF com seus indicadores atuais"
-                >
-                  Relatório PDF
-                </ActionButton>
                 <Link
                   to="/investimentos/configuracoes"
                   className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
@@ -645,7 +625,7 @@ export default function App() {
 
         <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard
-            title="Investido último mês"
+            title="Total de Investimentos"
             value={fmtBRL(lastMonth?.invested ?? 0)}
             subtitle={lastMonth ? `Referente a ${lastMonth.label}` : "Sem dados do mês"}
             hoverDetails={hoverSourceDetails}

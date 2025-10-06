@@ -199,7 +199,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
         goal: Math.max(readNumber(form.goalAmount, 0), 0),
         goalMonths: null,
         monthlyContributionStart: contribution,
-        passiveIncomeMonthly: balance * withdrawalRate / 12,
+        passiveIncomeMonthly: goal > 0 && balance >= goal ? goal * withdrawalRate / 12 : balance * withdrawalRate / 12,
         withdrawalRate,
       };
     }
@@ -209,10 +209,12 @@ export function Projecoes({ timeline = [], defaults = {} }) {
       contributionTotal += contribution;
       balance *= 1 + monthlyRate;
       if (month === horizon || month % 12 === 0) {
+        const monthlyYield = balance * monthlyRate;
         checkpoints.push({
           month,
           balance,
           contributionTotal,
+          monthlyYield,
         });
       }
       if (month < horizon) {
@@ -242,7 +244,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
       }
     }
 
-    const passiveIncomeMonthly = balance * withdrawalRate / 12;
+    const passiveIncomeMonthly = goal > 0 && balance >= goal ? goal * withdrawalRate / 12 : balance * withdrawalRate / 12;
 
     return {
       horizon,
@@ -298,7 +300,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   })
                 }
                 placeholder="0,00"
-                inputClassName="px-6 py-1 text-xs"
+                inputClassName="px-2 py-1 text-xs"
               />
             </label>
 
@@ -316,7 +318,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   })
                 }
                 placeholder="0,00"
-                inputClassName="px-6 py-1 text-xs"
+                inputClassName="px-2 py-1 text-xs"
               />
               {trailingStats.monthsConsidered > 0 && (
                 <span className="text-xs text-slate-500">
@@ -334,7 +336,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                 type="number"
                 min="1"
                 max="600"
-                step="1"
+                step="6"
                 value={form.horizonMonths}
                 onChange={(event) =>
                   setForm((prev) => ({
@@ -342,7 +344,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                     horizonMonths: Math.max(Math.floor(readNumber(event.target.value, prev.horizonMonths) || 1), 1),
                   }))
                 }
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-xl border border-slate-200 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
               />
             </label>
 
@@ -360,7 +362,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   })
                 }
                 placeholder="0,00"
-                inputClassName="px-6 py-1 text-xs"
+                inputClassName="px-2 py-1 text-xs"
               />
             </label>
 
@@ -381,7 +383,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                     return { ...prev, monthlyReturnPct: withPrecision(nextValue, 2, prev.monthlyReturnPct) };
                   })
                 }
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
               {trailingStats.monthsConsidered > 0 && (
                 <span className="text-xs text-slate-500">
@@ -416,12 +418,12 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                     return { ...prev, inflationPct: withPrecision(nextValue, 2, prev.inflationPct) };
                   })
                 }
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
 
             <label
-              className="flex min-w-0 flex-col gap-1 text-sm"
+              className="flex min-w-0 flex-col gap-1 text-xs"
               title="Crescimento esperado dos aportes ano a ano, útil para reajustes salariais"
             >
               Crescimento anual dos aportes (%)
@@ -437,17 +439,17 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                     return { ...prev, contributionGrowthPct: withPrecision(nextValue, 2, prev.contributionGrowthPct) };
                   })
                 }
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </label>
 
             
 
             <label
-              className="flex min-w-0 flex-col gap-1 text-sm"
-              title="Taxa de retirada segura usada para estimar renda passiva futura"
+              className="flex min-w-0 flex-col gap-1 text-xs"
+              title="Taxa de retirada mensal segura após atingir a meta financeira para gerar renda passiva"
             >
-              Taxa de retirada anual (%)
+              Taxa de retirada mensal após a meta
               <input
                 type="number"
                 min="0"
@@ -519,9 +521,21 @@ export function Projecoes({ timeline = [], defaults = {} }) {
           ) : (
             <p className="mt-2 text-sm text-slate-600">Defina uma meta para avaliar o tempo estimado de alcance.</p>
           )}
-          <p className="mt-4 text-xs text-slate-500" title="Estimativa de renda passiva usando a taxa de retirada anual informada">
-            Renda passiva mensal estimada: {fmtBRL(projection.passiveIncomeMonthly)} ({fmtPct(projection.withdrawalRate)} ao ano sobre o patrimônio ajustado).
-          </p>
+          
+          <div className="mt-4 space-y-2">
+            <p className="text-xs text-slate-500" title="Estimativa de renda passiva usando a taxa de retirada mensal após atingir a meta">
+              <span className="font-semibold">Renda passiva mensal após a meta:</span> {fmtBRL(projection.passiveIncomeMonthly)}
+            </p>
+            <p className="text-xs text-slate-500">
+              {projection.goal > 0 && projection.nominalBalance >= projection.goal 
+                ? `Baseado na meta de ${fmtBRL(projection.goal)} com taxa de ${fmtPct(projection.withdrawalRate)}/mês`
+                : `Baseado no patrimônio atual de ${fmtBRL(projection.nominalBalance)} com taxa de ${fmtPct(projection.withdrawalRate)}/mês`
+              }
+            </p>
+            <p className="text-xs text-slate-400 italic">
+              💡 A renda passiva representa o valor que você pode retirar mensalmente sem comprometer o crescimento do patrimônio a longo prazo.
+            </p>
+          </div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -544,6 +558,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
                   <span className="text-right">
                     <span className="block font-semibold text-slate-900">{fmtBRL(checkpoint.balance)}</span>
                     <span className="block text-xs text-slate-500">Aportes acumulados: {fmtBRL(checkpoint.contributionTotal)}</span>
+                    <span className="block text-xs text-blue-600">Rendimento mensal: {fmtBRL(checkpoint.monthlyYield)}</span>
                   </span>
                 </li>
               ))}

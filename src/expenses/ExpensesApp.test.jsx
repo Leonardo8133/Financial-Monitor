@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import ExpensesApp from "./ExpensesApp.jsx";
+import { detectExpenseTemplate, parseExpensePdfWithTemplates } from "./utils/pdfTemplates.js";
 import { MemoryRouter } from "react-router-dom";
 
 // Basic smoke tests for main tabs and import/export controls
@@ -28,5 +29,14 @@ describe("ExpensesApp", () => {
     fireEvent.click(screen.getByRole('button', { name: /Importar/ }));
     // Modal mounts; verify presence by dialog role
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+
+  it("detects a known PDF template from text", () => {
+    const sample = "Nubank Resumo da fatura 01/02 Supermercado R$ 123,45";
+    const tpl = detectExpenseTemplate(sample);
+    expect(tpl).not.toBeNull();
+    const res = parseExpensePdfWithTemplates(sample);
+    expect(Array.isArray(res.items)).toBe(true);
   });
 });

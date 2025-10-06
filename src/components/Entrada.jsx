@@ -182,8 +182,8 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-12" title="Preencha a data do lançamento; use dias do mês para agrupar corretamente">
-              <Field className="md:col-span-2" label="Data" helpText="Data do lançamento; use dias do mês para agrupar corretamente">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-8" title="Preencha a data do lançamento; use dias do mês para agrupar corretamente">
+              <Field className="md:col-span-1" label="Data" helpText="Data do lançamento; use dias do mês para agrupar corretamente">
                 <input
                   type="date"
                   required={!row.locked}
@@ -210,21 +210,21 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   onChange={(e) => updateRow(row.id, "source", e.target.value)}
                 />
               </Field>
-              <Field className="md:col-span-2" label="Conta (R$)" helpText="Valor que fica na conta corrente">
+              <Field className="md:col-span-1" label="Conta (R$)" helpText="Valor que fica na conta corrente">
                 <CurrencyInput
                   value={Number(row.inAccount) || 0}
                   disabled={row.locked}
                   onChange={(num) => updateRow(row.id, "inAccount", num)}
                 />
               </Field>
-              <Field className="md:col-span-2" label="Investido (R$)" helpText="Aporte do mês que vai para investimentos; use 0 se não houve">
+              <Field className="md:col-span-1" label="Investido (R$)" helpText="Aporte do mês que vai para investimentos; use 0 se não houve">
                 <CurrencyInput
                   value={Number(row.invested) || 0}
                   disabled={row.locked}
                   onChange={(num) => updateRow(row.id, "invested", num)}
                 />
               </Field>
-              <Field className="md:col-span-2" label="Fluxo (R$)" helpText="Positivo para entradas (depósitos), negativo para saídas (retiradas). Afeta o gráfico de fluxo.">
+              <Field className="md:col-span-1" label="Fluxo (R$)" helpText="Positivo para entradas (depósitos), negativo para saídas (retiradas). Afeta o gráfico de fluxo.">
                 <CurrencyInput
                   value={Number(row.cashFlow) || 0}
                   allowNegative

@@ -28,7 +28,7 @@ const formatValueInK = (value) => {
   return value.toString();
 };
 
-export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
+export function Dashboard({ monthly, sourceSummary = [], sources = [], isPdfMode }) {
   const safeMonthly = Array.isArray(monthly) ? monthly : [];
 
   const formatTick = (value) =>
@@ -139,7 +139,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
         <div className="h-72">
           {hasFlowData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={perSourceNet}>
+              <AreaChart data={perSourceNet} isAnimationActive={!isPdfMode}>
                 <defs>
                   {uniqueSourceNames.map((name, index) => {
                     const gradientId = `flow-source-${index}`;
@@ -183,7 +183,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
         <div className="h-72">
           {hasYieldData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={yieldChart}>
+              <AreaChart data={yieldChart} isAnimationActive={!isPdfMode}>
                 <defs>
                   {uniqueSourceNames.map((name, index) => {
                     const gradientId = `yield-source-${index}`;
@@ -227,7 +227,7 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
         <div className="h-80">
           {hasInvestmentData ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={investmentChart}>
+              <AreaChart data={investmentChart} isAnimationActive={!isPdfMode}>
                 <defs>
                   <linearGradient id={totalGradientId} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#0f172a" stopOpacity={0.35} />
@@ -286,7 +286,15 @@ export function Dashboard({ monthly, sourceSummary = [], sources = [] }) {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Tooltip formatter={(value) => fmtBRL(value)} />
-                  <Pie data={sourceChart} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} paddingAngle={3}>
+                  <Pie
+                    data={sourceChart}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={3}
+                    isAnimationActive={!isPdfMode}
+                  >
                     {sourceChart.map((entry) => (
                       <Cell key={entry.name} fill={entry.color} />
                     ))}

@@ -2,6 +2,7 @@ import React from "react";
 import { fmtBRL } from "./formatters.js";
 import { createRoot } from "react-dom/client";
 import ReportView from "../components/ReportView.jsx";
+import ExpensesReportView from "../components/ExpensesReportView.jsx";
 
 const LINE_HEIGHT = 16;
 const TOP_MARGIN = 800;
@@ -96,63 +97,6 @@ export function createPdfReport({
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// Nova exportação visual em PDF (captura a UI com gráficos e histórico)
-export async function exportVisualPdfReport({
-  personalInfo = {},
-  totals = {},
-  sources = [],
-  timeline = [],
-  sourceSummary = [],
-  entries = [],
-  exportedAt = new Date(),
-  notes = "",
-}) {
-  // Importação dinâmica para evitar custo de bundle quando não usado
-  const html2pdfModule = await import("html2pdf.js");
-  const html2pdf = html2pdfModule.default || html2pdfModule;
-
-  // Montar uma visualização offscreen para captura
-  const container = document.createElement("div");
-  container.id = "__pdf_report_container";
-  container.style.position = "absolute";
-  container.style.left = "-10000px";
-  container.style.top = "0";
-  container.style.width = "794px"; // ~A4 de largura @96dpi
-  container.style.background = "white";
-  document.body.appendChild(container);
-
-  const root = createRoot(container);
-  root.render(React.createElement(ReportView, {
-    personalInfo,
-    totals,
-    timeline,
-    sourceSummary,
-    sources,
-    entries,
-    exportedAt,
-    notes,
-  }));
-
-  // Aguardar gráficos renderizarem
-  await new Promise((r) => setTimeout(r, 600));
-
-  const filename = `relatorio-investimentos-${new Date().toISOString().slice(0, 10)}.pdf`;
-
-  await html2pdf()
-    .set({
-      margin: [10, 10, 14, 10],
-      filename,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
-      jsPDF: { unit: "pt", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] },
-    })
-    .from(container)
-    .save();
-
-  root.unmount();
-  container.remove();
-}
 
 function buildPdf(lines) {
   const encoder = new TextEncoder();

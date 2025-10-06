@@ -1,0 +1,86 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - link "Voltar para a página principal" [ref=e6] [cursor=pointer]:
+      - /url: /Financial-Monitor
+      - img [ref=e7] [cursor=pointer]
+      - generic [ref=e9] [cursor=pointer]: Início
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - heading "Controle de Gastos" [level=1] [ref=e13]
+          - generic [ref=e14]:
+            - button "Investimentos" [ref=e15] [cursor=pointer]
+            - button "Gastos" [pressed] [ref=e16] [cursor=pointer]
+        - paragraph [ref=e17]: Suba arquivos (CSV/XLSX/PDF), categorize e acompanhe seus gastos por mês. Seus dados ficam no navegador.
+      - generic [ref=e19]:
+        - button "Exportar" [ref=e20] [cursor=pointer]:
+          - img [ref=e21] [cursor=pointer]
+          - text: Exportar
+        - button "Importar" [ref=e23] [cursor=pointer]:
+          - img [ref=e24] [cursor=pointer]
+          - text: Importar
+        - link "Configurações" [ref=e26] [cursor=pointer]:
+          - /url: /Financial-Monitor/gastos/configuracoes
+          - img [ref=e27] [cursor=pointer]
+          - text: Configurações
+    - generic [ref=e31]:
+      - button "Dashboard" [ref=e32] [cursor=pointer]:
+        - img [ref=e33] [cursor=pointer]
+        - text: Dashboard
+      - button "Histórico" [active] [pressed] [ref=e34] [cursor=pointer]:
+        - img [ref=e35] [cursor=pointer]
+        - text: Histórico
+      - button "Nova Despesa" [ref=e37] [cursor=pointer]:
+        - img [ref=e38] [cursor=pointer]
+        - text: Nova Despesa
+      - button "Financiamentos" [ref=e39] [cursor=pointer]:
+        - img [ref=e40] [cursor=pointer]
+        - text: Financiamentos
+  - generic [ref=e42]:
+    - generic [ref=e43]:
+      - textbox "Filtrar por descrição, categoria, fonte..." [ref=e44]
+      - generic [ref=e45]:
+        - button "Colapsar tudo" [ref=e46] [cursor=pointer]
+        - generic [ref=e47]: 2 despesas
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]: jan. de 2025
+        - generic [ref=e53]:
+          - text: "Total:"
+          - strong [ref=e54]: R$ 176,30
+      - table [ref=e56]:
+        - rowgroup [ref=e57]:
+          - row "Data Descrição Categoria Fonte Valor Ações" [ref=e58]:
+            - cell "Data" [ref=e59]
+            - cell "Descrição" [ref=e60]
+            - cell "Categoria" [ref=e61]
+            - cell "Fonte" [ref=e62]
+            - cell "Valor" [ref=e63]
+            - cell "Ações" [ref=e64]
+        - rowgroup [ref=e65]:
+          - row "15/01/2025 Uber Transporte Pessoal R$ 25,80 Editar Excluir" [ref=e66]:
+            - cell "15/01/2025" [ref=e67]
+            - cell "Uber" [ref=e68]
+            - cell "Transporte" [ref=e69]
+            - cell "Pessoal" [ref=e70]
+            - cell "R$ 25,80" [ref=e71]
+            - cell "Editar Excluir" [ref=e72]:
+              - generic [ref=e73]:
+                - button "Editar" [ref=e74] [cursor=pointer]
+                - button "Excluir" [ref=e75] [cursor=pointer]
+          - row "14/01/2025 Supermercado Extra Alimentação Pessoal R$ 150,50 Editar Excluir" [ref=e76]:
+            - cell "14/01/2025" [ref=e77]
+            - cell "Supermercado Extra" [ref=e78]
+            - cell "Alimentação" [ref=e79]
+            - cell "Pessoal" [ref=e80]
+            - cell "R$ 150,50" [ref=e81]
+            - cell "Editar Excluir" [ref=e82]:
+              - generic [ref=e83]:
+                - button "Editar" [ref=e84] [cursor=pointer]
+                - button "Excluir" [ref=e85] [cursor=pointer]
+  - contentinfo [ref=e86]:
+    - paragraph [ref=e87]: Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.
+```

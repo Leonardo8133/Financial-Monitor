@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import * as pdfjsLib from "pdfjs-dist";
+import { parseExpensePdfWithTemplates } from "../utils/pdfTemplates.js";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -69,7 +70,15 @@ export function Uploader({ onRecordsParsed }) {
       const content = await page.getTextContent();
       text += content.items.map((it) => (typeof it.str === "string" ? it.str : "")).join(" ") + "\n";
     }
-    // Naive line split; user will map columns manually below
+    // Try auto-templates first
+    const parsed = parseExpensePdfWithTemplates(text);
+    if (parsed && parsed.items && parsed.items.length) {
+      setHeaders(["date", "description", "category", "source", "value"]);
+      setRows(parsed.items);
+      setMapping(DEFAULT_MAPPING.map((m) => ({ ...m, header: m.field })));
+      return;
+    }
+    // Fallback to manual mapping from single-column lines
     const lines = text.split(/\n+/).map((l) => l.trim()).filter(Boolean);
     const data = lines.map((line) => ({ Linha: line }));
     setHeaders(["Linha"]);
