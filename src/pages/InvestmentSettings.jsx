@@ -33,6 +33,7 @@ export default function InvestmentSettings() {
 
   const [newBank, setNewBank] = useState({ name: "", icon: "", color: "" });
   const [newSource, setNewSource] = useState({ name: "", icon: "", color: "" });
+  const [showUpdateWarning, setShowUpdateWarning] = useState({ type: null, index: null });
 
   const creationDate = useMemo(() => (createdAt ? createdAt.slice(0, 10) : ""), [createdAt]);
 
@@ -88,8 +89,21 @@ export default function InvestmentSettings() {
   function updateBank(index, field, value) {
     setStore((prev) => {
       const safePrev = ensureInvestmentDefaults(prev);
+      const oldBank = safePrev.banks[index];
       const nextBanks = safePrev.banks.map((bank, idx) => (idx === index ? { ...bank, [field]: value } : bank));
-      return { ...safePrev, banks: nextBanks };
+      
+      // Se o nome do banco foi alterado, atualizar todas as entradas no histórico
+      let nextEntries = safePrev.entries;
+      if (field === "name" && oldBank && oldBank.name !== value) {
+        nextEntries = safePrev.entries.map(entry => 
+          entry.bank === oldBank.name ? { ...entry, bank: value } : entry
+        );
+        // Mostrar aviso de atualização
+        setShowUpdateWarning({ type: 'bank', index, oldName: oldBank.name, newName: value });
+        setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
+      }
+      
+      return { ...safePrev, banks: nextBanks, entries: nextEntries };
     });
   }
 
@@ -126,10 +140,23 @@ export default function InvestmentSettings() {
   function updateSource(index, field, value) {
     setStore((prev) => {
       const safePrev = ensureInvestmentDefaults(prev);
+      const oldSource = safePrev.sources[index];
       const nextSources = safePrev.sources.map((source, idx) =>
         idx === index ? { ...source, [field]: value } : source
       );
-      return { ...safePrev, sources: nextSources };
+      
+      // Se o nome da fonte foi alterado, atualizar todas as entradas no histórico
+      let nextEntries = safePrev.entries;
+      if (field === "name" && oldSource && oldSource.name !== value) {
+        nextEntries = safePrev.entries.map(entry => 
+          entry.source === oldSource.name ? { ...entry, source: value } : entry
+        );
+        // Mostrar aviso de atualização
+        setShowUpdateWarning({ type: 'source', index, oldName: oldSource.name, newName: value });
+        setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
+      }
+      
+      return { ...safePrev, sources: nextSources, entries: nextEntries };
     });
   }
 
@@ -163,6 +190,18 @@ export default function InvestmentSettings() {
             </Link>
           </div>
         </header>
+
+        {showUpdateWarning.type && (
+          <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+              <p className="text-sm font-medium text-blue-800">
+                {showUpdateWarning.type === 'bank' ? 'Banco' : 'Fonte'} "{showUpdateWarning.oldName}" renomeado para "{showUpdateWarning.newName}". 
+                Todas as menções no histórico foram atualizadas automaticamente.
+              </p>
+            </div>
+          </div>
+        )}
 
         <section className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Informações pessoais</h2>
@@ -241,7 +280,7 @@ export default function InvestmentSettings() {
           </div>
           <div className="mt-4 space-y-4">
             {banks.map((bank, index) => (
-              <div key={bank.name + index} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
+              <div key={`bank-${index}`} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
                 <label className="text-sm font-medium text-slate-700">
                   Nome
                   <input
@@ -334,7 +373,7 @@ export default function InvestmentSettings() {
           </div>
           <div className="mt-4 space-y-4">
             {sources.map((source, index) => (
-              <div key={source.name + index} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
+              <div key={`source-${index}`} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
                 <label className="text-sm font-medium text-slate-700">
                   Nome
                   <input

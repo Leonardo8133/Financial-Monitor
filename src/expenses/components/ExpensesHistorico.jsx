@@ -6,6 +6,7 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const sourceOptionsId = "expenses-source-library";
 
   const baseLookup = useMemo(() => new Map(expenses.map((e) => [e.id, e])), [expenses]);
 
@@ -62,6 +63,12 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
         <div className="rounded-xl border border-dashed p-6 text-center text-slate-500">Sem despesas. Adicione na aba "Nova Despesa" ou importe um .json.</div>
       )}
 
+      <datalist id={sourceOptionsId}>
+        {(Array.isArray(sources) ? sources : []).map((source) => (
+          <option key={source.name} value={source.name} />
+        ))}
+      </datalist>
+
       <div className="space-y-6">
         {groups.map((group) => (
           <div key={group.ym} className="rounded-xl border border-slate-100">
@@ -74,7 +81,7 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
             {collapsed ? (
               <CollapsedTable items={group.items} />
             ) : (
-              <DetailedTable items={group.items} editingId={editingId} draft={draft} onStartEdit={startEdit} onUpdateDraft={(name, value) => setDraft((prev) => (prev ? { ...prev, [name]: value } : prev))} onCancelEdit={cancelEdit} onSaveEdit={saveEdit} onRemove={removeExpense} />
+              <DetailedTable items={group.items} editingId={editingId} draft={draft} onStartEdit={startEdit} onUpdateDraft={(name, value) => setDraft((prev) => (prev ? { ...prev, [name]: value } : prev))} onCancelEdit={cancelEdit} onSaveEdit={saveEdit} onRemove={removeExpense} sourceOptionsId={sourceOptionsId} />
             )}
           </div>
         ))}
@@ -83,7 +90,7 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
   );
 }
 
-function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove }) {
+function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove, sourceOptionsId = "expenses-source-library" }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-100 text-sm">
@@ -125,7 +132,13 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
                 </Td>
                 <Td>
                   {isEditing ? (
-                    <input type="text" value={draft?.source ?? ""} onChange={(ev) => onUpdateDraft("source", ev.target.value)} className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none" />
+                    <input 
+                      type="text" 
+                      list={sourceOptionsId}
+                      value={draft?.source ?? ""} 
+                      onChange={(ev) => onUpdateDraft("source", ev.target.value)} 
+                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none" 
+                    />
                   ) : (
                     e.source || "—"
                   )}

@@ -15,7 +15,14 @@ export function withId(entry) {
 }
 
 export function createDraftEntry(overrides = {}) {
-  return { ...emptyEntry, ...overrides, id: makeId(), locked: false };
+  const today = new Date().toISOString().split('T')[0];
+  return { 
+    ...emptyEntry, 
+    date: today,
+    ...overrides, 
+    id: makeId(), 
+    locked: false 
+  };
 }
 
 export function computeDerivedEntries(entries = []) {

@@ -1,11 +1,74 @@
 import { createDraftEntry } from "../utils/entries.js";
 import { Field } from "./Field.jsx";
 import { CurrencyInput } from "./CurrencyInput.jsx";
+import { resolveBankVisual } from "../config/banks.js";
+import { resolveSourceVisual } from "../config/sources.js";
 
 export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
   const bankOptionsId = "bank-options";
   const sourceOptionsId = "source-options";
   const sourceLibrary = Array.isArray(sources) ? sources : [];
+
+  // Componente para campo de banco com indicador visual
+  function BankField({ value, onChange, disabled, required, placeholder }) {
+    const visual = resolveBankVisual(value, banks);
+    return (
+      <div className="relative">
+        <input
+          type="text"
+          list={bankOptionsId}
+          required={required}
+          placeholder={placeholder}
+          value={value}
+          disabled={disabled}
+          onChange={onChange}
+          className="w-full rounded-xl border border-slate-200 px-3 py-2 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+        />
+        {value && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: visual.color }}
+              aria-hidden="true"
+            ></span>
+            <span className="text-base" aria-hidden="true">
+              {visual.icon}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Componente para campo de fonte com indicador visual
+  function SourceField({ value, onChange, disabled, placeholder }) {
+    const visual = resolveSourceVisual(value, sourceLibrary);
+    return (
+      <div className="relative">
+        <input
+          type="text"
+          list={sourceOptionsId}
+          placeholder={placeholder}
+          value={value}
+          disabled={disabled}
+          onChange={onChange}
+          className="w-full rounded-xl border border-slate-200 px-3 py-2 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+        />
+        {value && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: visual.color }}
+              aria-hidden="true"
+            ></span>
+            <span className="text-base" aria-hidden="true">
+              {visual.icon}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   
 
@@ -24,7 +87,8 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
   }
 
   function addRow() {
-    setDrafts((prev) => [...prev, createDraftEntry()]);
+    const firstSource = sourceLibrary.length > 0 ? sourceLibrary[0].name : "";
+    setDrafts((prev) => [...prev, createDraftEntry({ source: firstSource })]);
   }
 
   function removeRow(id) {
@@ -43,15 +107,22 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
     onSubmit(drafts);
   }
 
+  function handleKeyDown(ev) {
+    if (ev.key === 'Enter' && !ev.shiftKey) {
+      ev.preventDefault();
+      addRow();
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl bg-white p-4 shadow">
+    <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-4 rounded-2xl bg-white p-4 shadow">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-sm font-semibold text-slate-700">Lançamentos em preparação</div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={addRow}
-            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            className="rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
             title="Adiciona uma nova linha de lançamento"
           >
             Adicionar linha
@@ -123,26 +194,20 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                 />
               </Field>
               <Field className="md:col-span-2" label="Banco" helpText="Banco ou instituição financeira onde o valor está">
-                <input
-                  type="text"
-                  list={bankOptionsId}
-                  required={!row.locked}
-                  placeholder="ex.: Nubank Caixinhas"
+                <BankField
                   value={row.bank}
                   disabled={row.locked}
+                  required={!row.locked}
+                  placeholder="ex.: Nubank Caixinhas"
                   onChange={(e) => updateRow(row.id, "bank", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
               <Field className="md:col-span-2" label="Fonte" helpText="Origem do dinheiro (ex: salário, bônus, venda)">
-                <input
-                  type="text"
-                  list={sourceOptionsId}
-                  placeholder="ex.: Salário"
+                <SourceField
                   value={row.source}
                   disabled={row.locked}
+                  placeholder="ex.: Salário"
                   onChange={(e) => updateRow(row.id, "source", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
                 />
               </Field>
               <Field className="md:col-span-2" label="Conta (R$)" helpText="Valor que fica na conta corrente">
@@ -188,6 +253,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
         <ul className="list-disc space-y-1 pl-5">
           <li>Preencha <strong>Data</strong> e <strong>Banco</strong> para cada linha.</li>
           <li>Selecione um banco já utilizado ou digite um novo nome para salvá-lo automaticamente.</li>
+          <li>Pressione <strong>ENTER</strong> para adicionar uma nova linha rapidamente.</li>
           <li>Use o botão <strong>Bloquear</strong> para travar uma entrada pronta enquanto adiciona outras.</li>
           <li>Informe valores negativos em <strong>Fluxo (R$)</strong> para representar saídas.</li>
         </ul>
