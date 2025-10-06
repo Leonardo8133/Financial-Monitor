@@ -19,6 +19,7 @@ import {
   PlusIcon,
   TableCellsIcon,
   ChartBarIcon,
+  DocumentArrowDownIcon,
   SettingsIcon,
 } from "../components/icons.jsx";
 import { CalculatorIcon } from "@heroicons/react/24/outline";
@@ -423,6 +424,13 @@ export default function ExpensesApp() {
                 >
                   Importar
                 </ActionButton>
+                <Link
+                  to="/gastos/relatorio"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  <DocumentArrowDownIcon className="h-5 w-5" />
+                  Relatório PDF
+                </Link>
                 <Link
                   to="/gastos/configuracoes"
                   className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"

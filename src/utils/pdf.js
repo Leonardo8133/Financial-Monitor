@@ -1,168 +1,355 @@
-import React from "react";
-import { fmtBRL } from "./formatters.js";
-import { createRoot } from "react-dom/client";
-import ReportView from "../components/ReportView.jsx";
-import ExpensesReportView from "../components/ExpensesReportView.jsx";
+import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { fmtBRL, monthLabel } from "./formatters.js";
 
-const LINE_HEIGHT = 16;
-const TOP_MARGIN = 800;
-const MAX_ENTRY_LINES = 25;
+const styles = StyleSheet.create({
+  page: {
+    padding: 36,
+    fontSize: 11,
+    fontFamily: "Helvetica",
+    color: "#1f2937",
+  },
+  header: {
+    marginBottom: 18,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  subtitle: {
+    marginTop: 4,
+    fontSize: 10,
+    color: "#6b7280",
+  },
+  section: {
+    marginBottom: 18,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  muted: {
+    fontSize: 10,
+    color: "#6b7280",
+  },
+  listItem: {
+    fontSize: 10,
+    marginBottom: 4,
+  },
+  table: {
+    display: "table",
+    width: "auto",
+    borderStyle: "solid",
+    borderColor: "#d1d5db",
+    borderWidth: 1,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+  tableRow: {
+    flexDirection: "row",
+  },
+  tableCell: {
+    borderStyle: "solid",
+    borderColor: "#d1d5db",
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    fontSize: 10,
+    flexGrow: 1,
+  },
+  tableHeaderCell: {
+    fontWeight: "bold",
+    backgroundColor: "#f3f4f6",
+  },
+});
 
-export function createPdfReport({
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("pt-BR");
+}
+
+function renderKeyValueList(data) {
+  const entries = Object.entries(data || {});
+  if (!entries.length) {
+    return <Text style={styles.muted}>Nenhuma informação fornecida.</Text>;
+  }
+
+  return (
+    <View>
+      {entries.map(([key, value]) => (
+        <Text key={key} style={styles.listItem}>{`${key}: ${value}`}</Text>
+      ))}
+    </View>
+  );
+}
+
+function renderNotes(notes) {
+  if (!notes) return null;
+  return (
+    <View style={styles.section} wrap={false}>
+      <Text style={styles.sectionTitle}>Observações</Text>
+      {notes.split(/\r?\n/).map((line, index) => (
+        <Text key={`note-${index}`} style={styles.listItem}>
+          {line}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
+function renderTable(headers, rows) {
+  if (!rows.length) return null;
+  return (
+    <View style={[styles.table, styles.section]} wrap>
+      <View style={styles.tableRow}>
+        {headers.map((header, index) => (
+          <Text key={`header-${index}`} style={[styles.tableCell, styles.tableHeaderCell]}>
+            {header}
+          </Text>
+        ))}
+      </View>
+      {rows.map((row, rowIndex) => (
+        <View key={`row-${rowIndex}`} style={styles.tableRow}>
+          {row.map((cell, cellIndex) => (
+            <Text key={`cell-${rowIndex}-${cellIndex}`} style={styles.tableCell}>
+              {cell}
+            </Text>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function formatCurrency(value) {
+  return fmtBRL(value ?? 0);
+}
+
+function investmentMonthlyRows(monthlySummaries = []) {
+  return monthlySummaries.map((item) => [
+    item.label ?? monthLabel(item.ym),
+    formatCurrency(item.invested),
+    formatCurrency(item.inAccount),
+    formatCurrency(item.cashFlow),
+    item.yieldValue !== undefined && item.yieldValue !== null ? formatCurrency(item.yieldValue) : "–",
+  ]);
+}
+
+function investmentEntriesRows(entries = []) {
+  const limited = entries.slice(0, 25);
+  if (!limited.length) return [];
+  return limited.map((entry) => {
+    const date = entry.date ? new Date(entry.date) : null;
+    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("pt-BR") : "–";
+    return [
+      dateLabel,
+      entry.bank || "–",
+      entry.source || "–",
+      formatCurrency(entry.invested),
+      formatCurrency(entry.inAccount),
+      formatCurrency(entry.cashFlow),
+    ];
+  });
+}
+
+function investmentSourceRows(breakdown = []) {
+  if (!Array.isArray(breakdown) || !breakdown.length) return [];
+  return breakdown.map((item) => [item.name || "–", formatCurrency(item.invested), formatCurrency(item.inAccount)]);
+}
+
+function expensesMonthlyRows(monthlySummaries = []) {
+  return monthlySummaries.map((item) => [item.label ?? monthLabel(item.ym), formatCurrency(item.total)]);
+}
+
+function expensesEntriesRows(expenses = []) {
+  const limited = expenses.slice(0, 30);
+  if (!limited.length) return [];
+  return limited.map((expense) => {
+    const date = expense.date ? new Date(expense.date) : null;
+    const dateLabel = date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("pt-BR") : "–";
+    return [
+      dateLabel,
+      expense.description || "–",
+      expense.category || "–",
+      expense.source || "–",
+      formatCurrency(expense.value ?? expense.absValue),
+    ];
+  });
+}
+
+function expensesBreakdownRows(breakdown = []) {
+  if (!Array.isArray(breakdown) || !breakdown.length) return [];
+  return breakdown.map((item) => [item.name || "–", formatCurrency(item.total)]);
+}
+
+function renderSection(title, content) {
+  if (!content) return null;
+  return (
+    <View style={styles.section} wrap>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {content}
+    </View>
+  );
+}
+
+export function createInvestmentReportDocument({
+  exportedAt,
   personalInfo = {},
   totals = {},
-  sources = [],
-  entries = [],
-  exportedAt = new Date(),
+  monthlySummaries = [],
   notes = "",
-}) {
-  const lines = [];
-  const dateLabel = new Date(exportedAt).toLocaleString("pt-BR");
+  entries = [],
+  sourceBreakdown = [],
+} = {}) {
+  const headerSubtitleParts = [
+    `Gerado em ${formatDateTime(exportedAt)}`,
+    "Período considerado: últimos 12 meses",
+  ];
 
-  lines.push("Relatório de Investimentos");
-  lines.push(`Gerado em ${dateLabel}`);
-  lines.push("");
+  const totalsRows = [
+    [`Total investido`, formatCurrency(totals.total_invested)],
+    [`Total em conta`, formatCurrency(totals.total_in_account)],
+    [`Entradas/Saídas`, formatCurrency(totals.total_input)],
+    [
+      `Rendimento acumulado`,
+      totals.total_yield_value !== undefined && totals.total_yield_value !== null
+        ? formatCurrency(totals.total_yield_value)
+        : "–",
+    ],
+  ];
 
-  const personalEntries = Object.entries(personalInfo || {}).filter(([, value]) => value);
-  if (personalEntries.length) {
-    lines.push("Informações pessoais:");
-    personalEntries.forEach(([key, value]) => {
-      lines.push(`- ${toLabel(key)}: ${value}`);
-    });
-    lines.push("");
-  }
+  const monthlyRows = investmentMonthlyRows(monthlySummaries);
+  const entriesRows = investmentEntriesRows(entries);
+  const sourcesRows = investmentSourceRows(sourceBreakdown);
 
-  lines.push("Resumo:");
-  lines.push(`- Total investido: ${fmtBRL(totals.total_invested ?? 0)}`);
-  lines.push(`- Total em conta: ${fmtBRL(totals.total_in_account ?? 0)}`);
-  lines.push(`- Entradas/Saídas: ${fmtBRL(totals.total_input ?? 0)}`);
-  lines.push(`- Rendimento acumulado: ${fmtBRL(totals.total_yield_value ?? 0)}`);
-  lines.push("");
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header} wrap={false}>
+          <Text style={styles.title}>Relatório de Investimentos</Text>
+          <Text style={styles.subtitle}>{headerSubtitleParts.join(" • ")}</Text>
+        </View>
 
-  const normalizedSources = Array.isArray(sources)
-    ? sources.filter((source) => (source.total ?? source.invested ?? 0) !== 0)
-    : [];
-  if (normalizedSources.length) {
-    lines.push("Fontes de investimento:");
-    normalizedSources.forEach((source) => {
-      const total = source.total ?? source.invested ?? 0;
-      const percentage = source.percentage != null ? `${source.percentage}%` : "";
-      lines.push(`- ${source.name}: ${fmtBRL(total)} ${percentage}`.trim());
-    });
-    lines.push("");
-  }
+        {renderSection("Informações pessoais", renderKeyValueList(personalInfo))}
 
-  const trimmedNotes = String(notes).trim();
-  if (trimmedNotes) {
-    lines.push("Observações:");
-    const splitted = trimmedNotes
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (splitted.length) {
-      splitted.forEach((line) => lines.push(`- ${line}`));
-    } else {
-      lines.push(`- ${trimmedNotes}`);
-    }
-    lines.push("");
-  }
+        {renderSection(
+          "Totais consolidados",
+          <View>
+            {totalsRows.map(([label, value]) => (
+              <Text key={label} style={styles.listItem}>{`${label}: ${value}`}</Text>
+            ))}
+          </View>
+        )}
 
-  if (entries.length) {
-    lines.push("Lançamentos:");
-    const limited = entries.slice(0, MAX_ENTRY_LINES);
-    limited.forEach((entry) => {
-      const date = entry.date ? new Date(entry.date).toLocaleDateString("pt-BR") : "";
-      const bank = entry.bank || "";
-      const source = entry.source || "–";
-      lines.push(
-        `- ${date} | ${bank} | Fonte: ${source} | Investido: ${fmtBRL(entry.invested ?? 0)} | Em conta: ${fmtBRL(entry.inAccount ?? 0)} | Fluxo: ${fmtBRL(entry.cashFlow ?? 0)}`
-      );
-    });
-    if (entries.length > limited.length) {
-      lines.push(`- ... e mais ${entries.length - limited.length} lançamentos.`);
-    }
-  } else {
-    lines.push("Sem lançamentos registrados até o momento.");
-  }
+        {sourcesRows.length
+          ? renderSection(
+              "Distribuição por fonte",
+              renderTable(["Fonte", "Investido", "Em conta"], sourcesRows)
+            )
+          : null}
 
-  const pdfContent = buildPdf(lines);
-  const blob = new Blob([pdfContent], { type: "application/pdf" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `relatorio-investimentos-${new Date().toISOString().slice(0, 10)}.pdf`;
-  document.body.appendChild(link);
-  link.click();
-  const url = link.href;
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+        {monthlyRows.length
+          ? renderSection(
+              "Resumo mensal",
+              renderTable(
+                ["Mês", "Investido", "Em conta", "Fluxo", "Rentabilidade"],
+                monthlyRows
+              )
+            )
+          : null}
+
+        {entriesRows.length
+          ? renderSection(
+              "Lançamentos recentes",
+              renderTable(
+                ["Data", "Banco", "Fonte", "Investido", "Em conta", "Fluxo"],
+                entriesRows
+              )
+            )
+          : renderSection(
+              "Lançamentos recentes",
+              <Text style={styles.muted}>Sem registros no período selecionado.</Text>
+            )}
+
+        {renderNotes(notes)}
+      </Page>
+    </Document>
+  );
 }
 
+export function createExpensesReportDocument({
+  exportedAt,
+  personalInfo = {},
+  totals = {},
+  monthlySummaries = [],
+  notes = "",
+  expenses = [],
+  categoryBreakdown = [],
+  sourceBreakdown = [],
+} = {}) {
+  const headerSubtitleParts = [
+    `Gerado em ${formatDateTime(exportedAt)}`,
+    "Período considerado: últimos 12 meses",
+  ];
 
-function buildPdf(lines) {
-  const encoder = new TextEncoder();
-  const textStream = buildTextStream(lines);
+  const totalsRows = [[`Total gasto`, formatCurrency(totals.total_spent)]];
+  const monthlyRows = expensesMonthlyRows(monthlySummaries);
+  const expenseRows = expensesEntriesRows(expenses);
+  const categoryRows = expensesBreakdownRows(categoryBreakdown);
+  const sourceRows = expensesBreakdownRows(sourceBreakdown);
 
-  const header = "%PDF-1.4\n";
-  const obj1 = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
-  const obj2 = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
-  const obj3 =
-    "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n";
-  const obj4 = `4 0 obj\n<< /Length ${encoder.encode(textStream).length} >>\nstream\n${textStream}\nendstream\nendobj\n`;
-  const obj5 = "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n";
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header} wrap={false}>
+          <Text style={styles.title}>Relatório de Gastos</Text>
+          <Text style={styles.subtitle}>{headerSubtitleParts.join(" • ")}</Text>
+        </View>
 
-  const objects = [obj1, obj2, obj3, obj4, obj5];
-  const offsets = [0];
-  let position = encoder.encode(header).length;
+        {renderSection("Informações pessoais", renderKeyValueList(personalInfo))}
 
-  objects.forEach((object) => {
-    offsets.push(position);
-    position += encoder.encode(object).length;
-  });
+        {renderSection(
+          "Totais consolidados",
+          <View>
+            {totalsRows.map(([label, value]) => (
+              <Text key={label} style={styles.listItem}>{`${label}: ${value}`}</Text>
+            ))}
+          </View>
+        )}
 
-  const xrefPosition = position;
-  let xref = `xref\n0 ${offsets.length}\n`;
-  xref += "0000000000 65535 f \n";
-  for (let i = 1; i < offsets.length; i += 1) {
-    xref += `${String(offsets[i]).padStart(10, "0")} 00000 n \n`;
-  }
+        {categoryRows.length
+          ? renderSection(
+              "Por categoria",
+              renderTable(["Categoria", "Total"], categoryRows)
+            )
+          : null}
 
-  const trailer = `trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${xrefPosition}\n%%EOF`;
+        {sourceRows.length
+          ? renderSection("Por fonte", renderTable(["Fonte", "Total"], sourceRows))
+          : null}
 
-  return [header, ...objects, xref, trailer].join("");
+        {monthlyRows.length
+          ? renderSection("Resumo mensal", renderTable(["Mês", "Total gasto"], monthlyRows))
+          : null}
+
+        {expenseRows.length
+          ? renderSection(
+              "Despesas recentes",
+              renderTable(
+                ["Data", "Descrição", "Categoria", "Fonte", "Valor"],
+                expenseRows
+              )
+            )
+          : renderSection(
+              "Despesas recentes",
+              <Text style={styles.muted}>Sem registros no período selecionado.</Text>
+            )}
+
+        {renderNotes(notes)}
+      </Page>
+    </Document>
+  );
 }
 
-function buildTextStream(lines) {
-  const safeLines = Array.isArray(lines) ? lines : [];
-  const commands = ["BT", "/F1 12 Tf", `${LINE_HEIGHT} TL`, `72 ${TOP_MARGIN} Td`];
-  safeLines.forEach((line, index) => {
-    const text = escapePdfText(line || " ");
-    if (index === 0) {
-      commands.push(`(${text}) Tj`);
-    } else {
-      commands.push("T*");
-      if (line !== "") {
-        commands.push(`(${text}) Tj`);
-      }
-    }
-  });
-  commands.push("ET");
-  return commands.join("\n");
-}
-
-function escapePdfText(text) {
-  return String(text)
-    .replace(/\\/g, "\\\\")
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)")
-    .replace(/\r?\n/g, " ");
-}
-
-function toLabel(key) {
-  const map = {
-    fullName: "Nome completo",
-    email: "E-mail",
-    document: "Documento",
-    phone: "Telefone",
-  };
-  return map[key] || key;
-}
