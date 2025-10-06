@@ -582,6 +582,13 @@ export default function App() {
                   Importar
                 </ActionButton>
                 <Link
+                  to="/investimentos/relatorio"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                >
+                  <DocumentArrowDownIcon className="h-5 w-5" />
+                  Relatório PDF
+                </Link>
+                <Link
                   to="/investimentos/configuracoes"
                   className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
                 >

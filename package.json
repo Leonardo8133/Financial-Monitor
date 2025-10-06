@@ -16,6 +16,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
+    "@react-pdf/renderer": "^3.4.5",
     "html2pdf.js": "^0.12.1",
     "papaparse": "^5.5.3",
     "pdfjs-dist": "^5.4.149",
