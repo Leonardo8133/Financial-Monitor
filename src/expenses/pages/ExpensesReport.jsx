@@ -7,7 +7,7 @@ import { buildReportDataset } from "../../utils/reporting.js";
 import { monthLabel, toNumber } from "../../utils/formatters.js";
 import { EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED, ensureExpensesDefaults } from "../config/storage.js";
 import { computeDerivedExpenses, computeTotals } from "../utils/expenses.js";
-import { createExpensesReportDocument } from "../../utils/pdf.js";
+import { createExpensesReportDocument } from "../../utils/pdf.jsx";
 
 function sumExpensesMonthly(expenses = []) {
   return expenses.reduce(

@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import ExpensesApp from "./ExpensesApp.jsx";
 import { detectExpenseTemplate, parseExpensePdfWithTemplates } from "./utils/pdfTemplates.js";
+import { createExpensesReportDocument } from "../utils/pdf.jsx";
 import { MemoryRouter } from "react-router-dom";
 
 // Basic smoke tests for main tabs and import/export controls

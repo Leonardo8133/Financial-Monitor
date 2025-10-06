@@ -5,7 +5,7 @@ import { DocumentArrowDownIcon } from "../components/icons.jsx";
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { LS_KEY, toNumber, monthLabel } from "../utils/formatters.js";
 import { computeDerivedEntries, computeTotals } from "../utils/entries.js";
-import { createInvestmentReportDocument } from "../utils/pdf.js";
+import { createInvestmentReportDocument } from "../utils/pdf.jsx";
 import { buildReportDataset } from "../utils/reporting.js";
 import { INVESTMENT_STORAGE_SEED, ensureInvestmentDefaults } from "../config/investmentStorage.js";
 
