@@ -35,6 +35,7 @@ export default function ExpensesSettings() {
 
   const [newCategory, setNewCategory] = useState({ name: "", icon: "", color: "" });
   const [newSource, setNewSource] = useState({ name: "", icon: "", color: "" });
+  const [showUpdateWarning, setShowUpdateWarning] = useState({ type: null, index: null });
 
   const creationDate = useMemo(() => (createdAt ? createdAt.slice(0, 10) : ""), [createdAt]);
 
@@ -95,10 +96,23 @@ export default function ExpensesSettings() {
   function updateCategory(index, field, value) {
     setStore((prev) => {
       const safePrev = ensureExpensesDefaults(prev);
+      const oldCategory = safePrev.categories[index];
       const nextCategories = safePrev.categories.map((category, idx) =>
         idx === index ? { ...category, [field]: value } : category
       );
-      return { ...safePrev, categories: nextCategories };
+      
+      // Se o nome da categoria foi alterado, atualizar todas as despesas no histórico
+      let nextExpenses = safePrev.expenses;
+      if (field === "name" && oldCategory && oldCategory.name !== value) {
+        nextExpenses = safePrev.expenses.map(expense => 
+          expense.category === oldCategory.name ? { ...expense, category: value } : expense
+        );
+        // Mostrar aviso de atualização
+        setShowUpdateWarning({ type: 'category', index, oldName: oldCategory.name, newName: value });
+        setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
+      }
+      
+      return { ...safePrev, categories: nextCategories, expenses: nextExpenses };
     });
   }
 
@@ -135,10 +149,23 @@ export default function ExpensesSettings() {
   function updateSource(index, field, value) {
     setStore((prev) => {
       const safePrev = ensureExpensesDefaults(prev);
+      const oldSource = safePrev.sources[index];
       const nextSources = safePrev.sources.map((source, idx) =>
         idx === index ? { ...source, [field]: value } : source
       );
-      return { ...safePrev, sources: nextSources };
+      
+      // Se o nome da fonte foi alterado, atualizar todas as despesas no histórico
+      let nextExpenses = safePrev.expenses;
+      if (field === "name" && oldSource && oldSource.name !== value) {
+        nextExpenses = safePrev.expenses.map(expense => 
+          expense.source === oldSource.name ? { ...expense, source: value } : expense
+        );
+        // Mostrar aviso de atualização
+        setShowUpdateWarning({ type: 'source', index, oldName: oldSource.name, newName: value });
+        setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
+      }
+      
+      return { ...safePrev, sources: nextSources, expenses: nextExpenses };
     });
   }
 
@@ -174,6 +201,18 @@ export default function ExpensesSettings() {
             </Link>
           </div>
         </header>
+
+        {showUpdateWarning.type && (
+          <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+              <p className="text-sm font-medium text-blue-800">
+                {showUpdateWarning.type === 'category' ? 'Categoria' : 'Fonte'} "{showUpdateWarning.oldName}" renomeada para "{showUpdateWarning.newName}". 
+                Todas as menções no histórico foram atualizadas automaticamente.
+              </p>
+            </div>
+          </div>
+        )}
 
         <section className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-900">Informações pessoais</h2>
@@ -250,7 +289,7 @@ export default function ExpensesSettings() {
           </div>
           <div className="mt-4 space-y-4">
             {categories.map((category, index) => (
-              <div key={category.name + index} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
+              <div key={`category-${index}`} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
                 <label className="text-sm font-medium text-slate-700">
                   Nome
                   <input
@@ -343,7 +382,7 @@ export default function ExpensesSettings() {
           </div>
           <div className="mt-4 space-y-4">
             {sources.map((source, index) => (
-              <div key={source.name + index} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
+              <div key={`source-${index}`} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
                 <label className="text-sm font-medium text-slate-700">
                   Nome
                   <input
