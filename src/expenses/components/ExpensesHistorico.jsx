@@ -1,19 +1,38 @@
 import { useMemo, useState } from "react";
 import { fmtBRL, monthLabel, toNumber, yyyymm } from "../../utils/formatters.js";
+import { MultiPillSelect } from "./MultiPillSelect.jsx";
 
 export function ExpensesHistorico({ expenses, derived, setExpenses, categories, sources }) {
   const [q, setQ] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
-  const sourceOptionsId = "expenses-source-library";
+  const categoryOptions = useMemo(
+    () => (Array.isArray(categories) ? categories.map((category) => category.name).filter(Boolean) : []),
+    [categories]
+  );
+  const sourceOptions = useMemo(
+    () => (Array.isArray(sources) ? sources.map((source) => source.name).filter(Boolean) : []),
+    [sources]
+  );
 
   const baseLookup = useMemo(() => new Map(expenses.map((e) => [e.id, e])), [expenses]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (!s) return derived;
-    return derived.filter((e) => [e.description, e.category, e.source, e.date, e.value].map((v) => String(v ?? "").toLowerCase()).some((t) => t.includes(s)));
+    return derived.filter((e) => {
+      const searchPool = [
+        e.description,
+        ...(Array.isArray(e.categories) ? e.categories : e.category ? [e.category] : []),
+        ...(Array.isArray(e.sources) ? e.sources : e.source ? [e.source] : []),
+        e.date,
+        e.value,
+      ];
+      return searchPool
+        .map((value) => String(value ?? "").toLowerCase())
+        .some((text) => text.includes(s));
+    });
   }, [q, derived]);
 
   const groups = useMemo(() => {
@@ -37,7 +56,21 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
     const original = baseLookup.get(id);
     if (!original) return;
     setEditingId(id);
-    setDraft({ date: original.date?.slice(0, 10) || "", description: original.description || "", category: original.category || "", source: original.source || "", value: original.value || 0 });
+    setDraft({
+      date: original.date?.slice(0, 10) || "",
+      description: original.description || "",
+      categories: Array.isArray(original.categories)
+        ? original.categories
+        : original.category
+        ? [original.category]
+        : [],
+      sources: Array.isArray(original.sources)
+        ? original.sources
+        : original.source
+        ? [original.source]
+        : [],
+      value: original.value || 0,
+    });
   }
 
   function cancelEdit() { setEditingId(null); setDraft(null); }
@@ -45,7 +78,31 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
   function saveEdit(id) {
     if (!draft) return;
     if (!draft.date || !draft.description) { window.alert("Preencha Data e Descrição antes de salvar."); return; }
-    setExpenses((prev) => prev.map((e) => (e.id === id ? { ...e, date: draft.date, description: draft.description, category: draft.category, source: draft.source, value: toNumber(draft.value) } : e)));
+    setExpenses((prev) =>
+      prev.map((e) => {
+        if (e.id !== id) return e;
+        const categoriesList = Array.isArray(draft.categories)
+          ? draft.categories.map((value) => value && value.toString().trim()).filter(Boolean)
+          : draft.category
+          ? [draft.category]
+          : [];
+        const sourcesList = Array.isArray(draft.sources)
+          ? draft.sources.map((value) => value && value.toString().trim()).filter(Boolean)
+          : draft.source
+          ? [draft.source]
+          : [];
+        return {
+          ...e,
+          date: draft.date,
+          description: draft.description,
+          categories: categoriesList,
+          category: categoriesList[0] || "",
+          sources: sourcesList,
+          source: sourcesList[0] || "",
+          value: toNumber(draft.value),
+        };
+      })
+    );
     cancelEdit();
   }
 
@@ -63,12 +120,6 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
         <div className="rounded-xl border border-dashed p-6 text-center text-slate-500">Sem despesas. Adicione na aba "Nova Despesa" ou importe um .json.</div>
       )}
 
-      <datalist id={sourceOptionsId}>
-        {(Array.isArray(sources) ? sources : []).map((source) => (
-          <option key={source.name} value={source.name} />
-        ))}
-      </datalist>
-
       <div className="space-y-6">
         {groups.map((group) => (
           <div key={group.ym} className="rounded-xl border border-slate-100">
@@ -81,7 +132,20 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
             {collapsed ? (
               <CollapsedTable items={group.items} />
             ) : (
-              <DetailedTable items={group.items} editingId={editingId} draft={draft} onStartEdit={startEdit} onUpdateDraft={(name, value) => setDraft((prev) => (prev ? { ...prev, [name]: value } : prev))} onCancelEdit={cancelEdit} onSaveEdit={saveEdit} onRemove={removeExpense} sourceOptionsId={sourceOptionsId} />
+              <DetailedTable
+                items={group.items}
+                editingId={editingId}
+                draft={draft}
+                onStartEdit={startEdit}
+                onUpdateDraft={(name, value) =>
+                  setDraft((prev) => (prev ? { ...prev, [name]: value } : prev))
+                }
+                onCancelEdit={cancelEdit}
+                onSaveEdit={saveEdit}
+                onRemove={removeExpense}
+                categoryOptions={categoryOptions}
+                sourceOptions={sourceOptions}
+              />
             )}
           </div>
         ))}
@@ -90,7 +154,18 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
   );
 }
 
-function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove, sourceOptionsId = "expenses-source-library" }) {
+function DetailedTable({
+  items,
+  editingId,
+  draft,
+  onStartEdit,
+  onUpdateDraft,
+  onCancelEdit,
+  onSaveEdit,
+  onRemove,
+  categoryOptions = [],
+  sourceOptions = [],
+}) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-100 text-sm">
@@ -125,20 +200,48 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
                 </Td>
                 <Td>
                   {isEditing ? (
-                    <input type="text" value={draft?.category ?? ""} onChange={(ev) => onUpdateDraft("category", ev.target.value)} className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none" />
+                    <MultiPillSelect
+                      values={draft?.categories ?? []}
+                      options={categoryOptions}
+                      onChange={(values) => onUpdateDraft("categories", values)}
+                      placeholder="Adicionar categoria"
+                      inputPlaceholder="Nova categoria"
+                    />
+                  ) : e.categories && e.categories.length ? (
+                    <div className="flex flex-wrap gap-1">
+                      {e.categories.map((category) => (
+                        <span
+                          key={category}
+                          className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
                   ) : (
                     e.category || "—"
                   )}
                 </Td>
                 <Td>
                   {isEditing ? (
-                    <input 
-                      type="text" 
-                      list={sourceOptionsId}
-                      value={draft?.source ?? ""} 
-                      onChange={(ev) => onUpdateDraft("source", ev.target.value)} 
-                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none" 
+                    <MultiPillSelect
+                      values={draft?.sources ?? []}
+                      options={sourceOptions}
+                      onChange={(values) => onUpdateDraft("sources", values)}
+                      placeholder="Adicionar fonte"
+                      inputPlaceholder="Nova fonte"
                     />
+                  ) : e.sources && e.sources.length ? (
+                    <div className="flex flex-wrap gap-1">
+                      {e.sources.map((source) => (
+                        <span
+                          key={source}
+                          className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
+                        >
+                          {source}
+                        </span>
+                      ))}
+                    </div>
                   ) : (
                     e.source || "—"
                   )}

@@ -22,12 +22,16 @@ describe("Expenses Uploader", () => {
     expect(onParsed).toHaveBeenCalled();
   });
 
-  it("uses templates when PDF is recognized", async () => {
+  it("uses templates when PDF é reconhecido", async () => {
     const onParsed = vi.fn();
     // Mock template parser to return a fixed result
-    vi.spyOn(templates, "parseExpensePdfWithTemplates").mockReturnValue({ items: [
-      { date: "2025-02-01", description: "Mocked", category: "", source: "Teste", value: -12.34 },
-    ] });
+    vi.spyOn(templates, "parseExpensePdfWithTemplates").mockReturnValue({
+      templateId: "mock",
+      templateName: "Template Mockado",
+      items: [
+        { date: "2025-02-01", description: "Mocked", categories: [], sources: ["Teste"], value: -12.34 },
+      ],
+    });
     // Mock pdf.js to return synthetic text content
     vi.mock("pdfjs-dist", () => ({
       GlobalWorkerOptions: { workerSrc: "" },
@@ -52,8 +56,9 @@ describe("Expenses Uploader", () => {
     // Here we simulate by directly calling parseExpensePdfWithTemplates through a small hack:
     // We just assert that template result is rendered into headers (date, description...)
     fireEvent.change(input, { target: { files: [pdf] } });
-    // Ensure mapping UI appears (headers are set)
-    await screen.findByText(/Mapeie as colunas/i);
+    const confirmButton = await screen.findByRole("button", { name: /Confirmar importação/i });
+    fireEvent.click(confirmButton);
+    await waitFor(() => expect(onParsed).toHaveBeenCalled());
   });
 });
 

@@ -5,10 +5,16 @@ import { ensureCategoryInLibrary } from "../config/categories.js";
 import { ensureSourceInLibrary } from "../config/sources.js";
 import { SettingsIcon } from "../../components/icons.jsx";
 import {
+  DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
+  mergeDescriptionMappings,
+  normalizeMappingKeyword,
+} from "../config/descriptionMappings.js";
+import {
   EXPENSES_LS_KEY,
   EXPENSES_STORAGE_SEED,
   ensureExpensesDefaults,
 } from "../config/storage.js";
+import { MultiPillSelect } from "../components/MultiPillSelect.jsx";
 
 const PERSONAL_FIELDS = [
   { name: "fullName", label: "Nome completo", placeholder: "Nome do responsável" },
@@ -31,13 +37,27 @@ const CURRENCIES = [
 export default function ExpensesSettings() {
   const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
   const store = ensureExpensesDefaults(storeState);
-  const { personalInfo, settings, categories, sources, createdAt } = store;
+  const { personalInfo, settings, categories, sources, createdAt, descriptionCategoryMappings = [] } = store;
 
   const [newCategory, setNewCategory] = useState({ name: "", icon: "", color: "" });
   const [newSource, setNewSource] = useState({ name: "", icon: "", color: "" });
   const [showUpdateWarning, setShowUpdateWarning] = useState({ type: null, index: null });
+  const [newMappingKeyword, setNewMappingKeyword] = useState("");
+  const [newMappingCategories, setNewMappingCategories] = useState([]);
 
   const creationDate = useMemo(() => (createdAt ? createdAt.slice(0, 10) : ""), [createdAt]);
+  const mappingList = useMemo(
+    () =>
+      descriptionCategoryMappings.map((entry) => ({
+        keyword: entry.keyword,
+        categories: Array.isArray(entry.categories) ? entry.categories.filter(Boolean) : [],
+      })),
+    [descriptionCategoryMappings]
+  );
+  const categoryOptions = useMemo(
+    () => (Array.isArray(categories) ? categories.map((category) => category.name).filter(Boolean) : []),
+    [categories]
+  );
 
   function updatePersonalInfo(field, value) {
     const parsedValue = field === "householdSize" ? Number(value) || 0 : value;
@@ -104,9 +124,19 @@ export default function ExpensesSettings() {
       // Se o nome da categoria foi alterado, atualizar todas as despesas no histórico
       let nextExpenses = safePrev.expenses;
       if (field === "name" && oldCategory && oldCategory.name !== value) {
-        nextExpenses = safePrev.expenses.map(expense => 
-          expense.category === oldCategory.name ? { ...expense, category: value } : expense
-        );
+        nextExpenses = safePrev.expenses.map((expense) => {
+          const categoriesArray = Array.isArray(expense.categories)
+            ? expense.categories.map((item) => (item === oldCategory.name ? value : item))
+            : expense.category === oldCategory.name
+            ? [value]
+            : expense.categories;
+          const updatedCategory = expense.category === oldCategory.name ? value : expense.category;
+          return {
+            ...expense,
+            category: updatedCategory,
+            categories: categoriesArray || expense.categories,
+          };
+        });
         // Mostrar aviso de atualização
         setShowUpdateWarning({ type: 'category', index, oldName: oldCategory.name, newName: value });
         setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
@@ -157,9 +187,19 @@ export default function ExpensesSettings() {
       // Se o nome da fonte foi alterado, atualizar todas as despesas no histórico
       let nextExpenses = safePrev.expenses;
       if (field === "name" && oldSource && oldSource.name !== value) {
-        nextExpenses = safePrev.expenses.map(expense => 
-          expense.source === oldSource.name ? { ...expense, source: value } : expense
-        );
+        nextExpenses = safePrev.expenses.map((expense) => {
+          const sourcesArray = Array.isArray(expense.sources)
+            ? expense.sources.map((item) => (item === oldSource.name ? value : item))
+            : expense.source === oldSource.name
+            ? [value]
+            : expense.sources;
+          const updatedSource = expense.source === oldSource.name ? value : expense.source;
+          return {
+            ...expense,
+            source: updatedSource,
+            sources: sourcesArray || expense.sources,
+          };
+        });
         // Mostrar aviso de atualização
         setShowUpdateWarning({ type: 'source', index, oldName: oldSource.name, newName: value });
         setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
@@ -174,6 +214,39 @@ export default function ExpensesSettings() {
       const safePrev = ensureExpensesDefaults(prev);
       const nextSources = safePrev.sources.filter((_, idx) => idx !== index);
       return { ...safePrev, sources: nextSources };
+    });
+  }
+
+  function addDescriptionMapping(event) {
+    event.preventDefault();
+    const keyword = newMappingKeyword.trim();
+    if (!keyword || newMappingCategories.length === 0) return;
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      const merged = mergeDescriptionMappings(safePrev.descriptionCategoryMappings, [
+        { keyword, categories: newMappingCategories },
+      ]);
+      return { ...safePrev, descriptionCategoryMappings: merged };
+    });
+    setNewMappingKeyword("");
+    setNewMappingCategories([]);
+  }
+
+  function removeDescriptionMapping(keyword) {
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      const filtered = safePrev.descriptionCategoryMappings.filter(
+        (entry) => normalizeMappingKeyword(entry.keyword) !== normalizeMappingKeyword(keyword)
+      );
+      return { ...safePrev, descriptionCategoryMappings: filtered };
+    });
+  }
+
+  function resetDescriptionMappingsToDefault() {
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      const merged = mergeDescriptionMappings(DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS, []);
+      return { ...safePrev, descriptionCategoryMappings: merged };
     });
   }
 
@@ -277,6 +350,93 @@ export default function ExpensesSettings() {
                 className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400"
               />
             </label>
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900">Mapeamentos automáticos por descrição</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Quando a descrição contiver a palavra-chave abaixo, as categorias associadas serão aplicadas automaticamente na tela
+            de novas despesas.
+          </p>
+          <div className="mt-4 space-y-4">
+            {mappingList.length > 0 ? (
+              <div className="space-y-2">
+                {mappingList.map((mapping) => (
+                  <div
+                    key={mapping.keyword}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2"
+                  >
+                    <div>
+                      <div className="text-[0.65rem] uppercase text-slate-400">Palavra-chave</div>
+                      <div className="text-sm font-semibold text-slate-700">{mapping.keyword}</div>
+                    </div>
+                    <div className="flex flex-1 flex-wrap items-center gap-2">
+                      {mapping.categories.length > 0 ? (
+                        mapping.categories.map((category) => (
+                          <span
+                            key={`${mapping.keyword}-${category}`}
+                            className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] text-slate-600"
+                          >
+                            {category}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">Sem categorias associadas</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDescriptionMapping(mapping.keyword)}
+                      className="rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed px-3 py-4 text-sm text-slate-500">
+                Nenhum mapeamento configurado. Adicione uma palavra-chave abaixo.
+              </div>
+            )}
+
+            <form onSubmit={addDescriptionMapping} className="space-y-3 rounded-xl border border-slate-200 p-4">
+              <div>
+                <label className="text-xs font-semibold uppercase text-slate-500">Palavra-chave</label>
+                <input
+                  value={newMappingKeyword}
+                  onChange={(event) => setNewMappingKeyword(event.target.value)}
+                  placeholder="ex.: uber, farmácia, mercado"
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase text-slate-500">Categorias aplicadas</label>
+                <MultiPillSelect
+                  values={newMappingCategories}
+                  options={categoryOptions}
+                  onChange={setNewMappingCategories}
+                  placeholder="Selecionar categoria"
+                  inputPlaceholder="Nova categoria"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-slate-800"
+                >
+                  Salvar mapeamento
+                </button>
+                <button
+                  type="button"
+                  onClick={resetDescriptionMappingsToDefault}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                >
+                  Restaurar padrões
+                </button>
+              </div>
+            </form>
           </div>
         </section>
 

@@ -12,6 +12,11 @@ import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { useOfflineMode } from "../hooks/useOfflineMode.js";
 import { DEFAULT_CATEGORIES, ensureCategoryInLibrary } from "./config/categories.js";
 import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
+import {
+  DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
+  mergeDescriptionMappings,
+  normalizeMappingKeyword,
+} from "./config/descriptionMappings.js";
 import { computeDerivedExpenses, computeTotals, withId, makeId } from "./utils/expenses.js";
 import {
   ArrowDownTrayIcon,
@@ -45,6 +50,7 @@ export default function ExpensesApp() {
   const createdAt = store.createdAt;
   const personalInfo = store.personalInfo;
   const settings = store.settings;
+  const descriptionCategoryMappings = store.descriptionCategoryMappings || [];
 
   // Ativar modo offline
   useOfflineMode();
@@ -105,12 +111,35 @@ export default function ExpensesApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function normalizeExpense(expense) {
+    if (!expense) return expense;
+    const baseCategories = Array.isArray(expense.categories)
+      ? expense.categories.filter(Boolean)
+      : expense.category
+      ? [expense.category].filter(Boolean)
+      : [];
+    const baseSources = Array.isArray(expense.sources)
+      ? expense.sources.filter(Boolean)
+      : expense.source
+      ? [expense.source].filter(Boolean)
+      : [];
+    return {
+      ...expense,
+      categories: baseCategories,
+      sources: baseSources.length ? baseSources : [],
+      category: baseCategories[0] || "",
+      source: baseSources[0] || "",
+      locked: Boolean(expense.locked),
+    };
+  }
+
   function setExpenses(updater) {
     setStore((prev) => {
       const safePrev = ensureExpensesDefaults(prev);
       const currentExpenses = Array.isArray(safePrev.expenses) ? safePrev.expenses : [];
       const candidateExpenses = typeof updater === "function" ? updater(currentExpenses) : updater;
-      const nextExpenses = Array.isArray(candidateExpenses) ? candidateExpenses : [];
+      const nextExpensesRaw = Array.isArray(candidateExpenses) ? candidateExpenses : [];
+      const nextExpenses = nextExpensesRaw.map(normalizeExpense);
       const currentSources =
         Array.isArray(safePrev.sources) && safePrev.sources.length ? safePrev.sources : DEFAULT_SOURCES;
       const currentCategories =
@@ -134,13 +163,32 @@ export default function ExpensesApp() {
   }
 
   function createDraftExpense(overrides = {}) {
-    return { id: makeId(), date: "", description: "", category: "", source: "", value: 0, locked: false, ...overrides };
+    const defaultSource = sources?.[0]?.name || "";
+    const base = {
+      id: makeId(),
+      date: "",
+      description: "",
+      categories: [],
+      sources: defaultSource ? [defaultSource] : [],
+      category: "",
+      source: defaultSource,
+      value: 0,
+      locked: false,
+    };
+    const next = { ...base, ...overrides };
+    return normalizeExpense(next);
   }
 
   function mergeSourcesFromExpenses(expensesArr, baseSources = DEFAULT_SOURCES) {
     let next = Array.isArray(baseSources) ? [...baseSources] : [...DEFAULT_SOURCES];
     for (const e of expensesArr) {
-      next = ensureSourceInLibrary(e.source, next);
+      if (Array.isArray(e.sources)) {
+        for (const src of e.sources) {
+          next = ensureSourceInLibrary(src, next);
+        }
+      } else {
+        next = ensureSourceInLibrary(e.source, next);
+      }
     }
     return next;
   }
@@ -148,13 +196,54 @@ export default function ExpensesApp() {
   function mergeCategoriesFromExpenses(expensesArr, baseCategories = DEFAULT_CATEGORIES) {
     let next = Array.isArray(baseCategories) ? [...baseCategories] : [...DEFAULT_CATEGORIES];
     for (const e of expensesArr) {
-      next = ensureCategoryInLibrary(e.category, next);
+      if (Array.isArray(e.categories)) {
+        for (const cat of e.categories) {
+          next = ensureCategoryInLibrary(cat, next);
+        }
+      } else {
+        next = ensureCategoryInLibrary(e.category, next);
+      }
     }
     return next;
   }
 
+  function findCategoriesForDescription(description = "") {
+    const normalized = normalizeMappingKeyword(description);
+    if (!normalized) return [];
+    const matches = descriptionCategoryMappings.filter((entry) =>
+      normalized.includes(normalizeMappingKeyword(entry.keyword))
+    );
+    if (!matches.length) return [];
+    const categoriesSet = new Set();
+    for (const match of matches) {
+      if (!Array.isArray(match.categories)) continue;
+      for (const cat of match.categories) {
+        if (cat) categoriesSet.add(cat);
+      }
+    }
+    return Array.from(categoriesSet);
+  }
+
+  function upsertDescriptionMapping(keyword, categoriesList = []) {
+    const normalizedKeyword = normalizeMappingKeyword(keyword);
+    const filteredCategories = Array.isArray(categoriesList)
+      ? categoriesList.filter(Boolean)
+      : [];
+    if (!normalizedKeyword || !filteredCategories.length) return;
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      const merged = mergeDescriptionMappings(safePrev.descriptionCategoryMappings, [
+        { keyword: normalizedKeyword, categories: filteredCategories },
+      ]);
+      return { ...safePrev, descriptionCategoryMappings: merged };
+    });
+  }
+
   const expensesWithIds = useMemo(
-    () => expenses.map((e) => (e.id ? e : withId(e))),
+    () => expenses.map((e) => {
+      const normalized = normalizeExpense(e);
+      return normalized.id ? normalized : withId(normalized);
+    }),
     [expenses]
   );
 
@@ -166,11 +255,26 @@ export default function ExpensesApp() {
       const key = yyyymm(e.date);
       if (!key) continue;
       const base = byMonth.get(key) || { ym: key, total: 0, byCategory: {}, bySource: {} };
-      base.total += Math.abs(Number(e.value) || 0);
-      const cat = e.category || "(sem categoria)";
-      const src = e.source || "(sem fonte)";
-      base.byCategory[cat] = (base.byCategory[cat] || 0) + Math.abs(Number(e.value) || 0);
-      base.bySource[src] = (base.bySource[src] || 0) + Math.abs(Number(e.value) || 0);
+      const absValue = Math.abs(Number(e.value) || 0);
+      base.total += absValue;
+      const categoriesList = Array.isArray(e.categories) && e.categories.length
+        ? e.categories
+        : e.category
+        ? [e.category]
+        : ["(sem categoria)"];
+      const sourcesList = Array.isArray(e.sources) && e.sources.length
+        ? e.sources
+        : e.source
+        ? [e.source]
+        : ["(sem fonte)"];
+      for (const cat of categoriesList) {
+        const keyName = cat || "(sem categoria)";
+        base.byCategory[keyName] = (base.byCategory[keyName] || 0) + absValue;
+      }
+      for (const src of sourcesList) {
+        const keyName = src || "(sem fonte)";
+        base.bySource[keyName] = (base.bySource[keyName] || 0) + absValue;
+      }
       byMonth.set(key, base);
     }
     return Array.from(byMonth.values()).sort((a, b) => (a.ym < b.ym ? -1 : 1));
@@ -214,6 +318,7 @@ export default function ExpensesApp() {
       exported_at: new Date().toISOString(),
       categories,
       sources,
+      description_mappings: descriptionCategoryMappings,
       personal_info: personalInfo,
       settings,
       inputs: [
@@ -365,14 +470,23 @@ export default function ExpensesApp() {
   function handleSubmitDrafts(rows) {
     const prepared = rows
       .filter((r) => r.date && r.description)
-      .map((r) => ({
-        id: makeId(),
-        date: r.date,
-        description: r.description.trim(),
-        category: r.category.trim(),
-        source: r.source.trim(),
-        value: toNumber(r.value),
-      }));
+      .map((r) => {
+        const normalized = normalizeExpense({
+          ...r,
+          id: makeId(),
+          date: r.date,
+          description: r.description.trim(),
+          value: toNumber(r.value),
+        });
+        const categories = normalized.categories.length
+          ? normalized.categories
+          : findCategoriesForDescription(normalized.description);
+        return {
+          ...normalized,
+          categories,
+          category: categories[0] || "",
+        };
+      });
     if (!prepared.length) return;
     setExpenses((prev) => [...prev, ...prepared]);
     setDrafts([createDraftExpense()]);
@@ -458,7 +572,16 @@ export default function ExpensesApp() {
           <ExpensesHistorico expenses={expensesWithIds} derived={derived} setExpenses={setExpenses} categories={categories} sources={sources} />
         )}
         {tab === 'entrada' && (
-          <ExpensesEntrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} categories={categories} sources={sources} setStore={setStore} />
+          <ExpensesEntrada
+            drafts={drafts}
+            setDrafts={setDrafts}
+            onSubmit={handleSubmitDrafts}
+            categories={categories}
+            sources={sources}
+            setStore={setStore}
+            suggestCategories={findCategoriesForDescription}
+            onSaveDescriptionMapping={upsertDescriptionMapping}
+          />
         )}
         {tab === 'financiamentos' && <FinancingCalculator />}
 
