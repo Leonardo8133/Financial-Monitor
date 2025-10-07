@@ -135,3 +135,28 @@ export function SettingsIcon(props) {
     </Icon>
   );
 }
+
+export function FunnelIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4 5h16l-6 8v5l-4 2v-7z" />
+    </Icon>
+  );
+}
+
+export function ChevronUpDownIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M7 9l5-5 5 5" />
+      <path d="M7 15l5 5 5-5" />
+    </Icon>
+  );
+}
+
+export function ChevronDownIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M6 9l6 6 6-6" />
+    </Icon>
+  );
+}

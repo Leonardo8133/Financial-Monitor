@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fmtBRL, fmtPct } from "../utils/formatters.js";
 import { CurrencyInput } from "./CurrencyInput.jsx";
+import { InfoTooltip } from "./InfoTooltip.jsx";
 
 const MAX_GOAL_MONTHS = 600;
 
@@ -36,13 +37,18 @@ function formatGoalMessage(goalMonths) {
   return [yearLabel, monthLabel].filter(Boolean).join(" e ") || "menos de um mês";
 }
 
-function ResultItem({ title, value, description, tooltip }) {
+function ResultItem({ title, value, description, tooltip, explanation = {} }) {
+  const purpose = explanation.purpose ?? description;
+  const calculation = explanation.calculation ?? tooltip;
+  const extraDetails = explanation.extraDetails ?? [];
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4" title={tooltip || description}>
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</div>
-      <div className="mt-1 text-lg font-semibold text-slate-900">{value}</div>
-      <p className="mt-1 text-xs text-slate-600">{description}</p>
-    </div>
+    <InfoTooltip title={title} purpose={purpose} calculation={calculation} extraDetails={extraDetails}>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg" title={tooltip || description}>
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</div>
+        <div className="mt-1 text-lg font-semibold text-slate-900">{value}</div>
+        <p className="mt-1 text-xs text-slate-600">{description}</p>
+      </div>
+    </InfoTooltip>
   );
 }
 
@@ -475,36 +481,92 @@ export function Projecoes({ timeline = [], defaults = {} }) {
           value={fmtBRL(projection.nominalBalance)}
           description="Valor estimado ao final do período sem descontos de inflação"
           tooltip="Calculado aplicando juros compostos mensais sobre o saldo inicial mais aportes"
+          explanation={{
+            purpose:
+              "Ajuda a visualizar o tamanho futuro do patrimônio caso as premissas de rentabilidade e aportes se mantenham.",
+            calculation:
+              "Aplicamos juros compostos mensais sobre o saldo inicial, somando os aportes projetados a cada mês.",
+            extraDetails: [
+              { label: "Total aportado", value: fmtBRL(projection.totalContribution) },
+              { label: "Rendimentos acumulados", value: fmtBRL(projection.totalYield) },
+            ],
+          }}
         />
         <ResultItem
           title="Patrimônio ajustado"
           value={fmtBRL(projection.realBalance)}
           description="Valor equivalente em poder de compra atual considerando a inflação"
           tooltip="Saldo nominal dividido pelo fator de inflação acumulado"
+          explanation={{
+            purpose:
+              "Permite entender o poder de compra real do patrimônio projetado, descontando a perda de valor da moeda.",
+            calculation:
+              "Dividimos o saldo nominal pelo fator de inflação acumulado ao longo do período simulado.",
+            extraDetails: [
+              { label: "Inflação anual", value: fmtPct(percentToDecimal(form.inflationPct)) },
+              { label: "Horizonte", value: `${projection.horizon} meses` },
+            ],
+          }}
         />
         <ResultItem
           title="Total aportado"
           value={fmtBRL(projection.totalContribution)}
           description="Somatório do patrimônio atual com todos os aportes projetados"
           tooltip="Soma dos aportes mensais adicionados antes da aplicação da rentabilidade"
+          explanation={{
+            purpose: "Resume o esforço financeiro necessário ao longo do período simulado.",
+            calculation:
+              "Somamos o patrimônio inicial e cada aporte mensal projetado, considerando o crescimento informado.",
+            extraDetails: [
+              { label: "Aporte inicial", value: fmtBRL(form.initialBalance) },
+              { label: "Média aporte mensal", value: fmtBRL(form.monthlyContribution) },
+            ],
+          }}
         />
         <ResultItem
           title="Rendimentos acumulados"
           value={fmtBRL(projection.totalYield)}
           description="Diferença entre patrimônio projetado e o total investido"
           tooltip="Resultado líquido dos juros compostos após considerar os aportes"
+          explanation={{
+            purpose: "Mostra quanto do patrimônio projetado vem da performance e não dos aportes.",
+            calculation:
+              "Subtraímos o total aportado do patrimônio projetado para encontrar o ganho líquido.",
+            extraDetails: [
+              { label: "Patrimônio projetado", value: fmtBRL(projection.nominalBalance) },
+              { label: "Total aportado", value: fmtBRL(projection.totalContribution) },
+            ],
+          }}
         />
         <ResultItem
           title="Último aporte estimado"
           value={fmtBRL(projection.finalContribution)}
           description="Valor aproximado do aporte no último mês da projeção"
           tooltip="Considera o crescimento anual dos aportes informado"
+          explanation={{
+            purpose: "Ajuda a planejar o tamanho dos aportes no longo prazo com os reajustes configurados.",
+            calculation:
+              "Aplicamos o crescimento anual dos aportes sobre o valor mensal informado até o último mês simulado.",
+            extraDetails: [
+              { label: "Crescimento anual", value: fmtPct(percentToDecimal(form.contributionGrowthPct)) },
+              { label: "Horizonte", value: `${projection.horizon} meses` },
+            ],
+          }}
         />
         <ResultItem
           title="Taxa anual equivalente"
           value={fmtPct(projection.annualRate)}
           description="Conversão da taxa mensal em rentabilidade anual"
           tooltip="(1 + taxa mensal)^12 - 1"
+          explanation={{
+            purpose:
+              "Permite comparar a rentabilidade esperada com investimentos que divulgam performance anual.",
+            calculation: "Aplicamos a fórmula (1 + taxa mensal)^12 - 1 para obter a taxa anual equivalente.",
+            extraDetails: [
+              { label: "Taxa mensal", value: fmtPct(percentToDecimal(form.monthlyReturnPct)) },
+              { label: "Taxa anual", value: fmtPct(projection.annualRate) },
+            ],
+          }}
         />
       </div>
 

@@ -2,6 +2,15 @@
 
 Uma aplicação React para acompanhar investimentos com armazenamento local (localStorage), exportação/importação em JSON e gráficos com Recharts.
 
+> 📚 Consulte o [Guia do Usuário](docs/USER_GUIDE.md) para instruções detalhadas de uso, filtros, dashboards e dicas de operação.
+
+### Principais recursos
+
+- Dashboards interativos com seleção de período, filtros por fonte e ativação/ocultação de gráficos.
+- Tabela inteligente reutilizável (`SmartDataTable`) com ordenação, filtros e paginação integrados.
+- Cartões e resultados com tooltips explicando como cada métrica é calculada.
+- Importação/exportação em JSON com template oficial e modal animado.
+
 ## Pré-requisitos
 
 - [Node.js](https://nodejs.org/) (versão 18 ou superior recomendada)

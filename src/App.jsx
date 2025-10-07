@@ -281,6 +281,142 @@ export default function App() {
   }, [derivedEntries]);
 
   const lastMonth = timeline.at(-1);
+  const previousMonth = timeline.length > 1 ? timeline[timeline.length - 2] : null;
+
+  const takeRecentValues = (field, months, { requirePositive = false } = {}) => {
+    if (!timeline.length || months <= 0) return [];
+    const startIndex = Math.max(timeline.length - months, 0);
+    return timeline
+      .slice(startIndex)
+      .map((month) => month[field])
+      .filter((value) => value !== null && value !== undefined && Number.isFinite(value))
+      .filter((value) => (requirePositive ? value > 0 : true))
+      .map((value) => Number(value));
+  };
+
+  const computeAverage = (values) => (values.length ? values.reduce((acc, value) => acc + value, 0) / values.length : null);
+  const computeSum = (values) => (values.length ? values.reduce((acc, value) => acc + value, 0) : 0);
+
+  const investedAverage6 = useMemo(() => computeAverage(takeRecentValues("invested", 6, { requirePositive: true })), [timeline]);
+  const cashFlowAverage6 = useMemo(() => computeAverage(takeRecentValues("cashFlow", 6)), [timeline]);
+  const yieldPctAverage6 = useMemo(() => computeAverage(takeRecentValues("yieldPct", 6)), [timeline]);
+  const accountAverage6 = useMemo(() => computeAverage(takeRecentValues("inAccount", 6)), [timeline]);
+  const investedSum12 = useMemo(() => computeSum(takeRecentValues("invested", 12, { requirePositive: true })), [timeline]);
+
+  const formatDeltaBRL = (delta) => {
+    if (delta === null || delta === undefined) return "—";
+    const base = fmtBRL(delta);
+    return delta > 0 ? `+${base}` : base;
+  };
+
+  const formatDeltaPct = (delta) => {
+    if (delta === null || delta === undefined) return "—";
+    const base = fmtPct(delta);
+    return delta > 0 ? `+${base}` : base;
+  };
+
+  const cardExplanations = useMemo(() => {
+    const safeMonthLabel = lastMonth?.label ?? "mês atual";
+    const investVariation =
+      lastMonth && previousMonth ? (lastMonth.invested ?? 0) - (previousMonth.invested ?? 0) : null;
+    const cashFlowVariation =
+      lastMonth && previousMonth ? (lastMonth.cashFlow ?? 0) - (previousMonth.cashFlow ?? 0) : null;
+    const accountVariation =
+      lastMonth && previousMonth ? (lastMonth.inAccount ?? 0) - (previousMonth.inAccount ?? 0) : null;
+    const yieldVariation =
+      lastMonth && previousMonth && lastMonth.yieldValue !== null && previousMonth.yieldValue !== null
+        ? (lastMonth.yieldValue ?? 0) - (previousMonth.yieldValue ?? 0)
+        : null;
+    const yieldPctVariation =
+      lastMonth && previousMonth && lastMonth.yieldPct !== null && previousMonth.yieldPct !== null
+        ? (lastMonth.yieldPct ?? 0) - (previousMonth.yieldPct ?? 0)
+        : null;
+
+    const cashFlowHistory = takeRecentValues("cashFlow", 12);
+    const yieldHistory = takeRecentValues("yieldValue", 12);
+
+    const maxCashFlow = cashFlowHistory.length ? Math.max(...cashFlowHistory) : null;
+    const minCashFlow = cashFlowHistory.length ? Math.min(...cashFlowHistory) : null;
+    const bestYield = yieldHistory.length ? Math.max(...yieldHistory) : null;
+    const worstYield = yieldHistory.length ? Math.min(...yieldHistory) : null;
+
+    const accountShare =
+      lastMonth && (lastMonth.invested ?? 0) + (lastMonth.inAccount ?? 0) > 0
+        ? (lastMonth.inAccount ?? 0) / ((lastMonth.invested ?? 0) + (lastMonth.inAccount ?? 0))
+        : null;
+
+    return {
+      invested: {
+        purpose:
+          "Monitora o volume aportado no período para ajudar a manter a disciplina de investimento ao longo do tempo.",
+        calculation: lastMonth
+          ? `Somamos todos os valores informados em \"Valor em Investimentos\" referentes a ${safeMonthLabel}.`
+          : "Ainda não existem lançamentos para este período.",
+        extraDetails: [
+          { label: "Variação vs mês anterior", value: formatDeltaBRL(investVariation) },
+          { label: "Média últimos 6 meses", value: investedAverage6 !== null ? fmtBRL(investedAverage6) : "—" },
+          { label: "Total 12 meses", value: investedSum12 ? fmtBRL(investedSum12) : "—" },
+        ],
+      },
+      yield: {
+        purpose:
+          "Ajuda a entender quanto do crescimento do patrimônio veio de rendimento e não de novos aportes.",
+        calculation: lastMonth
+          ? `Consideramos a diferença entre o total investido e o total no fim de ${safeMonthLabel}, descontando o fluxo de caixa do mês.`
+          : "Sem rendimento calculado porque não há lançamentos com valores comparativos.",
+        extraDetails: [
+          {
+            label: "Taxa do mês",
+            value:
+              lastMonth && lastMonth.yieldPct !== null && lastMonth.yieldPct !== undefined
+                ? fmtPct(lastMonth.yieldPct)
+                : "—",
+          },
+          { label: "Variação vs mês anterior", value: formatDeltaBRL(yieldVariation) },
+          { label: "Delta de taxa", value: formatDeltaPct(yieldPctVariation) },
+          { label: "Média taxa 6 meses", value: yieldPctAverage6 !== null ? fmtPct(yieldPctAverage6) : "—" },
+          { label: "Melhor rendimento 12 meses", value: bestYield !== null ? fmtBRL(bestYield) : "—" },
+          { label: "Pior rendimento 12 meses", value: worstYield !== null ? fmtBRL(worstYield) : "—" },
+        ],
+      },
+      cashFlow: {
+        purpose:
+          "Aponta o saldo líquido de entradas e saídas, útil para identificar meses de maior aporte ou resgates.",
+        calculation: lastMonth
+          ? `Somamos todas as entradas positivas e saídas negativas cadastradas em ${safeMonthLabel}.`
+          : "Sem lançamentos disponíveis para calcular o fluxo.",
+        extraDetails: [
+          { label: "Variação vs mês anterior", value: formatDeltaBRL(cashFlowVariation) },
+          { label: "Média últimos 6 meses", value: cashFlowAverage6 !== null ? fmtBRL(cashFlowAverage6) : "—" },
+          { label: "Maior entrada 12 meses", value: maxCashFlow !== null ? fmtBRL(maxCashFlow) : "—" },
+          { label: "Maior saída 12 meses", value: minCashFlow !== null ? fmtBRL(minCashFlow) : "—" },
+        ],
+      },
+      account: {
+        purpose:
+          "Mostra a parcela do patrimônio que permanece disponível em conta corrente ou caixa para emergências.",
+        calculation: lastMonth
+          ? `Somamos o campo \"Valor na Conta\" de todos os lançamentos cadastrados em ${safeMonthLabel}.`
+          : "Sem valores em conta registrados para o período.",
+        extraDetails: [
+          { label: "Variação vs mês anterior", value: formatDeltaBRL(accountVariation) },
+          { label: "Participação no patrimônio", value: accountShare !== null ? fmtPct(accountShare) : "—" },
+          { label: "Média últimos 6 meses", value: accountAverage6 !== null ? fmtBRL(accountAverage6) : "—" },
+        ],
+      },
+    };
+  }, [
+    accountAverage6,
+    investedAverage6,
+    investedSum12,
+    lastMonth,
+    previousMonth,
+    takeRecentValues,
+    cashFlowAverage6,
+    yieldPctAverage6,
+    timeline,
+  ]);
+
   const lastMonthSources = useMemo(() => {
     if (!lastMonth || !Array.isArray(lastMonth.sources)) return [];
     const totalMonthInvested = lastMonth.sources.reduce(
@@ -637,6 +773,7 @@ export default function App() {
             subtitle={lastMonth ? `Referente a ${lastMonth.label}` : "Sem dados do mês"}
             hoverDetails={hoverSourceDetails}
             tooltip="Soma dos aportes registrados no mês selecionado; passe o mouse para ver o detalhe por fonte"
+            explanation={cardExplanations.invested}
           />
           <KPICard
             title="Rendimento último mês"
@@ -654,6 +791,7 @@ export default function App() {
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
             tooltip="Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais"
             hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.yieldValue })) || []}
+            explanation={cardExplanations.yield}
           />
           <KPICard
             title="Entrada/Saída último mês"
@@ -662,12 +800,14 @@ export default function App() {
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
             tooltip="Somatório das entradas (positivas) e saídas (negativas) informadas no mês"
             hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.cashFlow })) || []}
+            explanation={cardExplanations.cashFlow}
           />
           <KPICard
             title="Total em Conta último mês"
             value={fmtBRL(lastMonth?.inAccount ?? 0)}
             subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
             tooltip="Soma do campo 'Valor na Conta' para o mês selecionado"
+            explanation={cardExplanations.account}
           />
         </section>
 

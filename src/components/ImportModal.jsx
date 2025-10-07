@@ -26,7 +26,7 @@ export function ImportModal({ open, onClose, onImport, onDownloadTemplate }) {
   const modal = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl animate-scale-pop"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"

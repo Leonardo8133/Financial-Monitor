@@ -154,7 +154,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
 
       <div className="space-y-4">
         {drafts.map((row, index) => (
-          <div key={row.id} className="space-y-3 rounded-xl border border-slate-200 p-4">
+          <div key={row.id} className="space-y-3 rounded-xl border border-slate-200 p-4 animate-slide-fade-in">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
               <span className="font-semibold text-slate-700">Entrada #{index + 1}</span>
               <div className="flex flex-wrap items-center gap-2">

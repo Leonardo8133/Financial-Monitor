@@ -10,14 +10,22 @@ export function Tabs({ tabs, activeTab, onChange }) {
               key={tab.key}
               type="button"
               onClick={() => onChange(tab.key)}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                isActive ? "bg-white text-blue-700 shadow" : "text-blue-700 hover:bg-white/40"
+              className={`relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-4 py-2 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                isActive ? "text-blue-900" : "text-blue-700 hover:text-blue-800"
               }`}
               title={tooltip}
               aria-pressed={isActive}
             >
-              {tab.icon}
-              {tab.label}
+              <span
+                className={`absolute inset-0 -z-10 scale-95 rounded-lg bg-white shadow transition-all duration-200 ${
+                  isActive ? "opacity-100 scale-100" : "opacity-0"
+                }`}
+                aria-hidden="true"
+              />
+              <span className="flex items-center gap-2">
+                {tab.icon}
+                {tab.label}
+              </span>
             </button>
           );
         })}

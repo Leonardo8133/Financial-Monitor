@@ -1,25 +1,48 @@
 import { useMemo, useState } from "react";
+import { Transition } from "@headlessui/react";
 import { resolveBankVisual } from "../config/banks.js";
 import { resolveSourceVisual } from "../config/sources.js";
 import { fmtBRL, fmtPct, monthLabel, toNumber, yyyymm } from "../utils/formatters.js";
-import { Td, Th } from "./TableCells.jsx";
 import { useOpenDatePickerProps } from "../hooks/useOpenDatePickerProps.js";
+import { SmartDataTable } from "./SmartDataTable.jsx";
+import { InfoTooltip } from "./InfoTooltip.jsx";
 
 export function Historico({ entries, computedEntries, setEntries, banks, sources, onClearAll }) {
   const dateOpenProps = useOpenDatePickerProps();
-  const [q, setQ] = useState("");
+  const [search, setSearch] = useState("");
+  const [activeMonth, setActiveMonth] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
-  const [collapsed, setCollapsed] = useState(false);
   const sourceOptionsId = "source-library";
 
   const baseLookup = useMemo(() => new Map(entries.map((entry) => [entry.id, entry])), [entries]);
 
-  const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return computedEntries;
-    return computedEntries.filter((entry) =>
-      [
+  const monthlyGroups = useMemo(() => {
+    const map = new Map();
+    for (const entry of computedEntries) {
+      const ym = yyyymm(entry.date);
+      if (!ym) continue;
+      const bucket = map.get(ym) || { ym, label: monthLabel(ym), items: [] };
+      bucket.items.push(entry);
+      map.set(ym, bucket);
+    }
+    return Array.from(map.values())
+      .map((group) => ({
+        ...group,
+        totals: summarize(group.items),
+      }))
+      .sort((a, b) => (a.ym < b.ym ? 1 : -1));
+  }, [computedEntries]);
+
+  const filteredEntries = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    return computedEntries.filter((entry) => {
+      if (activeMonth && yyyymm(entry.date) !== activeMonth) {
+        return false;
+      }
+      if (!normalizedSearch) return true;
+      return [
         entry.bank,
         entry.date,
         entry.invested,
@@ -29,37 +52,34 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
         entry.yieldPct,
       ]
         .map((value) => String(value ?? "").toLowerCase())
-        .some((text) => text.includes(s))
-    );
-  }, [q, computedEntries]);
+        .some((text) => text.includes(normalizedSearch));
+    });
+  }, [activeMonth, computedEntries, search]);
 
-  const groups = useMemo(() => {
-    const map = new Map();
-    for (const entry of filtered) {
-      const key = yyyymm(entry.date);
-      if (!key) continue;
-      const arr = map.get(key) || [];
-      arr.push(entry);
-      map.set(key, arr);
+  const summaryRows = useMemo(() => {
+    const byDate = new Map();
+    for (const entry of filteredEntries) {
+      const key = entry.date;
+      const current =
+        byDate.get(key) || {
+          date: entry.date,
+          invested: 0,
+          inAccount: 0,
+          cashFlow: 0,
+          yieldValue: 0,
+          hasYield: false,
+        };
+      current.invested += toNumber(entry.invested);
+      current.inAccount += toNumber(entry.inAccount);
+      current.cashFlow += toNumber(entry.cashFlow);
+      if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
+        current.yieldValue += entry.yieldValue;
+        current.hasYield = true;
+      }
+      byDate.set(key, current);
     }
-    return Array.from(map.entries())
-      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([ym, arr]) => ({ ym, label: monthLabel(ym), items: arr }));
-  }, [filtered]);
-
-  const totalizer = (arr) =>
-    arr.reduce(
-      (acc, entry) => {
-        acc.invested += toNumber(entry.invested);
-        acc.inAccount += toNumber(entry.inAccount);
-        acc.cashFlow += toNumber(entry.cashFlow);
-        if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
-          acc.yieldValue += entry.yieldValue;
-        }
-        return acc;
-      },
-      { invested: 0, inAccount: 0, cashFlow: 0, yieldValue: 0 }
-    );
+    return Array.from(byDate.values()).sort((a, b) => (a.date < b.date ? 1 : -1));
+  }, [filteredEntries]);
 
   function removeEntry(id) {
     setEntries((prev) => prev.filter((item) => item.id !== id));
@@ -121,311 +141,401 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
     }
   };
 
+  const librarySources = Array.isArray(sources) ? sources : [];
+
+  const detailedColumns = useMemo(() => {
+    return [
+      {
+        id: "date",
+        header: "Data",
+        accessor: (row) => row.date,
+        headerTooltip: "Data em que o lançamento aconteceu",
+        compareFn: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        cell: ({ row }) => {
+          const isEditing = editingId === row.id;
+          if (isEditing) {
+            return (
+              <input
+                type="date"
+                value={draft?.date ?? ""}
+                onChange={(event) => updateDraft("date", event.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none"
+                {...dateOpenProps}
+              />
+            );
+          }
+          return new Date(row.date).toLocaleDateString("pt-BR");
+        },
+      },
+      {
+        id: "bank",
+        header: "Banco",
+        accessor: (row) => row.bank,
+        cell: ({ row }) => {
+          const isEditing = editingId === row.id;
+          if (isEditing) {
+            return (
+              <input
+                type="text"
+                value={draft?.bank ?? ""}
+                onChange={(event) => updateDraft("bank", event.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none"
+              />
+            );
+          }
+          return <BankBadge name={row.bank} banks={banks} />;
+        },
+      },
+      {
+        id: "source",
+        header: "Fonte",
+        accessor: (row) => row.source,
+        cell: ({ row }) => {
+          const isEditing = editingId === row.id;
+          if (isEditing) {
+            return (
+              <input
+                type="text"
+                list={sourceOptionsId}
+                value={draft?.source ?? ""}
+                onChange={(event) => updateDraft("source", event.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-blue-400 focus:outline-none"
+              />
+            );
+          }
+          return <SourceBadge name={row.source} sources={librarySources} />;
+        },
+      },
+      {
+        id: "inAccount",
+        header: "Valor na Conta",
+        accessor: (row) => toNumber(row.inAccount),
+        align: "right",
+        headerTooltip: "Somatório do saldo disponível informado",
+        cell: ({ row }) => {
+          const isEditing = editingId === row.id;
+          if (isEditing) {
+            return (
+              <input
+                type="number"
+                step="0.01"
+                value={draft?.inAccount ?? 0}
+                onChange={(event) => updateDraft("inAccount", event.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-blue-400 focus:outline-none"
+              />
+            );
+          }
+          return <span className={toneClass(row.inAccount)}>{fmtBRL(row.inAccount)}</span>;
+        },
+      },
+      {
+        id: "invested",
+        header: "Investido",
+        accessor: (row) => toNumber(row.invested),
+        align: "right",
+        headerTooltip: "Valor aplicado no investimento",
+        cell: ({ row }) => {
+          const isEditing = editingId === row.id;
+          if (isEditing) {
+            return (
+              <input
+                type="number"
+                step="0.01"
+                value={draft?.invested ?? 0}
+                onChange={(event) => updateDraft("invested", event.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-blue-400 focus:outline-none"
+              />
+            );
+          }
+          return fmtBRL(row.invested);
+        },
+      },
+      {
+        id: "cashFlow",
+        header: "Entrada/Saída",
+        accessor: (row) => toNumber(row.cashFlow),
+        align: "right",
+        headerTooltip: "Fluxo de caixa mensal informado",
+        cell: ({ row }) => {
+          const isEditing = editingId === row.id;
+          if (isEditing) {
+            return (
+              <input
+                type="number"
+                step="0.01"
+                value={draft?.cashFlow ?? 0}
+                onChange={(event) => updateDraft("cashFlow", event.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-blue-400 focus:outline-none"
+              />
+            );
+          }
+          return <span className={toneClass(row.cashFlow)}>{fmtBRL(row.cashFlow)}</span>;
+        },
+      },
+      {
+        id: "yieldValue",
+        header: "Rendimento (R$)",
+        accessor: (row) => (row.yieldValue !== null && row.yieldValue !== undefined ? row.yieldValue : null),
+        align: "right",
+        enableGlobalFilter: false,
+        cell: ({ row }) =>
+          row.yieldValue !== null && row.yieldValue !== undefined ? (
+            <span className={toneClass(row.yieldValue)}>{fmtBRL(row.yieldValue)}</span>
+          ) : (
+            "—"
+          ),
+      },
+      {
+        id: "yieldPct",
+        header: "Rendimento (%)",
+        accessor: (row) => (row.yieldPct !== null && row.yieldPct !== undefined ? row.yieldPct : null),
+        align: "right",
+        enableGlobalFilter: false,
+        cell: ({ row }) =>
+          row.yieldPct !== null && row.yieldPct !== undefined ? (
+            <span className={toneClass(row.yieldPct)}>{fmtPct(row.yieldPct)}</span>
+          ) : (
+            "—"
+          ),
+      },
+      {
+        id: "actions",
+        header: "Ações",
+        filterable: false,
+        enableGlobalFilter: false,
+        align: "right",
+        cell: ({ row }) => {
+          const isEditing = editingId === row.id;
+          return (
+            <div className="flex justify-end gap-2">
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={() => saveEdit(row.id)}
+                    className="rounded-lg bg-emerald-500 px-2 py-1 text-xs font-semibold text-white transition hover:bg-emerald-600"
+                  >
+                    Salvar
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="rounded-lg bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-300"
+                  >
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => startEdit(row.id)}
+                    className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 transition hover:scale-105 hover:bg-slate-200"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => removeEntry(row.id)}
+                    className="rounded-lg bg-red-50 px-2 py-1 text-xs font-semibold text-red-600 transition hover:scale-105 hover:bg-red-100"
+                  >
+                    Excluir
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        },
+      },
+    ];
+  }, [banks, cancelEdit, dateOpenProps, draft, editingId, librarySources, removeEntry, saveEdit, startEdit, updateDraft]);
+
+  const summaryColumns = useMemo(
+    () => [
+      {
+        id: "date",
+        header: "Data",
+        accessor: (row) => row.date,
+        compareFn: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        cell: ({ row }) => new Date(row.date).toLocaleDateString("pt-BR"),
+      },
+      {
+        id: "invested",
+        header: "Investido",
+        accessor: (row) => row.invested,
+        align: "right",
+        cell: ({ row }) => fmtBRL(row.invested),
+      },
+      {
+        id: "inAccount",
+        header: "Em conta",
+        accessor: (row) => row.inAccount,
+        align: "right",
+        cell: ({ row }) => fmtBRL(row.inAccount),
+      },
+      {
+        id: "cashFlow",
+        header: "Entradas/Saídas",
+        accessor: (row) => row.cashFlow,
+        align: "right",
+        cell: ({ row }) => <span className={toneClass(row.cashFlow)}>{fmtBRL(row.cashFlow)}</span>,
+      },
+      {
+        id: "yieldValue",
+        header: "Rendimento",
+        accessor: (row) => row.yieldValue,
+        align: "right",
+        cell: ({ row }) =>
+          row.hasYield ? <span className={toneClass(row.yieldValue)}>{fmtBRL(row.yieldValue)}</span> : "—",
+      },
+    ],
+    []
+  );
+
   return (
     <div className="rounded-2xl bg-white p-4 shadow">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <input
-          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 sm:w-72"
-          placeholder="Filtrar por banco, data, valor..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            className="w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-blue-400"
+            placeholder="Busque por banco, valor ou data"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <button
+            type="button"
+            onClick={() => setCollapsed((prev) => !prev)}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+            title={collapsed ? "Mostrar lançamentos detalhados" : "Mostrar consolidação diária"}
+          >
+            {collapsed ? "Ver lançamentos" : "Resumo diário"}
+          </button>
           {typeof onClearAll === "function" && (
             <button
               type="button"
               onClick={handleClearAll}
-              className="rounded-lg border border-red-200 px-2 py-1 font-semibold text-red-600 transition hover:bg-red-50"
-              title="Remove todos os lançamentos armazenados"
+              className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
             >
               Limpar tudo
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setCollapsed((prev) => !prev)}
-            className="rounded-lg border border-slate-200 px-2 py-1 font-semibold text-slate-600 transition hover:bg-slate-100"
-            title={collapsed ? "Expandir os detalhes das linhas" : "Ocultar detalhes das linhas"}
-          >
-            {collapsed ? "Expandir tudo" : "Colapsar tudo"}
-          </button>
-          <span>{filtered.length} lançamentos</span>
+        </div>
+        <div className="text-xs text-slate-500">
+          {filteredEntries.length} lançamento{filteredEntries.length === 1 ? "" : "s"} exibido{filteredEntries.length === 1 ? "" : "s"}
         </div>
       </div>
 
-      {groups.length === 0 && (
-        <div className="rounded-xl border border-dashed p-6 text-center text-slate-500">
-          Sem lançamentos. Adicione na aba "Nova Entrada" ou importe um .json.
+      <div className="relative mb-6 overflow-hidden rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+        <div className="flex flex-wrap gap-2">
+          {monthlyGroups.map((group) => {
+            const isActive = activeMonth === group.ym;
+            const totalEntries = group.items.length;
+            const tooltipDetails = [
+              { label: "Investido", value: fmtBRL(group.totals.invested) },
+              { label: "Em conta", value: fmtBRL(group.totals.inAccount) },
+              { label: "Fluxo", value: fmtBRL(group.totals.cashFlow) },
+            ];
+            return (
+              <InfoTooltip
+                key={group.ym}
+                title={`Resumo de ${group.label}`}
+                purpose="Permite filtrar o histórico rapidamente por período para comparar evolução."
+                calculation="Os totais somam todos os lançamentos com a mesma referência de mês."
+                extraDetails={tooltipDetails}
+                side="bottom"
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveMonth((prev) => (prev === group.ym ? null : group.ym))}
+                  className={`relative overflow-hidden rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-lg"
+                      : "bg-white text-slate-600 shadow hover:bg-blue-50"
+                  }`}
+                >
+                  <span>{group.label}</span>
+                  <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[0.65rem] font-medium text-blue-700">
+                    {totalEntries} registro{totalEntries === 1 ? "" : "s"}
+                  </span>
+                  <Transition
+                    show={isActive}
+                    enter="transition transform duration-200"
+                    enterFrom="opacity-0 -translate-y-2"
+                    enterTo="opacity-100 translate-y-0"
+                    leave="transition transform duration-150"
+                    leaveFrom="opacity-100 translate-y-0"
+                    leaveTo="opacity-0 -translate-y-1"
+                  >
+                    <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/20" />
+                  </Transition>
+                </button>
+              </InfoTooltip>
+            );
+          })}
         </div>
-      )}
+        {!monthlyGroups.length && (
+          <p className="text-xs text-slate-500">Adicione lançamentos para habilitar o filtro por mês.</p>
+        )}
+      </div>
 
       <datalist id={sourceOptionsId}>
-        {(Array.isArray(sources) ? sources : []).map((source) => (
+        {librarySources.map((source) => (
           <option key={source.name} value={source.name} />
         ))}
       </datalist>
 
-      <div className="space-y-6">
-        {groups.map((group) => {
-          const totals = totalizer(group.items);
-          return (
-            <div key={group.ym} className="rounded-xl border border-slate-100">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 text-xs text-slate-600">
-                <div className="text-sm font-semibold text-slate-800">{group.label}</div>
-                <div className="flex flex-wrap gap-4">
-                  <span>
-                    Investido: <strong>{fmtBRL(totals.invested)}</strong>
-                  </span>
-                  <span>
-                    Em Conta: <strong>{fmtBRL(totals.inAccount)}</strong>
-                  </span>
-                  <span>
-                    Entradas: <strong className={toneClass(totals.cashFlow)}>{fmtBRL(totals.cashFlow)}</strong>
-                  </span>
-                  <span>
-                    Rendimento: <strong className={toneClass(totals.yieldValue)}>{fmtBRL(totals.yieldValue)}</strong>
-                  </span>
-                </div>
-              </div>
+      <Transition
+        show={!collapsed}
+        enter="transition duration-200"
+        enterFrom="opacity-0 translate-y-2"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition duration-150"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 -translate-y-1"
+      >
+        <div>
+          <SmartDataTable
+            data={filteredEntries}
+            columns={detailedColumns}
+            initialSort={{ id: "date", direction: "desc" }}
+            getRowId={(row) => row.id}
+            globalFilterPlaceholder="Pesquisar dentro dos resultados"
+          />
+        </div>
+      </Transition>
 
-              {collapsed ? (
-                <CollapsedTable items={group.items} />
-              ) : (
-                <DetailedTable
-                  items={group.items}
-                  editingId={editingId}
-                  draft={draft}
-                  onStartEdit={startEdit}
-                  onUpdateDraft={updateDraft}
-                  onCancelEdit={cancelEdit}
-                  onSaveEdit={saveEdit}
-                  onRemove={removeEntry}
-                  banks={banks}
-                  sources={sources}
-                  sourceOptionsId={sourceOptionsId}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <Transition
+        show={collapsed}
+        enter="transition duration-200"
+        enterFrom="opacity-0 translate-y-2"
+        enterTo="opacity-100 translate-y-0"
+        leave="transition duration-150"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 -translate-y-1"
+      >
+        <div>
+          <SmartDataTable
+            data={summaryRows}
+            columns={summaryColumns}
+            initialSort={{ id: "date", direction: "desc" }}
+            getRowId={(row) => row.date}
+            enableGlobalFilter={false}
+            emptyMessage="Nenhum lançamento encontrado para o período selecionado"
+          />
+        </div>
+      </Transition>
     </div>
   );
 }
 
-function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove, banks, sources, sourceOptionsId = "source-library" }) {
-  const library = Array.isArray(sources) ? sources : [];
-  return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-slate-100 text-sm">
-        <thead className="bg-slate-50">
-          <tr>
-            <Th>Data</Th>
-            <Th>Banco</Th>
-            <Th>Fonte</Th>
-            <Th className="text-right">Valor na Conta</Th>
-            <Th className="text-right">Valor em Investimentos</Th>
-            <Th className="text-right">Entrada/Saída</Th>
-            <Th className="text-right">Rendimento (R$)</Th>
-            <Th className="text-right">Rendimento (%)</Th>
-            <Th className="text-right">Ações</Th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {items
-            .slice()
-            .sort((a, b) => (a.date < b.date ? 1 : -1))
-            .map((entry) => {
-              const isEditing = editingId === entry.id;
-              return (
-                <tr key={entry.id} className="align-top hover:bg-slate-50">
-                  <Td>
-                    {isEditing ? (
-                      <input
-                        type="date"
-                        value={draft?.date ?? ""}
-                        onChange={(e) => onUpdateDraft("date", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
-                        {...dateOpenProps}
-                      />
-                    ) : (
-                      new Date(entry.date).toLocaleDateString("pt-BR")
-                    )}
-                  </Td>
-              <Td>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={draft?.bank ?? ""}
-                    onChange={(e) => onUpdateDraft("bank", e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
-                  />
-                ) : (
-                  <BankBadge name={entry.bank} banks={banks} />
-                )}
-              </Td>
-              <Td>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    list={sourceOptionsId}
-                    value={draft?.source ?? ""}
-                    onChange={(e) => onUpdateDraft("source", e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
-                  />
-                ) : (
-                  <SourceBadge name={entry.source} sources={library} />
-                )}
-              </Td>
-                  <Td align="right">
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={draft?.inAccount ?? 0}
-                        onChange={(e) => onUpdateDraft("inAccount", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-slate-400 focus:outline-none"
-                      />
-                    ) : (
-                      <span className={toneClass(entry.inAccount)}>{fmtBRL(entry.inAccount)}</span>
-                    )}
-                  </Td>
-                  <Td align="right">
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={draft?.invested ?? 0}
-                        onChange={(e) => onUpdateDraft("invested", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-slate-400 focus:outline-none"
-                      />
-                    ) : (
-                      fmtBRL(entry.invested)
-                    )}
-                  </Td>
-                  <Td align="right">
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={draft?.cashFlow ?? 0}
-                        onChange={(e) => onUpdateDraft("cashFlow", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-slate-400 focus:outline-none"
-                      />
-                    ) : (
-                      <span className={toneClass(entry.cashFlow)}>{fmtBRL(entry.cashFlow)}</span>
-                    )}
-                  </Td>
-                  <Td align="right">
-                    {entry.yieldValue !== null && entry.yieldValue !== undefined ? (
-                      <span className={toneClass(entry.yieldValue)}>{fmtBRL(entry.yieldValue)}</span>
-                    ) : (
-                      ""
-                    )}
-                  </Td>
-                  <Td align="right">
-                    {entry.yieldPct !== null && entry.yieldPct !== undefined ? (
-                      <span className={toneClass(entry.yieldPct)}>{fmtPct(entry.yieldPct)}</span>
-                    ) : (
-                      ""
-                    )}
-                  </Td>
-                  <Td align="right">
-                    {isEditing ? (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => onSaveEdit(entry.id)}
-                          className="rounded-lg bg-emerald-500 px-2 py-1 text-xs font-semibold text-white hover:bg-emerald-600"
-                        >
-                          Salvar
-                        </button>
-                        <button
-                          onClick={onCancelEdit}
-                          className="rounded-lg bg-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-300"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => onStartEdit(entry.id)}
-                          className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => onRemove(entry.id)}
-                          className="rounded-lg bg-red-50 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-100"
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    )}
-                  </Td>
-                </tr>
-              );
-            })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function CollapsedTable({ items }) {
-  const byDate = new Map();
-  for (const entry of items) {
-    const key = entry.date;
-    const current =
-      byDate.get(key) || {
-        date: entry.date,
-        invested: 0,
-        inAccount: 0,
-        cashFlow: 0,
-        yieldValue: 0,
-        hasYield: false,
-      };
-    current.invested += toNumber(entry.invested);
-    current.inAccount += toNumber(entry.inAccount);
-    current.cashFlow += toNumber(entry.cashFlow);
-    if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
-      current.yieldValue += entry.yieldValue;
-      current.hasYield = true;
-    }
-    byDate.set(key, current);
-  }
-
-  const rows = Array.from(byDate.values()).sort((a, b) => (a.date < b.date ? 1 : -1));
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-slate-100 text-sm">
-        <thead className="bg-slate-50">
-          <tr>
-            <Th>Data</Th>
-            <Th className="text-right">Investido</Th>
-            <Th className="text-right">Em Conta</Th>
-            <Th className="text-right">Entradas/Saídas</Th>
-            <Th className="text-right">Rendimento</Th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {rows.map((row) => (
-            <tr key={row.date} className="hover:bg-slate-50">
-              <Td>{new Date(row.date).toLocaleDateString("pt-BR")}</Td>
-              <Td align="right">{fmtBRL(row.invested)}</Td>
-              <Td align="right">{fmtBRL(row.inAccount)}</Td>
-              <Td align="right">
-                <span className={toneClass(row.cashFlow)}>{fmtBRL(row.cashFlow)}</span>
-              </Td>
-              <Td align="right">
-                {row.hasYield ? <span className={toneClass(row.yieldValue)}>{fmtBRL(row.yieldValue)}</span> : ""}
-              </Td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+function summarize(entries) {
+  return entries.reduce(
+    (acc, entry) => {
+      acc.invested += toNumber(entry.invested);
+      acc.inAccount += toNumber(entry.inAccount);
+      acc.cashFlow += toNumber(entry.cashFlow);
+      if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
+        acc.yieldValue += entry.yieldValue;
+      }
+      return acc;
+    },
+    { invested: 0, inAccount: 0, cashFlow: 0, yieldValue: 0 }
   );
 }
 
@@ -440,11 +550,7 @@ function BankBadge({ name, banks }) {
   const visual = resolveBankVisual(name, banks);
   return (
     <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-      <span
-        className="h-2.5 w-2.5 rounded-full"
-        style={{ backgroundColor: visual.color }}
-        aria-hidden="true"
-      ></span>
+      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: visual.color }} aria-hidden="true" />
       <span className="text-base" aria-hidden="true">
         {visual.icon}
       </span>
@@ -459,11 +565,7 @@ function SourceBadge({ name, sources }) {
   const visual = resolveSourceVisual(name, library);
   return (
     <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-      <span
-        className="h-2.5 w-2.5 rounded-full"
-        style={{ backgroundColor: visual.color }}
-        aria-hidden="true"
-      ></span>
+      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: visual.color }} aria-hidden="true" />
       <span className="text-base" aria-hidden="true">
         {visual.icon}
       </span>

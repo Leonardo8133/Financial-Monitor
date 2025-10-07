@@ -40,6 +40,30 @@ function inferHeaderRowIndex(rows = []) {
   return 0;
 }
 
+const debugInTest = (message, payload) => {
+  if (import.meta.env?.MODE === "test") {
+    console.debug(message, payload);
+  }
+};
+
+function buildRecordsFromRaw(rawRows = [], headerIndex = 0) {
+  const headerRow = rawRows[headerIndex] || [];
+  const resolvedHeaders = headerRow.map((cell, idx) => normalizeText(cell) || `Coluna ${idx + 1}`);
+  const body = rawRows
+    .slice(headerIndex + 1)
+    .filter((row) => Array.isArray(row) && row.some((cell) => normalizeText(cell)));
+
+  const records = body.map((row) => {
+    const entry = {};
+    resolvedHeaders.forEach((header, idx) => {
+      entry[header] = row[idx] ?? "";
+    });
+    return entry;
+  });
+
+  return { resolvedHeaders, records };
+}
+
 export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions = [] }) {
   const inputRef = useRef(null);
   const [mapping, setMapping] = useState(() => DEFAULT_MAPPING.map((entry) => ({ ...entry, header: "" })));
@@ -157,16 +181,7 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       setRows([]);
       return;
     }
-    const headerRow = data[index] || [];
-    const resolvedHeaders = headerRow.map((cell, idx) => normalizeText(cell) || `Coluna ${idx + 1}`);
-    const body = data.slice(index + 1).filter((row) => Array.isArray(row) && row.some((cell) => normalizeText(cell)));
-    const records = body.map((row) => {
-      const entry = {};
-      resolvedHeaders.forEach((header, idx) => {
-        entry[header] = row[idx] ?? "";
-      });
-      return entry;
-    });
+    const { resolvedHeaders, records } = buildRecordsFromRaw(data, index);
     setHeaders(resolvedHeaders);
     setRows(records);
     setMapping((prev) =>
@@ -378,6 +393,7 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       return;
     }
     
+    console.debug("applyMapping:complete", { count: filtered.length, ignoredCount });
     onRecordsParsed(filtered, ignoredCount);
     
     // Limpa tudo após importação
@@ -423,9 +439,22 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
   }
 
   function applyMapping() {
-    if (!rows.length) return;
+    debugInTest("applyMapping:invoked", { rowsLength: rows.length, rawRowsLength: rawRows.length });
+    let currentRows = rows;
+    if (!currentRows.length && rawRows.length > 0) {
+      const { records } = buildRecordsFromRaw(rawRows, headerRowIndex);
+      currentRows = records;
+    }
+    if (!currentRows.length) {
+      setError("Nenhum dado disponível para importar. Verifique o arquivo e tente novamente.");
+      onRecordsParsed([], 0);
+      return;
+    }
+    
+
     const columnMap = Object.fromEntries(mapping.map((entry) => [entry.field, entry.header]));
-    const transformed = rows.map((row) => {
+
+    const transformed = currentRows.map((row) => {
       const rawValue = row[columnMap.value] ?? row["Linha"] ?? 0;
       const categories = columnMap.category ? parseList(row[columnMap.category]) : [];
       const sources = columnMap.source ? parseList(row[columnMap.source]) : [];
@@ -440,12 +469,13 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
     });
     
     const { filtered, ignoredCount } = filterIgnoredItems(transformed);
-    
+
     if (filtered.length === 0 && transformed.length > 0) {
       setError("Todos os itens foram ignorados conforme configuração.");
       return;
     }
-    
+
+    debugInTest("applyMapping:complete", { count: filtered.length, ignoredCount });
     onRecordsParsed(filtered, ignoredCount);
   }
 

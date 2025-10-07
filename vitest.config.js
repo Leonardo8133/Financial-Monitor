@@ -13,5 +13,7 @@ export default defineConfig({
       '**/playwright-report/**',
     ],
     globals: true,
+    minThreads: 1,
+    maxThreads: 1,
   },
 });
