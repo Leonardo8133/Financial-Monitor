@@ -1,0 +1,81 @@
+{
+  "investimentos": {
+    "entries": [
+      {
+        "id": "entry-1",
+        "date": "2024-01-15",
+        "bank": "Nubank Caixinhas",
+        "source": "Salário",
+        "inAccount": 5000,
+        "invested": 2000,
+        "description": "Investimento mensal"
+      }
+    ],
+    "banks": [
+      {
+        "name": "Nubank Caixinhas",
+        "icon": "🏦",
+        "color": "#8B5CF6"
+      }
+    ],
+    "sources": [
+      {
+        "name": "Salário",
+        "icon": "💰",
+        "color": "#10B981"
+      }
+    ],
+    "personalInfo": {
+      "fullName": "Seu Nome",
+      "email": "seu@email.com",
+      "document": "123.456.789-00",
+      "phone": "+55 11 99999-9999"
+    },
+    "settings": {
+      "defaultTab": "dashboard",
+      "defaultFocusArea": "investimentos",
+      "reportNotes": ""
+    },
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  "gastos": {
+    "expenses": [
+      {
+        "id": "expense-1",
+        "date": "2024-01-15",
+        "description": "Supermercado",
+        "value": -150.50,
+        "categories": ["Alimentação"],
+        "sources": ["Cartão de Crédito"]
+      }
+    ],
+    "categories": [
+      {
+        "name": "Alimentação",
+        "icon": "🍔",
+        "color": "#10B981"
+      }
+    ],
+    "sources": [
+      {
+        "name": "Cartão de Crédito",
+        "icon": "💳",
+        "color": "#2563EB"
+      }
+    ],
+    "personalInfo": {
+      "fullName": "Seu Nome",
+      "email": "seu@email.com"
+    },
+    "settings": {
+      "defaultTab": "dashboard",
+      "defaultFocusArea": "gastos"
+    },
+    "descriptionCategoryMappings": [],
+    "ignoredDescriptions": [],
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  "mergedAt": "2024-01-15T12:00:00.000Z",
+  "version": "1.0.0"
+}
+

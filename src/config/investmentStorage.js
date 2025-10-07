@@ -23,14 +23,9 @@ export function ensureInvestmentDefaults(store = {}) {
   return {
     ...INVESTMENT_STORAGE_SEED,
     ...store,
-    banks:
-      Array.isArray(store?.banks) && store.banks.length
-        ? store.banks
-        : INVESTMENT_STORAGE_SEED.banks,
-    sources:
-      Array.isArray(store?.sources) && store.sources.length
-        ? store.sources
-        : INVESTMENT_STORAGE_SEED.sources,
+    // Permitir arrays vazios - não forçar restauração dos padrões
+    banks: Array.isArray(store?.banks) ? store.banks : INVESTMENT_STORAGE_SEED.banks,
+    sources: Array.isArray(store?.sources) ? store.sources : INVESTMENT_STORAGE_SEED.sources,
     personalInfo: { ...INVESTMENT_STORAGE_SEED.personalInfo, ...(store?.personalInfo || {}) },
     settings: { ...INVESTMENT_STORAGE_SEED.settings, ...(store?.settings || {}) },
     entries: Array.isArray(store?.entries) ? store.entries : [],

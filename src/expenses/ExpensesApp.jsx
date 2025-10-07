@@ -34,6 +34,7 @@ import {
   EXPENSES_STORAGE_SEED,
   ensureExpensesDefaults,
 } from "./config/storage.js";
+import { UNIFIED_LS_KEY, ensureUnifiedDefaults, migrateToUnifiedStorage } from "../utils/unifiedStorage.js";
 
 // merge artifact removed: duplicate icon import
 
@@ -42,15 +43,24 @@ import {
 export default function ExpensesApp() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
-  const store = ensureExpensesDefaults(storeState);
-  const expenses = store.expenses;
-  const categories = store.categories;
-  const sources = store.sources;
-  const createdAt = store.createdAt;
-  const personalInfo = store.personalInfo;
-  const settings = store.settings;
-  const descriptionCategoryMappings = store.descriptionCategoryMappings || [];
+  
+  // Migrar para dados unificados se necessário
+  const [unifiedState, setUnifiedStore] = useLocalStorageState(UNIFIED_LS_KEY, null);
+  const [legacyState, setLegacyStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
+  
+  // Se não há dados unificados, migrar dos dados legados
+  const storeState = unifiedState || migrateToUnifiedStorage();
+  const store = ensureUnifiedDefaults(storeState);
+  
+  // Extrair dados de gastos
+  const expensesData = store.gastos;
+  const expenses = expensesData.expenses;
+  const categories = expensesData.categories;
+  const sources = expensesData.sources;
+  const createdAt = expensesData.createdAt;
+  const personalInfo = expensesData.personalInfo;
+  const settings = expensesData.settings;
+  const descriptionCategoryMappings = expensesData.descriptionCategoryMappings || [];
 
   // Ativar modo offline
   useOfflineMode();
@@ -99,13 +109,16 @@ export default function ExpensesApp() {
   useEffect(() => {
     if (Array.isArray(storeState)) {
       const normalized = storeState.map(withId);
-      setStore((prev) => {
-        const safePrev = ensureExpensesDefaults(prev);
+      setUnifiedStore((prev) => {
+        const safePrev = ensureUnifiedDefaults(prev);
         return {
           ...safePrev,
-          expenses: normalized,
-          categories: mergeCategoriesFromExpenses(normalized, DEFAULT_CATEGORIES),
-          sources: mergeSourcesFromExpenses(normalized, DEFAULT_SOURCES),
+          gastos: {
+            ...safePrev.gastos,
+            expenses: normalized,
+            categories: mergeCategoriesFromExpenses(normalized, DEFAULT_CATEGORIES),
+            sources: mergeSourcesFromExpenses(normalized, DEFAULT_SOURCES),
+          },
         };
       });
     }
@@ -135,31 +148,40 @@ export default function ExpensesApp() {
   }
 
   function setExpenses(updater) {
-    setStore((prev) => {
-      const safePrev = ensureExpensesDefaults(prev);
-      const currentExpenses = Array.isArray(safePrev.expenses) ? safePrev.expenses : [];
+    setUnifiedStore((prev) => {
+      const safePrev = ensureUnifiedDefaults(prev);
+      const currentExpenses = Array.isArray(safePrev.gastos.expenses) ? safePrev.gastos.expenses : [];
       const candidateExpenses = typeof updater === "function" ? updater(currentExpenses) : updater;
       const nextExpensesRaw = Array.isArray(candidateExpenses) ? candidateExpenses : [];
       const nextExpenses = nextExpensesRaw.map(normalizeExpense);
       const currentSources =
-        Array.isArray(safePrev.sources) && safePrev.sources.length ? safePrev.sources : DEFAULT_SOURCES;
+        Array.isArray(safePrev.gastos.sources) && safePrev.gastos.sources.length ? safePrev.gastos.sources : DEFAULT_SOURCES;
       const currentCategories =
-        Array.isArray(safePrev.categories) && safePrev.categories.length ? safePrev.categories : DEFAULT_CATEGORIES;
+        Array.isArray(safePrev.gastos.categories) && safePrev.gastos.categories.length ? safePrev.gastos.categories : DEFAULT_CATEGORIES;
       const mergedSources = mergeSourcesFromExpenses(nextExpenses, currentSources);
       const mergedCategories = mergeCategoriesFromExpenses(nextExpenses, currentCategories);
       return {
         ...safePrev,
-        expenses: nextExpenses,
-        sources: mergedSources,
-        categories: mergedCategories,
+        gastos: {
+          ...safePrev.gastos,
+          expenses: nextExpenses,
+          sources: mergedSources,
+          categories: mergedCategories,
+        },
       };
     });
   }
 
   function setCreatedAt(value) {
-    setStore((prev) => {
-      const safePrev = ensureExpensesDefaults(prev);
-      return { ...safePrev, createdAt: value };
+    setUnifiedStore((prev) => {
+      const safePrev = ensureUnifiedDefaults(prev);
+      return {
+        ...safePrev,
+        gastos: {
+          ...safePrev.gastos,
+          createdAt: value,
+        },
+      };
     });
   }
 
@@ -240,12 +262,18 @@ export default function ExpensesApp() {
       ? categoriesList.filter(Boolean)
       : [];
     if (!normalizedKeyword || !filteredCategories.length) return;
-    setStore((prev) => {
-      const safePrev = ensureExpensesDefaults(prev);
-      const merged = mergeDescriptionMappings(safePrev.descriptionCategoryMappings, [
+    setUnifiedStore((prev) => {
+      const safePrev = ensureUnifiedDefaults(prev);
+      const merged = mergeDescriptionMappings(safePrev.gastos.descriptionCategoryMappings, [
         { keyword: normalizedKeyword, categories: filteredCategories },
       ]);
-      return { ...safePrev, descriptionCategoryMappings: merged };
+      return {
+        ...safePrev,
+        gastos: {
+          ...safePrev.gastos,
+          descriptionCategoryMappings: merged,
+        },
+      };
     });
   }
 
@@ -329,24 +357,17 @@ export default function ExpensesApp() {
   };
 
   function exportJson() {
+    // Exportar dados unificados
+    const unifiedData = JSON.parse(localStorage.getItem(UNIFIED_LS_KEY) || '{}');
     const payload = {
-      version: 2,
-      created_at: createdAt,
+      version: 3,
+      type: "unified",
       exported_at: new Date().toISOString(),
-      categories,
-      sources,
-      description_mappings: descriptionCategoryMappings,
-      personal_info: personalInfo,
-      settings,
-      inputs: [
-        {
-          expenses: expensesWithIds.map(({ id, ...rest }) => rest),
-        },
-      ],
+      data: unifiedData,
     };
     const now = new Date();
     const timestamp = `${now.toISOString().slice(0, 10)}_${now.toTimeString().slice(0, 8).replace(/:/g, '-')}`;
-    download(`export-gastos-${timestamp}.json`, JSON.stringify(payload, null, 2));
+    download(`export-financial-monitor-unified-${timestamp}.json`, JSON.stringify(payload, null, 2));
   }
 
 
@@ -400,43 +421,58 @@ export default function ExpensesApp() {
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
+        
+        // Verificar se é um arquivo unificado
+        if (data.type === "unified" && data.data) {
+          // Importar dados unificados
+          setUnifiedStore(data.data);
+          setImportModalOpen(false);
+          return;
+        }
+        
         if (data && Array.isArray(data.inputs)) {
           const inputExpenses = data.inputs.flatMap((section) => section.expenses || []);
           const normalized = inputExpenses.map(withId);
           const incomingCategories = Array.isArray(data.categories) && data.categories.length ? data.categories : categories;
           const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
           const created = data.created_at || createdAt || new Date().toISOString();
-          setStore((prev) => {
-            const safePrev = ensureExpensesDefaults(prev);
+          setUnifiedStore((prev) => {
+            const safePrev = ensureUnifiedDefaults(prev);
             const nextCategories = mergeCategoriesFromExpenses(normalized, incomingCategories);
             const nextSources = mergeSourcesFromExpenses(normalized, incomingSources);
             const nextPersonal = {
-              ...safePrev.personalInfo,
+              ...safePrev.gastos.personalInfo,
               ...(data.personal_info || {}),
             };
             const nextSettings = {
-              ...safePrev.settings,
+              ...safePrev.gastos.settings,
               ...(data.settings || {}),
             };
             return {
               ...safePrev,
-              expenses: normalized,
-              categories: nextCategories,
-              sources: nextSources,
-              personalInfo: nextPersonal,
-              settings: nextSettings,
-              createdAt: created,
+              gastos: {
+                ...safePrev.gastos,
+                expenses: normalized,
+                categories: nextCategories,
+                sources: nextSources,
+                personalInfo: nextPersonal,
+                settings: nextSettings,
+                createdAt: created,
+              },
             };
           });
         } else if (Array.isArray(data.expenses)) {
           const normalized = data.expenses.map(withId);
-          setStore((prev) => {
-            const safePrev = ensureExpensesDefaults(prev);
+          setUnifiedStore((prev) => {
+            const safePrev = ensureUnifiedDefaults(prev);
             return {
               ...safePrev,
-              expenses: normalized,
-              categories: mergeCategoriesFromExpenses(normalized, safePrev.categories),
-              sources: mergeSourcesFromExpenses(normalized, safePrev.sources),
+              gastos: {
+                ...safePrev.gastos,
+                expenses: normalized,
+                categories: mergeCategoriesFromExpenses(normalized, safePrev.gastos.categories),
+                sources: mergeSourcesFromExpenses(normalized, safePrev.gastos.sources),
+              },
             };
           });
         } else {
@@ -703,7 +739,7 @@ export default function ExpensesApp() {
           onSubmit={handleSubmitDrafts}
           categories={categories}
           sources={sources}
-          setStore={setStore}
+          setStore={setUnifiedStore}
           suggestCategories={findCategoriesForDescription}
           onSaveDescriptionMapping={upsertDescriptionMapping}
           descriptionMappings={descriptionCategoryMappings}

@@ -32,14 +32,9 @@ export function ensureExpensesDefaults(store = {}) {
     ...EXPENSES_STORAGE_SEED,
     ...store,
     expenses: Array.isArray(store?.expenses) ? store.expenses : [],
-    categories:
-      Array.isArray(store?.categories) && store.categories.length
-        ? store.categories
-        : EXPENSES_STORAGE_SEED.categories,
-    sources:
-      Array.isArray(store?.sources) && store.sources.length
-        ? store.sources
-        : EXPENSES_STORAGE_SEED.sources,
+    // Permitir arrays vazios - não forçar restauração dos padrões
+    categories: Array.isArray(store?.categories) ? store.categories : EXPENSES_STORAGE_SEED.categories,
+    sources: Array.isArray(store?.sources) ? store.sources : EXPENSES_STORAGE_SEED.sources,
     descriptionCategoryMappings: mergedMappings,
     ignoredDescriptions: Array.isArray(store?.ignoredDescriptions) ? store.ignoredDescriptions : [],
     personalInfo: { ...EXPENSES_STORAGE_SEED.personalInfo, ...(store?.personalInfo || {}) },

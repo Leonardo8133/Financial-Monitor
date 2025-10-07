@@ -309,6 +309,11 @@ export default function InvestmentSettings() {
                   />
                 </label>
                 <div className="flex items-end justify-end">
+                  {banks.length === 1 && (
+                    <span className="text-xs text-amber-600 mr-2">
+                      ⚠️ Último banco
+                    </span>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeBank(index)}
@@ -402,6 +407,11 @@ export default function InvestmentSettings() {
                   />
                 </label>
                 <div className="flex items-end justify-end">
+                  {sources.length === 1 && (
+                    <span className="text-xs text-amber-600 mr-2">
+                      ⚠️ Última fonte
+                    </span>
+                  )}
                   <button
                     type="button"
                     onClick={() => removeSource(index)}

@@ -47,18 +47,28 @@ import {
   INVESTMENT_STORAGE_SEED,
 } from "./config/investmentStorage.js";
 import { Link } from "react-router-dom";
+import { UNIFIED_LS_KEY, ensureUnifiedDefaults, migrateToUnifiedStorage } from "./utils/unifiedStorage.js";
 
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [storeState, setStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
-  const store = ensureInvestmentDefaults(storeState);
-  const entries = store.entries;
-  const banks = store.banks;
-  const sources = store.sources;
-  const personalInfo = store.personalInfo;
-  const settings = store.settings;
-  const createdAt = store.createdAt;
+  
+  // Migrar para dados unificados se necessário
+  const [unifiedState, setUnifiedStore] = useLocalStorageState(UNIFIED_LS_KEY, null);
+  const [legacyState, setLegacyStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
+  
+  // Se não há dados unificados, migrar dos dados legados
+  const storeState = unifiedState || migrateToUnifiedStorage();
+  const store = ensureUnifiedDefaults(storeState);
+  
+  // Extrair dados de investimentos
+  const investmentData = store.investimentos;
+  const entries = investmentData.entries;
+  const banks = investmentData.banks;
+  const sources = investmentData.sources;
+  const personalInfo = investmentData.personalInfo;
+  const settings = investmentData.settings;
+  const createdAt = investmentData.createdAt;
 
   // Ativar modo offline
   useOfflineMode();
@@ -101,48 +111,60 @@ export default function App() {
   }, [location.pathname]);
 
   const setEntries = (updater) => {
-    setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      const currentEntries = Array.isArray(safePrev.entries) ? safePrev.entries : [];
+    setUnifiedStore((prev) => {
+      const safePrev = ensureUnifiedDefaults(prev);
+      const currentEntries = Array.isArray(safePrev.investimentos.entries) ? safePrev.investimentos.entries : [];
       const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
       const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
       const currentBanks =
-        Array.isArray(safePrev.banks) && safePrev.banks.length ? safePrev.banks : DEFAULT_BANKS;
+        Array.isArray(safePrev.investimentos.banks) && safePrev.investimentos.banks.length ? safePrev.investimentos.banks : DEFAULT_BANKS;
       const currentSources =
-        Array.isArray(safePrev.sources) && safePrev.sources.length
-          ? safePrev.sources
+        Array.isArray(safePrev.investimentos.sources) && safePrev.investimentos.sources.length
+          ? safePrev.investimentos.sources
           : DEFAULT_SOURCES;
       const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
       const mergedSources = mergeSourcesFromEntries(nextEntries, currentSources);
       return {
         ...safePrev,
-        entries: nextEntries,
-        banks: mergedBanks,
-        sources: mergedSources,
+        investimentos: {
+          ...safePrev.investimentos,
+          entries: nextEntries,
+          banks: mergedBanks,
+          sources: mergedSources,
+        },
       };
     });
   };
 
   const setCreatedAt = (value) => {
-    setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      return { ...safePrev, createdAt: value };
+    setUnifiedStore((prev) => {
+      const safePrev = ensureUnifiedDefaults(prev);
+      return {
+        ...safePrev,
+        investimentos: {
+          ...safePrev.investimentos,
+          createdAt: value,
+        },
+      };
     });
   };
 
   useEffect(() => {
     if (Array.isArray(storeState)) {
       const normalized = storeState.map(withId);
-      setStore((prev) => {
-        const safePrev = ensureInvestmentDefaults(prev);
+      setUnifiedStore((prev) => {
+        const safePrev = ensureUnifiedDefaults(prev);
         return {
           ...safePrev,
-          entries: normalized,
-          banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
-          sources: mergeSourcesFromEntries(normalized, DEFAULT_SOURCES),
-          personalInfo: safePrev.personalInfo,
-          settings: safePrev.settings,
-          createdAt: safePrev.createdAt || new Date().toISOString(),
+          investimentos: {
+            ...safePrev.investimentos,
+            entries: normalized,
+            banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
+            sources: mergeSourcesFromEntries(normalized, DEFAULT_SOURCES),
+            personalInfo: safePrev.investimentos.personalInfo,
+            settings: safePrev.investimentos.settings,
+            createdAt: safePrev.investimentos.createdAt || new Date().toISOString(),
+          },
         };
       });
     }
@@ -396,23 +418,16 @@ export default function App() {
   }
 
   function exportJson() {
-    const strippedEntries = entriesWithIds.map(({ id, yieldValue, yieldPct, previousTotal, computedTotal, ...rest }) => rest);
+    // Exportar dados unificados
+    const unifiedData = JSON.parse(localStorage.getItem(UNIFIED_LS_KEY) || '{}');
     const payload = {
-      version: 2,
-      created_at: createdAt,
+      version: 3,
+      type: "unified",
       exported_at: new Date().toISOString(),
-      banks,
-      sources,
-      personal_info: personalInfo,
-      settings,
-      inputs: [
-        {
-          entries: strippedEntries,
-        },
-      ],
+      data: unifiedData,
     };
     download(
-      `export-investimentos-${new Date().toISOString().slice(0, 10)}.json`,
+      `export-financial-monitor-unified-${new Date().toISOString().slice(0, 10)}.json`,
       JSON.stringify(payload, null, 2)
     );
   }
@@ -459,15 +474,27 @@ export default function App() {
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
+        
+        // Verificar se é um arquivo unificado
+        if (data.type === "unified" && data.data) {
+          // Importar dados unificados
+          setUnifiedStore(data.data);
+          setImportModalOpen(false);
+          return;
+        }
+        
         if (Array.isArray(data)) {
           const normalized = data.map(withId);
-          setStore((prev) => {
-            const safePrev = ensureInvestmentDefaults(prev);
+          setUnifiedStore((prev) => {
+            const safePrev = ensureUnifiedDefaults(prev);
             return {
               ...safePrev,
-              entries: normalized,
-              banks: mergeBanksFromEntries(normalized, safePrev.banks),
-              sources: mergeSourcesFromEntries(normalized, safePrev.sources),
+              investimentos: {
+                ...safePrev.investimentos,
+                entries: normalized,
+                banks: mergeBanksFromEntries(normalized, safePrev.investimentos.banks),
+                sources: mergeSourcesFromEntries(normalized, safePrev.investimentos.sources),
+              },
             };
           });
           setImportModalOpen(false);
@@ -477,36 +504,42 @@ export default function App() {
           const incomingBanks = Array.isArray(data.banks) && data.banks.length ? data.banks : banks;
           const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
           const created = data.created_at || createdAt || new Date().toISOString();
-          setStore((prev) => {
-            const safePrev = ensureInvestmentDefaults(prev);
+          setUnifiedStore((prev) => {
+            const safePrev = ensureUnifiedDefaults(prev);
             const nextPersonal = {
-              ...safePrev.personalInfo,
+              ...safePrev.investimentos.personalInfo,
               ...(data.personal_info || {}),
             };
             const nextSettings = {
-              ...safePrev.settings,
+              ...safePrev.investimentos.settings,
               ...(data.settings || {}),
             };
             return {
               ...safePrev,
-              entries: normalized,
-              banks: mergeBanksFromEntries(normalized, incomingBanks),
-              sources: mergeSourcesFromEntries(normalized, incomingSources),
-              personalInfo: nextPersonal,
-              settings: nextSettings,
-              createdAt: created,
+              investimentos: {
+                ...safePrev.investimentos,
+                entries: normalized,
+                banks: mergeBanksFromEntries(normalized, incomingBanks),
+                sources: mergeSourcesFromEntries(normalized, incomingSources),
+                personalInfo: nextPersonal,
+                settings: nextSettings,
+                createdAt: created,
+              },
             };
           });
           setImportModalOpen(false);
         } else if (data && Array.isArray(data.entries)) {
           const normalized = data.entries.map(withId);
-          setStore((prev) => {
-            const safePrev = ensureInvestmentDefaults(prev);
+          setUnifiedStore((prev) => {
+            const safePrev = ensureUnifiedDefaults(prev);
             return {
               ...safePrev,
-              entries: normalized,
-              banks: mergeBanksFromEntries(normalized, safePrev.banks),
-              sources: mergeSourcesFromEntries(normalized, safePrev.sources),
+              investimentos: {
+                ...safePrev.investimentos,
+                entries: normalized,
+                banks: mergeBanksFromEntries(normalized, safePrev.investimentos.banks),
+                sources: mergeSourcesFromEntries(normalized, safePrev.investimentos.sources),
+              },
             };
           });
           setImportModalOpen(false);
