@@ -20,10 +20,14 @@ export function computeDerivedExpenses(expenses = []) {
 export function computeTotals(expenses = []) {
   return expenses.reduce(
     (acc, e) => {
-      const value = Math.abs(toNumber(e.value));
-      acc.total_spent += value;
+      const value = toNumber(e.value);
+      if (value < 0) {
+        acc.total_spent += Math.abs(value);
+      } else {
+        acc.total_earned += value;
+      }
       return acc;
     },
-    { total_spent: 0 }
+    { total_spent: 0, total_earned: 0 }
   );
 }

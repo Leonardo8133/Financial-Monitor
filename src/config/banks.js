@@ -1,10 +1,21 @@
 export const DEFAULT_BANKS = [
-  { name: "Nubank Caixinhas", color: "#8A05BE", icon: "🟣" },
-  { name: "Nubank Investimentos", color: "#7A04B5", icon: "💜" },
+  { name: "Nubank - Caixinhas", color: "#8A05BE", icon: "🟣" },
+  { name: "Nubank - Investimentos", color: "#7A04B5", icon: "💜" },
   { name: "XP", color: "#000000", icon: "⚫" },
   { name: "Inter", color: "#FF7A00", icon: "🟠" },
-  { name: "Nubank Cripto", color: "#380960", icon: "🪙" },
+  { name: "Nubank - Cripto", color: "#380960", icon: "🪙" },
   { name: "Binance", color: "#F3BA2F", icon: "🟡" },
+  { name: "Mercado Livre", color: "#000000", icon: "🟡" },
+  { name: "Mercado Pago", color: "#000000", icon: "🟡" },
+  { name: "Itaú", color: "#000000", icon: "⚫" },
+  { name: "Santander", color: "#000000", icon: "⚫" },
+  { name: "Bradesco", color: "#000000", icon: "⚫" },
+  { name: "Banco do Brasil", color: "#000000", icon: "🟡" },
+  { name: "Caixa", color: "#000000", icon: "🔵" },
+  { name: "C6 Bank", color: "#000000", icon: "⚫" },
+  { name: "Pagseguro", color: "#000000", icon: "⚫" },
+  { name: "PicPay", color: "#00C86F", icon: "🟢" },
+  { name: "Nomad", color: "#00C86F", icon: "🟡" },
 ];
 
 export function stringToColor(input = "") {

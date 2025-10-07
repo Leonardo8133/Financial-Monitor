@@ -82,6 +82,7 @@ export default function ExpensesApp() {
   const [drafts, setDrafts] = useState(() => [createDraftExpense()]);
   const defaultsRef = useRef(settings.defaultTab);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [duplicateModal, setDuplicateModal] = useState(null);
   
   useEffect(() => {
     if (settings.defaultTab && defaultsRef.current !== settings.defaultTab) {
@@ -210,9 +211,18 @@ export default function ExpensesApp() {
   function findCategoriesForDescription(description = "") {
     const normalized = normalizeMappingKeyword(description);
     if (!normalized) return [];
-    const matches = descriptionCategoryMappings.filter((entry) =>
-      normalized.includes(normalizeMappingKeyword(entry.keyword))
-    );
+    
+    const matches = descriptionCategoryMappings.filter((entry) => {
+      const keyword = normalizeMappingKeyword(entry.keyword);
+      const exactMatch = entry.exactMatch !== undefined ? entry.exactMatch : false;
+      
+      if (exactMatch) {
+        return normalized === keyword;
+      } else {
+        return normalized.includes(keyword);
+      }
+    });
+    
     if (!matches.length) return [];
     const categoriesSet = new Set();
     for (const match of matches) {
@@ -254,23 +264,30 @@ export default function ExpensesApp() {
     for (const e of derived) {
       const key = yyyymm(e.date);
       if (!key) continue;
-      const base = byMonth.get(key) || { ym: key, total: 0, byCategory: {}, bySource: {} };
-      const absValue = Math.abs(Number(e.value) || 0);
+      const base = byMonth.get(key) || { ym: key, total: 0, byCategory: {}, bySource: {}, items: [] };
+      const value = Number(e.value) || 0;
+      const absValue = Math.abs(value);
       base.total += absValue;
-      const categoriesList = Array.isArray(e.categories) && e.categories.length
-        ? e.categories
-        : e.category
-        ? [e.category]
-        : ["(sem categoria)"];
+      base.items.push(e);
+      
+      // Só adiciona às categorias se for despesa (valor negativo)
+      if (value < 0) {
+        const categoriesList = Array.isArray(e.categories) && e.categories.length
+          ? e.categories
+          : e.category
+          ? [e.category]
+          : ["(sem categoria)"];
+        for (const cat of categoriesList) {
+          const keyName = cat || "(sem categoria)";
+          base.byCategory[keyName] = (base.byCategory[keyName] || 0) + absValue;
+        }
+      }
+      
       const sourcesList = Array.isArray(e.sources) && e.sources.length
         ? e.sources
         : e.source
         ? [e.source]
         : ["(sem fonte)"];
-      for (const cat of categoriesList) {
-        const keyName = cat || "(sem categoria)";
-        base.byCategory[keyName] = (base.byCategory[keyName] || 0) + absValue;
-      }
       for (const src of sourcesList) {
         const keyName = src || "(sem fonte)";
         base.bySource[keyName] = (base.bySource[keyName] || 0) + absValue;
@@ -327,7 +344,9 @@ export default function ExpensesApp() {
         },
       ],
     };
-    download(`export-gastos-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
+    const now = new Date();
+    const timestamp = `${now.toISOString().slice(0, 10)}_${now.toTimeString().slice(0, 8).replace(/:/g, '-')}`;
+    download(`export-gastos-${timestamp}.json`, JSON.stringify(payload, null, 2));
   }
 
 
@@ -421,7 +440,7 @@ export default function ExpensesApp() {
             };
           });
         } else {
-          window.alert("Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de despesas.");
+          window.alert("Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de transações.");
         }
       } catch (e) {
         window.alert("Falha ao ler JSON: " + e.message);
@@ -488,13 +507,119 @@ export default function ExpensesApp() {
         };
       });
     if (!prepared.length) return;
+
+    // Verificar duplicatas
+    const duplicates = [];
+    for (const newItem of prepared) {
+      const existing = expenses.find(existing => 
+        existing.date === newItem.date &&
+        existing.description.toLowerCase() === newItem.description.toLowerCase() &&
+        Math.abs((existing.value || 0) - (newItem.value || 0)) < 0.01 // tolerância para valores decimais
+      );
+      if (existing) {
+        duplicates.push({
+          new: newItem,
+          existing: existing
+        });
+      }
+    }
+
+    // Se há duplicatas, mostrar modal de opções
+    if (duplicates.length > 0) {
+      setDuplicateModal({
+        duplicates,
+        onDeleteAndAdd: () => {
+          // Deletar duplicatas existentes
+          const duplicateIds = duplicates.map(dup => dup.existing.id);
+          setExpenses(prev => prev.filter(expense => !duplicateIds.includes(expense.id)));
+          setExpenses((prev) => [...prev, ...prepared]);
+          setDrafts([createDraftExpense()]);
+          setTab("historico");
+          setDuplicateModal(null);
+        },
+        onAddAnyway: () => {
+          // Adicionar mesmo com duplicatas
+          setExpenses((prev) => [...prev, ...prepared]);
+          setDrafts([createDraftExpense()]);
+          setTab("historico");
+          setDuplicateModal(null);
+        },
+        onCancel: () => {
+          setDuplicateModal(null);
+        }
+      });
+      return; // Não prosseguir com a adição normal
+    }
+
     setExpenses((prev) => [...prev, ...prepared]);
     setDrafts([createDraftExpense()]);
     setTab("historico");
   }
 
+  function DuplicateModal({ modal }) {
+    if (!modal) return null;
+
+    const { duplicates, onDeleteAndAdd, onAddAnyway, onCancel } = modal;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">
+            Transações Duplicadas Encontradas
+          </h3>
+          
+          <div className="mb-4">
+            <p className="text-sm text-slate-600 mb-3">
+              As seguintes transações já existem no histórico:
+            </p>
+            <div className="bg-slate-50 rounded-lg p-3 max-h-48 overflow-y-auto">
+              <ul className="space-y-2 text-sm">
+                {duplicates.map((dup, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <span className="text-slate-500">•</span>
+                    <div className="flex-1">
+                      <span className="font-medium">{dup.new.date}</span>
+                      <span className="text-slate-600"> - {dup.new.description}</span>
+                    </div>
+                    <span className={`font-semibold ${dup.new.value < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                      {fmtBRL(dup.new.value)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={onDeleteAndAdd}
+              className="w-full bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors"
+            >
+              Deletar duplicatas e adicionar novas
+            </button>
+            
+            <button
+              onClick={onAddAnyway}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              Adicionar mesmo com duplicatas
+            </button>
+            
+            <button
+              onClick={onCancel}
+              className="w-full bg-slate-200 text-slate-700 py-2 px-4 rounded-lg font-medium hover:bg-slate-300 transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
+      <DuplicateModal modal={duplicateModal} />
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 space-y-4">
           <BackToHomeButton />
@@ -559,7 +684,7 @@ export default function ExpensesApp() {
             tabs={[
               { key: 'dashboard', label: 'Dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
               { key: 'historico', label: 'Histórico', icon: <TableCellsIcon className="h-5 w-5" /> },
-              { key: 'entrada', label: 'Nova Despesa', icon: <PlusIcon className="h-5 w-5" /> },
+              { key: 'entrada', label: 'Nova Transação', icon: <PlusIcon className="h-5 w-5" /> },
               { key: 'financiamentos', label: 'Financiamentos', icon: <CalculatorIcon className="h-5 w-5" /> },
             ]}
             activeTab={tab}
@@ -567,21 +692,23 @@ export default function ExpensesApp() {
           />
         </header>
 
-        {tab === 'dashboard' && <ExpensesDashboard monthly={timeline} totals={totals} />}
+        {tab === 'dashboard' && <ExpensesDashboard monthly={timeline} totals={totals} categories={categories} sources={sources} />}
         {tab === 'historico' && (
           <ExpensesHistorico expenses={expensesWithIds} derived={derived} setExpenses={setExpenses} categories={categories} sources={sources} />
         )}
         {tab === 'entrada' && (
-          <ExpensesEntrada
-            drafts={drafts}
-            setDrafts={setDrafts}
-            onSubmit={handleSubmitDrafts}
-            categories={categories}
-            sources={sources}
-            setStore={setStore}
-            suggestCategories={findCategoriesForDescription}
-            onSaveDescriptionMapping={upsertDescriptionMapping}
-          />
+        <ExpensesEntrada
+          drafts={drafts}
+          setDrafts={setDrafts}
+          onSubmit={handleSubmitDrafts}
+          categories={categories}
+          sources={sources}
+          setStore={setStore}
+          suggestCategories={findCategoriesForDescription}
+          onSaveDescriptionMapping={upsertDescriptionMapping}
+          descriptionMappings={descriptionCategoryMappings}
+          ignoredDescriptions={store.ignoredDescriptions || []}
+        />
         )}
         {tab === 'financiamentos' && <FinancingCalculator />}
 

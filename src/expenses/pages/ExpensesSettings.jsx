@@ -37,13 +37,15 @@ const CURRENCIES = [
 export default function ExpensesSettings() {
   const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
   const store = ensureExpensesDefaults(storeState);
-  const { personalInfo, settings, categories, sources, createdAt, descriptionCategoryMappings = [] } = store;
+  const { personalInfo, settings, categories, sources, createdAt, descriptionCategoryMappings = [], ignoredDescriptions = [] } = store;
+  const ignoredList = Array.isArray(ignoredDescriptions) ? ignoredDescriptions : [];
 
   const [newCategory, setNewCategory] = useState({ name: "", icon: "", color: "" });
   const [newSource, setNewSource] = useState({ name: "", icon: "", color: "" });
   const [showUpdateWarning, setShowUpdateWarning] = useState({ type: null, index: null });
   const [newMappingKeyword, setNewMappingKeyword] = useState("");
   const [newMappingCategories, setNewMappingCategories] = useState([]);
+  const [newIgnoredKeyword, setNewIgnoredKeyword] = useState("");
 
   const creationDate = useMemo(() => (createdAt ? createdAt.slice(0, 10) : ""), [createdAt]);
   const mappingList = useMemo(
@@ -250,6 +252,28 @@ export default function ExpensesSettings() {
     });
   }
 
+  function addIgnoredDescription(event) {
+    event.preventDefault();
+    const keyword = newIgnoredKeyword.trim();
+    if (!keyword) return;
+    
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      const currentIgnored = Array.isArray(safePrev.ignoredDescriptions) ? safePrev.ignoredDescriptions : [];
+      if (currentIgnored.includes(keyword)) return safePrev;
+      return { ...safePrev, ignoredDescriptions: [...currentIgnored, keyword] };
+    });
+    setNewIgnoredKeyword("");
+  }
+
+  function removeIgnoredDescription(keyword) {
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      const currentIgnored = Array.isArray(safePrev.ignoredDescriptions) ? safePrev.ignoredDescriptions : [];
+      return { ...safePrev, ignoredDescriptions: currentIgnored.filter(k => k !== keyword) };
+    });
+  }
+
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
@@ -354,100 +378,13 @@ export default function ExpensesSettings() {
         </section>
 
         <section className="rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Mapeamentos automáticos por descrição</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Quando a descrição contiver a palavra-chave abaixo, as categorias associadas serão aplicadas automaticamente na tela
-            de novas despesas.
-          </p>
-          <div className="mt-4 space-y-4">
-            {mappingList.length > 0 ? (
-              <div className="space-y-2">
-                {mappingList.map((mapping) => (
-                  <div
-                    key={mapping.keyword}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2"
-                  >
-                    <div>
-                      <div className="text-[0.65rem] uppercase text-slate-400">Palavra-chave</div>
-                      <div className="text-sm font-semibold text-slate-700">{mapping.keyword}</div>
-                    </div>
-                    <div className="flex flex-1 flex-wrap items-center gap-2">
-                      {mapping.categories.length > 0 ? (
-                        mapping.categories.map((category) => (
-                          <span
-                            key={`${mapping.keyword}-${category}`}
-                            className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] text-slate-600"
-                          >
-                            {category}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-xs text-slate-400">Sem categorias associadas</span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeDescriptionMapping(mapping.keyword)}
-                      className="rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
-                    >
-                      Remover
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-lg border border-dashed px-3 py-4 text-sm text-slate-500">
-                Nenhum mapeamento configurado. Adicione uma palavra-chave abaixo.
-              </div>
-            )}
-
-            <form onSubmit={addDescriptionMapping} className="space-y-3 rounded-xl border border-slate-200 p-4">
-              <div>
-                <label className="text-xs font-semibold uppercase text-slate-500">Palavra-chave</label>
-                <input
-                  value={newMappingKeyword}
-                  onChange={(event) => setNewMappingKeyword(event.target.value)}
-                  placeholder="ex.: uber, farmácia, mercado"
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold uppercase text-slate-500">Categorias aplicadas</label>
-                <MultiPillSelect
-                  values={newMappingCategories}
-                  options={categoryOptions}
-                  onChange={setNewMappingCategories}
-                  placeholder="Selecionar categoria"
-                  inputPlaceholder="Nova categoria"
-                />
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="submit"
-                  className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-slate-800"
-                >
-                  Salvar mapeamento
-                </button>
-                <button
-                  type="button"
-                  onClick={resetDescriptionMappingsToDefault}
-                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                >
-                  Restaurar padrões
-                </button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Categorias cadastradas</h2>
               <p className="mt-1 text-sm text-slate-500">Use para agrupar gastos por tipo.</p>
             </div>
           </div>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 max-h-[500px] overflow-y-auto space-y-4 pr-2">
             {categories.map((category, index) => (
               <div key={`category-${index}`} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
                 <label className="text-sm font-medium text-slate-700">
@@ -540,7 +477,7 @@ export default function ExpensesSettings() {
               <p className="mt-1 text-sm text-slate-500">Representam de onde vem cada gasto.</p>
             </div>
           </div>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 max-h-[500px] overflow-y-auto space-y-4 pr-2">
             {sources.map((source, index) => (
               <div key={`source-${index}`} className="grid grid-cols-1 gap-3 rounded-xl border border-slate-100 p-4 md:grid-cols-4">
                 <label className="text-sm font-medium text-slate-700">
@@ -624,6 +561,167 @@ export default function ExpensesSettings() {
               </button>
             </div>
           </form>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900">Mapeamentos automáticos por descrição</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Quando a descrição contiver a palavra-chave abaixo, as categorias associadas serão aplicadas automaticamente na tela
+            de novas transações.
+          </p>
+          <div className="mt-4">
+            {mappingList.length > 0 && (
+              <>
+                <div className="mb-3 flex items-center gap-2">
+                  <input
+                    value={mappingFilter}
+                    onChange={(e) => setMappingFilter(e.target.value)}
+                    placeholder="Filtrar por palavra-chave ou categoria"
+                    className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+                  />
+                  {mappingFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setMappingFilter("")}
+                      className="text-slate-400 hover:text-slate-600 text-lg px-2"
+                      title="Limpar filtro"
+                    >
+                      ×
+                    </button>
+                  )}
+                  <div className="text-xs text-slate-500 whitespace-nowrap">
+                    {filteredMappingList.length} de {mappingList.length}
+                  </div>
+                </div>
+                <div className="mb-4 max-h-[400px] overflow-y-auto space-y-2 pr-2">
+                  {filteredMappingList.map((mapping) => (
+                  <div
+                    key={mapping.keyword}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2"
+                  >
+                    <div>
+                      <div className="text-[0.65rem] uppercase text-slate-400">Palavra-chave</div>
+                      <div className="text-sm font-semibold text-slate-700">{mapping.keyword}</div>
+                    </div>
+                    <div className="flex flex-1 flex-wrap items-center gap-2">
+                      {mapping.categories.length > 0 ? (
+                        mapping.categories.map((category) => (
+                          <span
+                            key={`${mapping.keyword}-${category}`}
+                            className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] text-slate-600"
+                          >
+                            {category}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">Sem categorias associadas</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDescriptionMapping(mapping.keyword)}
+                      className="rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {mappingList.length === 0 && (
+              <div className="mb-4 rounded-lg border border-dashed px-3 py-4 text-sm text-slate-500">
+                Nenhum mapeamento configurado. Adicione uma palavra-chave abaixo.
+              </div>
+            )}
+
+            <form onSubmit={addDescriptionMapping} className="space-y-3 rounded-xl border border-slate-200 p-4">
+              <div>
+                <label className="text-xs font-semibold uppercase text-slate-500">Palavra-chave</label>
+                <input
+                  value={newMappingKeyword}
+                  onChange={(event) => setNewMappingKeyword(event.target.value)}
+                  placeholder="ex.: uber, farmácia, mercado"
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase text-slate-500">Categorias aplicadas</label>
+                <MultiPillSelect
+                  values={newMappingCategories}
+                  options={categoryOptions}
+                  onChange={setNewMappingCategories}
+                  placeholder="Selecionar categoria"
+                  inputPlaceholder="Nova categoria"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-slate-800"
+                >
+                  Salvar mapeamento
+                </button>
+                <button
+                  type="button"
+                  onClick={resetDescriptionMappingsToDefault}
+                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                >
+                  Restaurar padrões
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900">Descrições para ignorar na importação</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Gastos com estas descrições serão automaticamente ignorados durante a importação de arquivos CSV. 
+            Útil para pagamentos recebidos, transferências entre contas ou outros lançamentos que não devem aparecer no histórico.
+          </p>
+          
+          <div className="mt-4">
+            {ignoredList.length > 0 && (
+              <div className="mb-4 max-h-[300px] overflow-y-auto space-y-2 pr-2">
+                {ignoredList.map((keyword, index) => (
+                  <div key={index} className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                    <span className="text-sm text-slate-700 font-medium">{keyword}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeIgnoredDescription(keyword)}
+                      className="rounded-lg border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {ignoredList.length === 0 && (
+              <div className="mb-4 rounded-lg border border-dashed px-3 py-4 text-sm text-slate-500">
+                Nenhuma descrição configurada para ser ignorada. Adicione abaixo.
+              </div>
+            )}
+
+            <form onSubmit={addIgnoredDescription} className="flex gap-2">
+              <input
+                type="text"
+                value={newIgnoredKeyword}
+                onChange={(e) => setNewIgnoredKeyword(e.target.value)}
+                placeholder='Ex: "Pagamento recebido", "Transferência enviada"'
+                className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Adicionar
+              </button>
+            </form>
+          </div>
         </section>
       </div>
     </div>

@@ -5,6 +5,7 @@ export const DEFAULT_CATEGORIES = [
   { name: "Saúde", color: "#EF4444", icon: "🩺" },
   { name: "Educação", color: "#8B5CF6", icon: "📚" },
   { name: "Lazer", color: "#F59E0B", icon: "🎮" },
+  { name: "Assinaturas", color: "#EC4899", icon: "📱" },
   { name: "Outros", color: "#6B7280", icon: "🧩" },
 ];
 

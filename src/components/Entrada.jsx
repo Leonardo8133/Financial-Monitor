@@ -1,10 +1,12 @@
 import { createDraftEntry } from "../utils/entries.js";
 import { Field } from "./Field.jsx";
 import { CurrencyInput } from "./CurrencyInput.jsx";
+import { useOpenDatePickerProps } from "../hooks/useOpenDatePickerProps.js";
 import { resolveBankVisual } from "../config/banks.js";
 import { resolveSourceVisual } from "../config/sources.js";
 
 export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
+  const dateOpenProps = useOpenDatePickerProps();
   const bankOptionsId = "bank-options";
   const sourceOptionsId = "source-options";
   const sourceLibrary = Array.isArray(sources) ? sources : [];
@@ -191,6 +193,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   disabled={row.locked}
                   onChange={(e) => updateRow(row.id, "date", e.target.value)}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+                  {...dateOpenProps}
                 />
               </Field>
               <Field className="md:col-span-2" label="Banco" helpText="Banco ou instituição financeira onde o valor está">

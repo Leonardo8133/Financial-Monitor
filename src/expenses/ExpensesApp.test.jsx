@@ -18,7 +18,7 @@ describe("ExpensesApp", () => {
     // Tab buttons have role=button with aria-pressed
     expect(screen.getByRole("button", { name: /Dashboard/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Histórico/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Nova Despesa/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Nova Transação/ })).toBeInTheDocument();
   });
 
   it("opens import modal from button", () => {

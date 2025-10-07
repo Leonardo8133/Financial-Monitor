@@ -130,14 +130,14 @@ export default function ExpensesReport() {
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Relatório PDF de Gastos</h1>
             <p className="text-sm text-slate-600">
-              Gere um documento consolidado das despesas registradas nos últimos 12 meses.
+              Gere um documento consolidado das transações registradas nos últimos 12 meses.
             </p>
             {hasPeriod ? (
               <p className="text-xs text-slate-500">
                 Intervalo considerado: {monthLabel(report.startYm)} – {monthLabel(report.endYm)}
               </p>
             ) : (
-              <p className="text-xs text-slate-500">Cadastre despesas com data para liberar o PDF.</p>
+              <p className="text-xs text-slate-500">Cadastre transações com data para liberar o PDF.</p>
             )}
           </div>
           <Link
@@ -172,7 +172,7 @@ export default function ExpensesReport() {
             {error && <p className="text-sm text-red-600">Não foi possível gerar o PDF. Tente novamente em instantes.</p>}
             {report.itemCount === 0 && (
               <p className="text-sm text-slate-500">
-                Nenhuma despesa com data registrada nos últimos 12 meses. Adicione novos lançamentos antes de gerar o PDF.
+                Nenhuma transação com data registrada nos últimos 12 meses. Adicione novos lançamentos antes de gerar o PDF.
               </p>
             )}
           </div>

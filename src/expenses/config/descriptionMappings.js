@@ -1,17 +1,4 @@
-export const DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS = [
-  { keyword: "uber", categories: ["Transporte"] },
-  { keyword: "99", categories: ["Transporte"] },
-  { keyword: "cartao", categories: ["Crédito"] },
-  { keyword: "cartão", categories: ["Crédito"] },
-  { keyword: "ifood", categories: ["Alimentação"] },
-  { keyword: "super", categories: ["Alimentação"] },
-  { keyword: "mercado", categories: ["Alimentação"] },
-  { keyword: "farmácia", categories: ["Saúde"] },
-  { keyword: "farmacia", categories: ["Saúde"] },
-  { keyword: "iptu", categories: ["Moradia"] },
-  { keyword: "energia", categories: ["Moradia"] },
-  { keyword: "luz", categories: ["Moradia"] },
-];
+export const DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS = [];
 
 export function normalizeMappingKeyword(keyword = "") {
   return keyword.trim().toLowerCase();
@@ -29,8 +16,16 @@ export function mergeDescriptionMappings(base = [], incoming = []) {
       : [];
     if (!categories.length) continue;
     const existing = map.get(keyword);
-    const merged = existing ? Array.from(new Set([...existing, ...categories])) : categories;
-    map.set(keyword, merged);
+    const existingCategories = existing ? existing.categories : [];
+    const merged = Array.from(new Set([...existingCategories, ...categories]));
+    map.set(keyword, { 
+      categories: merged, 
+      exactMatch: entry.exactMatch !== undefined ? entry.exactMatch : (existing ? existing.exactMatch : false)
+    });
   }
-  return Array.from(map.entries()).map(([keyword, categories]) => ({ keyword, categories }));
+  return Array.from(map.entries()).map(([keyword, data]) => ({ 
+    keyword, 
+    categories: data.categories,
+    exactMatch: data.exactMatch
+  }));
 }

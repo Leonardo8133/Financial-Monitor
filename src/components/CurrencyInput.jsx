@@ -94,7 +94,13 @@ export function CurrencyInput({
         onBlur={handleBlur}
         onChange={handleChange}
         placeholder={placeholder}
-        className={`w-full rounded-xl border border-slate-200 px-6 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100 ${inputClassName}`}
+        className={`w-full rounded-xl border px-6 py-1.5 text-xs outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100 ${
+          Number(value) > 0
+            ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold"
+            : Number(value) < 0
+            ? "bg-red-50 border-red-200 text-red-700 font-semibold"
+            : "border-slate-200"
+        } ${inputClassName}`}
         {...props}
       />
     </div>

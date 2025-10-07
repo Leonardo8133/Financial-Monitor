@@ -3,8 +3,10 @@ import { resolveBankVisual } from "../config/banks.js";
 import { resolveSourceVisual } from "../config/sources.js";
 import { fmtBRL, fmtPct, monthLabel, toNumber, yyyymm } from "../utils/formatters.js";
 import { Td, Th } from "./TableCells.jsx";
+import { useOpenDatePickerProps } from "../hooks/useOpenDatePickerProps.js";
 
 export function Historico({ entries, computedEntries, setEntries, banks, sources, onClearAll }) {
+  const dateOpenProps = useOpenDatePickerProps();
   const [q, setQ] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
@@ -244,6 +246,7 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
                         value={draft?.date ?? ""}
                         onChange={(e) => onUpdateDraft("date", e.target.value)}
                         className="w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
+                        {...dateOpenProps}
                       />
                     ) : (
                       new Date(entry.date).toLocaleDateString("pt-BR")

@@ -9,6 +9,7 @@ export const EXPENSES_STORAGE_SEED = {
   categories: DEFAULT_CATEGORIES,
   sources: DEFAULT_SOURCES,
   descriptionCategoryMappings: DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
+  ignoredDescriptions: [], // Lista de palavras-chave para ignorar na importação
   personalInfo: {
     fullName: "",
     email: "",
@@ -40,6 +41,7 @@ export function ensureExpensesDefaults(store = {}) {
         ? store.sources
         : EXPENSES_STORAGE_SEED.sources,
     descriptionCategoryMappings: mergedMappings,
+    ignoredDescriptions: Array.isArray(store?.ignoredDescriptions) ? store.ignoredDescriptions : [],
     personalInfo: { ...EXPENSES_STORAGE_SEED.personalInfo, ...(store?.personalInfo || {}) },
     settings: { ...EXPENSES_STORAGE_SEED.settings, ...(store?.settings || {}) },
     createdAt: store?.createdAt || EXPENSES_STORAGE_SEED.createdAt,
