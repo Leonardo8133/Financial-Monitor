@@ -33,9 +33,6 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
               style={{ backgroundColor: visual.color }}
               aria-hidden="true"
             ></span>
-            <span className="text-base" aria-hidden="true">
-              {visual.icon}
-            </span>
           </div>
         )}
       </div>
