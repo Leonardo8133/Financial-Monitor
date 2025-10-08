@@ -100,13 +100,18 @@ export async function migrateToUnifiedStorage() {
 }
 
 // Função para garantir dados unificados
-export function ensureUnifiedDefaults(store = {}) {
+export function ensureUnifiedDefaults(store) {
+  // Se store é null ou undefined, retornar seed padrão
+  if (!store) {
+    return UNIFIED_STORAGE_SEED;
+  }
+  
   return {
     ...UNIFIED_STORAGE_SEED,
     ...store,
     investimentos: {
       ...UNIFIED_STORAGE_SEED.investimentos,
-      ...store.investimentos,
+      ...(store.investimentos || {}),
       // Permitir arrays vazios - não forçar restauração dos padrões
       banks: Array.isArray(store.investimentos?.banks) ? store.investimentos.banks : UNIFIED_STORAGE_SEED.investimentos.banks,
       sources: Array.isArray(store.investimentos?.sources) ? store.investimentos.sources : UNIFIED_STORAGE_SEED.investimentos.sources,
@@ -122,11 +127,13 @@ export function ensureUnifiedDefaults(store = {}) {
     },
     gastos: {
       ...UNIFIED_STORAGE_SEED.gastos,
-      ...store.gastos,
+      ...(store.gastos || {}),
       // Permitir arrays vazios - não forçar restauração dos padrões
       categories: Array.isArray(store.gastos?.categories) ? store.gastos.categories : UNIFIED_STORAGE_SEED.gastos.categories,
       sources: Array.isArray(store.gastos?.sources) ? store.gastos.sources : UNIFIED_STORAGE_SEED.gastos.sources,
       expenses: Array.isArray(store.gastos?.expenses) ? store.gastos.expenses : UNIFIED_STORAGE_SEED.gastos.expenses,
+      descriptionCategoryMappings: Array.isArray(store.gastos?.descriptionCategoryMappings) ? store.gastos.descriptionCategoryMappings : UNIFIED_STORAGE_SEED.gastos.descriptionCategoryMappings,
+      ignoredDescriptions: Array.isArray(store.gastos?.ignoredDescriptions) ? store.gastos.ignoredDescriptions : UNIFIED_STORAGE_SEED.gastos.ignoredDescriptions,
       personalInfo: {
         ...UNIFIED_STORAGE_SEED.gastos.personalInfo,
         ...(store.gastos?.personalInfo || {}),

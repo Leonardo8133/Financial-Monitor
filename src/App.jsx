@@ -40,42 +40,46 @@ import {
   makeId,
   withId,
 } from "./utils/entries.js";
-import { DEFAULT_BANKS, ensureBankInLibrary } from "./config/banks.js";
-import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
+import { ensureBankInLibrary } from "./config/banks.js";
+import { ensureSourceInLibrary } from "./config/sources.js";
 import {
   ensureInvestmentDefaults,
   INVESTMENT_STORAGE_SEED,
 } from "./config/investmentStorage.js";
 import { Link } from "react-router-dom";
-import { UNIFIED_LS_KEY, ensureUnifiedDefaults, migrateToUnifiedStorage } from "./utils/unifiedStorage.js";
+import { UNIFIED_LS_KEY, UNIFIED_STORAGE_SEED, ensureUnifiedDefaults, migrateToUnifiedStorage } from "./utils/unifiedStorage.js";
 
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Estados para inicialização
-  const [isInitializing, setIsInitializing] = useState(true);
+  // Estados para dados
   const [unifiedState, setUnifiedStore] = useLocalStorageState(UNIFIED_LS_KEY, null);
   const [legacyState, setLegacyStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
   
-  // Inicialização assíncrona
+  // Inicialização assíncrona (apenas para usuários novos, uma única vez)
   useEffect(() => {
     async function initializeApp() {
+      if (unifiedState) {
+        // Já tem dados, não precisa inicializar
+        return;
+      }
+      
       try {
-        if (!unifiedState) {
-          await migrateToUnifiedStorage();
+        const result = await migrateToUnifiedStorage();
+        if (result && Object.keys(result).length > 0) {
+          setUnifiedStore(result);
         }
       } catch (error) {
         console.error('Erro na inicialização:', error);
-      } finally {
-        setIsInitializing(false);
       }
     }
     
     initializeApp();
-  }, [unifiedState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
-  // Se não há dados unificados, usar seed padrão
+  // Se não há dados unific ados, usar seed padrão
   const storeState = unifiedState || UNIFIED_STORAGE_SEED;
   const store = ensureUnifiedDefaults(storeState);
   
@@ -109,19 +113,6 @@ export default function App() {
   });
   const fileRef = useRef(null);
 
-  // Mostrar tela de carregamento durante inicialização
-  if (isInitializing) {
-    return (
-      <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mx-auto mb-4"></div>
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">Inicializando...</h2>
-          <p className="text-sm text-slate-600">Carregando configurações do arquivo JSON</p>
-        </div>
-      </div>
-    );
-  }
-
   useEffect(() => {
     if (settings.defaultTab && defaultsRef.current.tab !== settings.defaultTab) {
       defaultsRef.current.tab = settings.defaultTab;
@@ -148,11 +139,11 @@ export default function App() {
       const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
       const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
       const currentBanks =
-        Array.isArray(safePrev.investimentos.banks) && safePrev.investimentos.banks.length ? safePrev.investimentos.banks : DEFAULT_BANKS;
+        Array.isArray(safePrev.investimentos.banks) && safePrev.investimentos.banks.length ? safePrev.investimentos.banks : [];
       const currentSources =
         Array.isArray(safePrev.investimentos.sources) && safePrev.investimentos.sources.length
           ? safePrev.investimentos.sources
-          : DEFAULT_SOURCES;
+          : [];
       const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
       const mergedSources = mergeSourcesFromEntries(nextEntries, currentSources);
       return {
@@ -190,8 +181,8 @@ export default function App() {
           investimentos: {
             ...safePrev.investimentos,
             entries: normalized,
-            banks: mergeBanksFromEntries(normalized, DEFAULT_BANKS),
-            sources: mergeSourcesFromEntries(normalized, DEFAULT_SOURCES),
+            banks: mergeBanksFromEntries(normalized, safePrev.investimentos.banks || []),
+            sources: mergeSourcesFromEntries(normalized, safePrev.investimentos.sources || []),
             personalInfo: safePrev.investimentos.personalInfo,
             settings: safePrev.investimentos.settings,
             createdAt: safePrev.investimentos.createdAt || new Date().toISOString(),
@@ -782,16 +773,16 @@ function resolveTone(value) {
   return "neutral";
 }
 
-function mergeBanksFromEntries(entries, baseBanks = DEFAULT_BANKS) {
-  let next = Array.isArray(baseBanks) ? [...baseBanks] : [...DEFAULT_BANKS];
+function mergeBanksFromEntries(entries, baseBanks = []) {
+  let next = Array.isArray(baseBanks) ? [...baseBanks] : [];
   for (const entry of entries) {
     next = ensureBankInLibrary(entry.bank, next);
   }
   return next;
 }
 
-function mergeSourcesFromEntries(entries, baseSources = DEFAULT_SOURCES) {
-  let next = Array.isArray(baseSources) ? [...baseSources] : [...DEFAULT_SOURCES];
+function mergeSourcesFromEntries(entries, baseSources = []) {
+  let next = Array.isArray(baseSources) ? [...baseSources] : [];
   for (const entry of entries) {
     next = ensureSourceInLibrary(entry.source, next);
   }

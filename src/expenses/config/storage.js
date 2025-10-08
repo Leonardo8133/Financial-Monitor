@@ -1,15 +1,15 @@
-import { DEFAULT_CATEGORIES } from "./categories.js";
-import { DEFAULT_SOURCES } from "./sources.js";
-import { DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS, mergeDescriptionMappings } from "./descriptionMappings.js";
+import { mergeDescriptionMappings } from "./descriptionMappings.js";
 
 export const EXPENSES_LS_KEY = "financial-monitor-expenses-v1";
 
+// Seed mínimo sem configurações padrão embutidas
+// As configurações virão do arquivo configuracoes-padrao.json
 export const EXPENSES_STORAGE_SEED = {
   expenses: [],
-  categories: DEFAULT_CATEGORIES,
-  sources: DEFAULT_SOURCES,
-  descriptionCategoryMappings: DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
-  ignoredDescriptions: [], // Lista de palavras-chave para ignorar na importação
+  categories: [],
+  sources: [],
+  descriptionCategoryMappings: [],
+  ignoredDescriptions: [],
   personalInfo: {
     fullName: "",
     email: "",
@@ -24,18 +24,13 @@ export const EXPENSES_STORAGE_SEED = {
 };
 
 export function ensureExpensesDefaults(store = {}) {
-  const mergedMappings = mergeDescriptionMappings(
-    DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
-    Array.isArray(store?.descriptionCategoryMappings) ? store.descriptionCategoryMappings : []
-  );
   return {
     ...EXPENSES_STORAGE_SEED,
     ...store,
     expenses: Array.isArray(store?.expenses) ? store.expenses : [],
-    // Permitir arrays vazios - não forçar restauração dos padrões
-    categories: Array.isArray(store?.categories) ? store.categories : EXPENSES_STORAGE_SEED.categories,
-    sources: Array.isArray(store?.sources) ? store.sources : EXPENSES_STORAGE_SEED.sources,
-    descriptionCategoryMappings: mergedMappings,
+    categories: Array.isArray(store?.categories) ? store.categories : [],
+    sources: Array.isArray(store?.sources) ? store.sources : [],
+    descriptionCategoryMappings: Array.isArray(store?.descriptionCategoryMappings) ? store.descriptionCategoryMappings : [],
     ignoredDescriptions: Array.isArray(store?.ignoredDescriptions) ? store.ignoredDescriptions : [],
     personalInfo: { ...EXPENSES_STORAGE_SEED.personalInfo, ...(store?.personalInfo || {}) },
     settings: { ...EXPENSES_STORAGE_SEED.settings, ...(store?.settings || {}) },

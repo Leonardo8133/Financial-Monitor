@@ -5,8 +5,6 @@ import { ensureCategoryInLibrary } from "../config/categories.js";
 import { ensureSourceInLibrary } from "../config/sources.js";
 import { SettingsIcon } from "../../components/icons.jsx";
 import {
-  DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
-  mergeDescriptionMappings,
   normalizeMappingKeyword,
 } from "../config/descriptionMappings.js";
 import {
@@ -235,10 +233,12 @@ export default function ExpensesSettings() {
     if (!keyword || newMappingCategories.length === 0) return;
     setStore((prev) => {
       const safePrev = ensureExpensesDefaults(prev);
-      const merged = mergeDescriptionMappings(safePrev.descriptionCategoryMappings, [
-        { keyword, categories: newMappingCategories },
-      ]);
-      return { ...safePrev, descriptionCategoryMappings: merged };
+      const existing = safePrev.descriptionCategoryMappings || [];
+      const filtered = existing.filter(
+        (entry) => normalizeMappingKeyword(entry.keyword) !== normalizeMappingKeyword(keyword)
+      );
+      const updated = [...filtered, { keyword, categories: newMappingCategories, exactMatch: false }];
+      return { ...safePrev, descriptionCategoryMappings: updated };
     });
     setNewMappingKeyword("");
     setNewMappingCategories([]);
@@ -295,10 +295,12 @@ export default function ExpensesSettings() {
   }
 
   function resetDescriptionMappingsToDefault() {
+    if (!confirm('Tem certeza que deseja remover todos os mapeamentos? Esta ação não pode ser desfeita.')) {
+      return;
+    }
     setStore((prev) => {
       const safePrev = ensureExpensesDefaults(prev);
-      const merged = mergeDescriptionMappings(DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS, []);
-      return { ...safePrev, descriptionCategoryMappings: merged };
+      return { ...safePrev, descriptionCategoryMappings: [] };
     });
   }
 
@@ -790,9 +792,9 @@ export default function ExpensesSettings() {
                 <button
                   type="button"
                   onClick={resetDescriptionMappingsToDefault}
-                  className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
                 >
-                  Restaurar padrões
+                  Limpar todos
                 </button>
               </div>
             </form>

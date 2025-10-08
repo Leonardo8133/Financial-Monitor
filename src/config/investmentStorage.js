@@ -1,10 +1,9 @@
-import { DEFAULT_BANKS } from "./banks.js";
-import { DEFAULT_SOURCES } from "./sources.js";
-
+// Seed mínimo sem configurações padrão embutidas
+// As configurações virão do arquivo configuracoes-padrao.json
 export const INVESTMENT_STORAGE_SEED = {
   entries: [],
-  banks: DEFAULT_BANKS,
-  sources: DEFAULT_SOURCES,
+  banks: [],
+  sources: [],
   personalInfo: {
     fullName: "",
     email: "",
