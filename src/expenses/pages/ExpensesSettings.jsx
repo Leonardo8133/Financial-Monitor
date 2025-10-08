@@ -46,6 +46,7 @@ export default function ExpensesSettings() {
   const [newMappingKeyword, setNewMappingKeyword] = useState("");
   const [newMappingCategories, setNewMappingCategories] = useState([]);
   const [newIgnoredKeyword, setNewIgnoredKeyword] = useState("");
+  const [mappingFilter, setMappingFilter] = useState("");
 
   const creationDate = useMemo(() => (createdAt ? createdAt.slice(0, 10) : ""), [createdAt]);
   const mappingList = useMemo(
@@ -60,6 +61,14 @@ export default function ExpensesSettings() {
     () => (Array.isArray(categories) ? categories.map((category) => category.name).filter(Boolean) : []),
     [categories]
   );
+  const filteredMappingList = useMemo(() => {
+    if (!mappingFilter.trim()) return mappingList;
+    const filter = mappingFilter.toLowerCase();
+    return mappingList.filter((mapping) =>
+      mapping.keyword.toLowerCase().includes(filter) ||
+      mapping.categories.some((cat) => cat.toLowerCase().includes(filter))
+    );
+  }, [mappingList, mappingFilter]);
 
   function updatePersonalInfo(field, value) {
     const parsedValue = field === "householdSize" ? Number(value) || 0 : value;

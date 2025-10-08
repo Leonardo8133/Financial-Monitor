@@ -4,6 +4,7 @@ import { resolveSourceVisual } from "../config/sources.js";
 import { fmtBRL, fmtPct, monthLabel, toNumber, yyyymm } from "../utils/formatters.js";
 import { Td, Th } from "./TableCells.jsx";
 import { useOpenDatePickerProps } from "../hooks/useOpenDatePickerProps.js";
+import { CurrencyInput } from "./CurrencyInput.jsx";
 
 export function Historico({ entries, computedEntries, setEntries, banks, sources, onClearAll }) {
   const dateOpenProps = useOpenDatePickerProps();
@@ -80,6 +81,8 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
       inAccount: original.inAccount ?? 0,
       invested: original.invested ?? 0,
       cashFlow: original.cashFlow ?? 0,
+      yieldValue: original.yieldValue ?? 0,
+      yieldPct: original.yieldPct ?? 0,
     });
   }
 
@@ -105,6 +108,8 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
           inAccount: toNumber(draft.inAccount),
           invested: toNumber(draft.invested),
           cashFlow: toNumber(draft.cashFlow),
+          yieldValue: toNumber(draft.yieldValue),
+          yieldPct: toNumber(draft.yieldPct),
         };
       })
     );
@@ -203,6 +208,7 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
                   banks={banks}
                   sources={sources}
                   sourceOptionsId={sourceOptionsId}
+                  dateOpenProps={dateOpenProps}
                 />
               )}
             </div>
@@ -213,7 +219,7 @@ export function Historico({ entries, computedEntries, setEntries, banks, sources
   );
 }
 
-function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove, banks, sources, sourceOptionsId = "source-library" }) {
+function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, onCancelEdit, onSaveEdit, onRemove, banks, sources, sourceOptionsId = "source-library", dateOpenProps }) {
   const library = Array.isArray(sources) ? sources : [];
   return (
     <div className="overflow-x-auto">
@@ -279,12 +285,10 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
               </Td>
                   <Td align="right">
                     {isEditing ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={draft?.inAccount ?? 0}
-                        onChange={(e) => onUpdateDraft("inAccount", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-slate-400 focus:outline-none"
+                      <CurrencyInput
+                        value={Number(draft?.inAccount) || 0}
+                        onChange={(num) => onUpdateDraft("inAccount", num)}
+                        inputClassName="px-2 py-1 text-sm text-right"
                       />
                     ) : (
                       <span className={toneClass(entry.inAccount)}>{fmtBRL(entry.inAccount)}</span>
@@ -292,12 +296,10 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
                   </Td>
                   <Td align="right">
                     {isEditing ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={draft?.invested ?? 0}
-                        onChange={(e) => onUpdateDraft("invested", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-slate-400 focus:outline-none"
+                      <CurrencyInput
+                        value={Number(draft?.invested) || 0}
+                        onChange={(num) => onUpdateDraft("invested", num)}
+                        inputClassName="px-2 py-1 text-sm text-right"
                       />
                     ) : (
                       fmtBRL(entry.invested)
@@ -305,29 +307,48 @@ function DetailedTable({ items, editingId, draft, onStartEdit, onUpdateDraft, on
                   </Td>
                   <Td align="right">
                     {isEditing ? (
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={draft?.cashFlow ?? 0}
-                        onChange={(e) => onUpdateDraft("cashFlow", e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-slate-400 focus:outline-none"
+                      <CurrencyInput
+                        value={Number(draft?.cashFlow) || 0}
+                        onChange={(num) => onUpdateDraft("cashFlow", num)}
+                        allowNegative
+                        inputClassName="px-2 py-1 text-sm text-right"
                       />
                     ) : (
                       <span className={toneClass(entry.cashFlow)}>{fmtBRL(entry.cashFlow)}</span>
                     )}
                   </Td>
                   <Td align="right">
-                    {entry.yieldValue !== null && entry.yieldValue !== undefined ? (
-                      <span className={toneClass(entry.yieldValue)}>{fmtBRL(entry.yieldValue)}</span>
+                    {isEditing ? (
+                      <CurrencyInput
+                        value={Number(draft?.yieldValue) || 0}
+                        onChange={(num) => onUpdateDraft("yieldValue", num)}
+                        allowNegative
+                        inputClassName="px-2 py-1 text-sm text-right"
+                      />
                     ) : (
-                      ""
+                      entry.yieldValue !== null && entry.yieldValue !== undefined ? (
+                        <span className={toneClass(entry.yieldValue)}>{fmtBRL(entry.yieldValue)}</span>
+                      ) : (
+                        ""
+                      )
                     )}
                   </Td>
                   <Td align="right">
-                    {entry.yieldPct !== null && entry.yieldPct !== undefined ? (
-                      <span className={toneClass(entry.yieldPct)}>{fmtPct(entry.yieldPct)}</span>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={draft?.yieldPct ?? 0}
+                        onChange={(e) => onUpdateDraft("yieldPct", e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 px-2 py-1 text-right text-sm focus:border-slate-400 focus:outline-none"
+                        placeholder="0,00"
+                      />
                     ) : (
-                      ""
+                      entry.yieldPct !== null && entry.yieldPct !== undefined ? (
+                        <span className={toneClass(entry.yieldPct)}>{fmtPct(entry.yieldPct)}</span>
+                      ) : (
+                        ""
+                      )
                     )}
                   </Td>
                   <Td align="right">
