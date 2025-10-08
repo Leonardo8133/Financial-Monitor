@@ -94,3 +94,4 @@ if (result.success) {
   console.log('\n❌ Teste falhou:', result.error);
 }
 
+

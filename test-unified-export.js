@@ -65,3 +65,4 @@ function testUnifiedExport() {
 const result = testUnifiedExport();
 console.log('\n📋 Resultado do teste:', result);
 
+
