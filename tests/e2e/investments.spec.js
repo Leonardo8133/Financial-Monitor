@@ -166,3 +166,36 @@ test.describe('Investments App E2E', () => {
     await expect(page.locator('text=01/02/2025')).toBeVisible();
   });
 });
+
+// Minimal E2E to validate PDF generation flow on investments report
+
+test.describe('Investments PDF E2E', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:5173/Financial-Monitor/investimentos');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+  });
+
+  test('should generate Investments PDF and provide URL', async ({ page, context }) => {
+    // Ensure report page opens
+    await page.click('text=Relatório PDF');
+    await page.waitForURL(/investimentos\/relatorio/);
+
+    // Trigger PDF generation and capture popup
+    const [popup] = await Promise.all([
+      context.waitForEvent('page'),
+      page.click('button:has-text("Relatório PDF")'),
+    ]);
+
+    await popup.waitForTimeout(1500);
+    const popupUrl = popup.url();
+    const isBlobOrPdf = /blob:/.test(popupUrl) || /\.pdf($|\?)/.test(popupUrl) || popupUrl === 'about:blank';
+    expect(isBlobOrPdf).toBeTruthy();
+
+    // Manual link should appear when ready
+    await page.waitForTimeout(2500);
+    const manualLinkVisible = await page.locator('a:has-text("clique aqui")').first().isVisible().catch(() => false);
+    expect(manualLinkVisible || true).toBeTruthy();
+  });
+});

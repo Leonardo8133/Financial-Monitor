@@ -22,100 +22,104 @@
         - button "Importar" [ref=e23] [cursor=pointer]:
           - img [ref=e24] [cursor=pointer]
           - text: Importar
-        - link "Configurações" [ref=e26] [cursor=pointer]:
-          - /url: /Financial-Monitor/investimentos/configuracoes
+        - link "Relatório PDF" [ref=e26] [cursor=pointer]:
+          - /url: /Financial-Monitor/investimentos/relatorio
           - img [ref=e27] [cursor=pointer]
+          - text: Relatório PDF
+        - link "Configurações" [ref=e31] [cursor=pointer]:
+          - /url: /Financial-Monitor/investimentos/configuracoes
+          - img [ref=e32] [cursor=pointer]
           - text: Configurações
-    - generic [ref=e31]:
-      - button "Dashboard" [ref=e32] [cursor=pointer]:
-        - img [ref=e33] [cursor=pointer]
-        - text: Dashboard
-      - button "Histórico" [active] [pressed] [ref=e34] [cursor=pointer]:
-        - img [ref=e35] [cursor=pointer]
-        - text: Histórico
-      - button "Nova Entrada" [ref=e37] [cursor=pointer]:
+    - generic [ref=e36]:
+      - button "Dashboard" [ref=e37] [cursor=pointer]:
         - img [ref=e38] [cursor=pointer]
-        - text: Nova Entrada
-      - button "Projeções" [ref=e39] [cursor=pointer]:
+        - text: Dashboard
+      - button "Histórico" [active] [pressed] [ref=e39] [cursor=pointer]:
         - img [ref=e40] [cursor=pointer]
+        - text: Histórico
+      - button "Nova Entrada" [ref=e42] [cursor=pointer]:
+        - img [ref=e43] [cursor=pointer]
+        - text: Nova Entrada
+      - button "Projeções" [ref=e44] [cursor=pointer]:
+        - img [ref=e45] [cursor=pointer]
         - text: Projeções
-  - generic [ref=e43]:
-    - generic "Soma dos aportes registrados no mês selecionado; passe o mouse para ver o detalhe por fonte" [ref=e44]:
-      - generic [ref=e45]: Total de Investimentos
-      - generic [ref=e46]: R$ 1.500,00
-      - generic [ref=e47]: Referente a jan. de 2025
-    - generic "Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais" [ref=e48]:
-      - generic [ref=e49]: Rendimento último mês
-      - generic [ref=e50]: R$ 0,00
-      - generic [ref=e51]: Período jan. de 2025
-    - generic "Somatório das entradas (positivas) e saídas (negativas) informadas no mês" [ref=e52]:
-      - generic [ref=e53]: Entrada/Saída último mês
-      - generic [ref=e54]: R$ 0,00
-      - generic [ref=e55]: Período jan. de 2025
-    - generic "Soma do campo 'Valor na Conta' para o mês selecionado" [ref=e56]:
-      - generic [ref=e57]: Total em Conta último mês
-      - generic [ref=e58]: R$ 3.000,00
-      - generic [ref=e59]: Período jan. de 2025
-  - generic [ref=e60]:
-    - generic [ref=e61]:
-      - textbox "Filtrar por banco, data, valor..." [ref=e62]
-      - generic [ref=e63]:
-        - button "Limpar tudo" [ref=e64] [cursor=pointer]
-        - button "Colapsar tudo" [ref=e65] [cursor=pointer]
-        - generic [ref=e66]: 1 lançamentos
-    - generic [ref=e68]:
-      - generic [ref=e69]:
-        - generic [ref=e70]: jan. de 2025
-        - generic [ref=e71]:
-          - generic [ref=e72]:
+  - generic [ref=e48]:
+    - generic "Soma dos aportes registrados no mês selecionado; passe o mouse para ver o detalhe por fonte" [ref=e49]:
+      - generic [ref=e50]: Total de Investimentos
+      - generic [ref=e51]: R$ 1.500,00
+      - generic [ref=e52]: Referente a jan. de 2025
+    - generic "Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais" [ref=e53]:
+      - generic [ref=e54]: Rendimento último mês
+      - generic [ref=e55]: R$ 0,00
+      - generic [ref=e56]: Período jan. de 2025
+    - generic "Somatório das entradas (positivas) e saídas (negativas) informadas no mês" [ref=e57]:
+      - generic [ref=e58]: Entrada/Saída último mês
+      - generic [ref=e59]: R$ 0,00
+      - generic [ref=e60]: Período jan. de 2025
+    - generic "Soma do campo 'Valor na Conta' para o mês selecionado" [ref=e61]:
+      - generic [ref=e62]: Total em Conta último mês
+      - generic [ref=e63]: R$ 3.000,00
+      - generic [ref=e64]: Período jan. de 2025
+  - generic [ref=e65]:
+    - generic [ref=e66]:
+      - textbox "Filtrar por banco, data, valor..." [ref=e67]
+      - generic [ref=e68]:
+        - button "Limpar tudo" [ref=e69] [cursor=pointer]
+        - button "Colapsar tudo" [ref=e70] [cursor=pointer]
+        - generic [ref=e71]: 1 lançamentos
+    - generic [ref=e73]:
+      - generic [ref=e74]:
+        - generic [ref=e75]: jan. de 2025
+        - generic [ref=e76]:
+          - generic [ref=e77]:
             - text: "Investido:"
-            - strong [ref=e73]: R$ 1.500,00
-          - generic [ref=e74]:
+            - strong [ref=e78]: R$ 1.500,00
+          - generic [ref=e79]:
             - text: "Em Conta:"
-            - strong [ref=e75]: R$ 3.000,00
-          - generic [ref=e76]:
+            - strong [ref=e80]: R$ 3.000,00
+          - generic [ref=e81]:
             - text: "Entradas:"
-            - strong [ref=e77]: R$ 0,00
-          - generic [ref=e78]:
+            - strong [ref=e82]: R$ 0,00
+          - generic [ref=e83]:
             - text: "Rendimento:"
-            - strong [ref=e79]: R$ 0,00
-      - table [ref=e81]:
-        - rowgroup [ref=e82]:
-          - row "Data Banco Fonte Valor na Conta Valor em Investimentos Entrada/Saída Rendimento (R$) Rendimento (%) Ações" [ref=e83]:
-            - cell "Data" [ref=e84]
-            - cell "Banco" [ref=e85]
-            - cell "Fonte" [ref=e86]
-            - cell "Valor na Conta" [ref=e87]
-            - cell "Valor em Investimentos" [ref=e88]
-            - cell "Entrada/Saída" [ref=e89]
-            - cell "Rendimento (R$)" [ref=e90]
-            - cell "Rendimento (%)" [ref=e91]
-            - cell "Ações" [ref=e92]
-        - rowgroup [ref=e93]:
-          - row "31/01/2025 State Test Bank State Test Source R$ 3.000,00 R$ 1.500,00 R$ 0,00 Editar Excluir" [ref=e94]:
-            - cell "31/01/2025" [ref=e95]
-            - cell "State Test Bank" [ref=e96]:
-              - generic [ref=e97]:
-                - generic [ref=e99]: 🏦
-                - generic [ref=e100]: State Test Bank
-            - cell "State Test Source" [ref=e101]:
+            - strong [ref=e84]: R$ 0,00
+      - table [ref=e86]:
+        - rowgroup [ref=e87]:
+          - row "Data Banco Fonte Valor na Conta Valor em Investimentos Entrada/Saída Rendimento (R$) Rendimento (%) Ações" [ref=e88]:
+            - cell "Data" [ref=e89]
+            - cell "Banco" [ref=e90]
+            - cell "Fonte" [ref=e91]
+            - cell "Valor na Conta" [ref=e92]
+            - cell "Valor em Investimentos" [ref=e93]
+            - cell "Entrada/Saída" [ref=e94]
+            - cell "Rendimento (R$)" [ref=e95]
+            - cell "Rendimento (%)" [ref=e96]
+            - cell "Ações" [ref=e97]
+        - rowgroup [ref=e98]:
+          - row "31/01/2025 State Test Bank State Test Source R$ 3.000,00 R$ 1.500,00 R$ 0,00 Editar Excluir" [ref=e99]:
+            - cell "31/01/2025" [ref=e100]
+            - cell "State Test Bank" [ref=e101]:
               - generic [ref=e102]:
-                - generic [ref=e104]: 📊
-                - generic [ref=e105]: State Test Source
-            - cell "R$ 3.000,00" [ref=e106]:
-              - generic [ref=e107]: R$ 3.000,00
-            - cell "R$ 1.500,00" [ref=e108]
-            - cell "R$ 0,00" [ref=e109]:
-              - generic [ref=e110]: R$ 0,00
-            - cell [ref=e111]
-            - cell [ref=e112]
-            - cell "Editar Excluir" [ref=e113]:
-              - generic [ref=e114]:
-                - button "Editar" [ref=e115] [cursor=pointer]
-                - button "Excluir" [ref=e116] [cursor=pointer]
-  - contentinfo [ref=e117]:
-    - paragraph [ref=e118]:
+                - generic [ref=e104]: 🏦
+                - generic [ref=e105]: State Test Bank
+            - cell "State Test Source" [ref=e106]:
+              - generic [ref=e107]:
+                - generic [ref=e109]: 📊
+                - generic [ref=e110]: State Test Source
+            - cell "R$ 3.000,00" [ref=e111]:
+              - generic [ref=e112]: R$ 3.000,00
+            - cell "R$ 1.500,00" [ref=e113]
+            - cell "R$ 0,00" [ref=e114]:
+              - generic [ref=e115]: R$ 0,00
+            - cell [ref=e116]
+            - cell [ref=e117]
+            - cell "Editar Excluir" [ref=e118]:
+              - generic [ref=e119]:
+                - button "Editar" [ref=e120] [cursor=pointer]
+                - button "Excluir" [ref=e121] [cursor=pointer]
+  - contentinfo [ref=e122]:
+    - paragraph [ref=e123]:
       - text: "Dica: clique em"
-      - strong [ref=e119]: Exportar
+      - strong [ref=e124]: Exportar
       - text: para salvar um arquivo local. Você pode importar depois para continuar de onde parou.
 ```

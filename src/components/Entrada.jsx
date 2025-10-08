@@ -164,7 +164,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
                   className={`rounded-lg px-2 py-1 text-xs font-semibold transition ${
                     row.locked
                       ? "border border-amber-300 bg-amber-100 text-amber-700 hover:bg-amber-200"
-                      : "border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      : "border"
                   }`}
                   title={row.locked ? "Permite editar novamente esta linha" : "Trava os valores para evitar alterações"}
                 >

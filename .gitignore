@@ -20,3 +20,8 @@ Gemfile.lock
 # Node/npm artifacts
 node_modules/
 dist/
+test-results
+test-results/*
+playwright-report/*
+*.error-context.md
+test-results/*/error-context.md

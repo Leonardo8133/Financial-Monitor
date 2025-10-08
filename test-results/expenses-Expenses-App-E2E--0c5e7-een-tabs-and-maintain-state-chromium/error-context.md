@@ -22,38 +22,83 @@
         - button "Importar" [ref=e23] [cursor=pointer]:
           - img [ref=e24] [cursor=pointer]
           - text: Importar
-        - link "Configurações" [ref=e26] [cursor=pointer]:
-          - /url: /Financial-Monitor/gastos/configuracoes
+        - link "Relatório PDF" [ref=e26] [cursor=pointer]:
+          - /url: /Financial-Monitor/gastos/relatorio
           - img [ref=e27] [cursor=pointer]
+          - text: Relatório PDF
+        - link "Configurações" [ref=e31] [cursor=pointer]:
+          - /url: /Financial-Monitor/gastos/configuracoes
+          - img [ref=e32] [cursor=pointer]
           - text: Configurações
-    - generic [ref=e31]:
-      - button "Dashboard" [pressed] [ref=e32] [cursor=pointer]:
-        - img [ref=e33] [cursor=pointer]
-        - text: Dashboard
-      - button "Histórico" [ref=e34] [cursor=pointer]:
-        - img [ref=e35] [cursor=pointer]
-        - text: Histórico
-      - button "Nova Despesa" [active] [ref=e37] [cursor=pointer]:
+    - generic [ref=e36]:
+      - button "Dashboard" [pressed] [ref=e37] [cursor=pointer]:
         - img [ref=e38] [cursor=pointer]
-        - text: Nova Despesa
-      - button "Financiamentos" [ref=e39] [cursor=pointer]:
+        - text: Dashboard
+      - button "Histórico" [ref=e39] [cursor=pointer]:
         - img [ref=e40] [cursor=pointer]
+        - text: Histórico
+      - button "Nova Transação" [ref=e42] [cursor=pointer]:
+        - img [ref=e43] [cursor=pointer]
+        - text: Nova Transação
+      - button "Financiamentos" [ref=e44] [cursor=pointer]:
+        - img [ref=e45] [cursor=pointer]
         - text: Financiamentos
-  - generic [ref=e42]:
-    - generic [ref=e43]:
-      - heading "Gasto total por mês" [level=3] [ref=e44]
-      - generic [ref=e47]:
-        - img [ref=e48]
-        - list [ref=e50]:
-          - listitem [ref=e51]:
-            - img [ref=e52]
-            - generic [ref=e54]: Total
-    - generic [ref=e55]:
-      - heading "Distribuição por categoria (mês mais recente)" [level=3] [ref=e56]
-      - img [ref=e60]
-    - generic [ref=e61]:
-      - heading "Total acumulado" [level=3] [ref=e62]
-      - generic [ref=e63]: R$ 0,00
-  - contentinfo [ref=e64]:
-    - paragraph [ref=e65]: Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.
+  - generic [ref=e47]:
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]: "Período:"
+        - generic [ref=e52]:
+          - button "1m" [ref=e53] [cursor=pointer]
+          - button "2m" [ref=e54] [cursor=pointer]
+          - button "3m" [ref=e55] [cursor=pointer]
+          - button "6m" [ref=e56] [cursor=pointer]
+          - button "12m" [ref=e57] [cursor=pointer]
+          - button "24m" [ref=e58] [cursor=pointer]
+          - button "Tudo" [ref=e59] [cursor=pointer]
+      - generic [ref=e60]:
+        - generic [ref=e61]: "Categorias:"
+        - generic [ref=e62]:
+          - button "Moradia" [ref=e63] [cursor=pointer]
+          - button "Assinaturas" [ref=e64] [cursor=pointer]
+          - button "Alimentação" [ref=e65] [cursor=pointer]
+          - button "Mercado" [ref=e66] [cursor=pointer]
+          - button "Transporte" [ref=e67] [cursor=pointer]
+          - button "Saúde" [ref=e68] [cursor=pointer]
+          - button "Educação" [ref=e69] [cursor=pointer]
+          - button "Lazer" [ref=e70] [cursor=pointer]
+          - button "Viagem" [ref=e71] [cursor=pointer]
+          - button "Investimentos" [ref=e72] [cursor=pointer]
+          - button "Desconhecido" [ref=e73] [cursor=pointer]
+          - button "Outros" [ref=e74] [cursor=pointer]
+    - generic [ref=e75]:
+      - generic [ref=e76]:
+        - heading "Despesas e Receitas por mês" [level=3] [ref=e77]
+        - generic [ref=e80]:
+          - img [ref=e81]
+          - list [ref=e83]:
+            - listitem [ref=e84]:
+              - img [ref=e85]
+              - generic [ref=e87]: Despesas
+            - listitem [ref=e88]:
+              - img [ref=e89]
+              - generic [ref=e91]: Receitas
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - heading "Despesas por categoria (Últimos 6 meses)" [level=3] [ref=e94]
+          - generic [ref=e95]:
+            - button "Categorias" [ref=e96] [cursor=pointer]
+            - button "Fontes" [ref=e97] [cursor=pointer]
+        - img [ref=e102]
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - heading "Total de Despesas" [level=4] [ref=e107]
+          - generic [ref=e108]: R$ 0,00
+        - generic [ref=e109]:
+          - heading "Total de Receitas" [level=4] [ref=e110]
+          - generic [ref=e111]: R$ 0,00
+        - generic [ref=e112]:
+          - heading "Saldo Líquido" [level=4] [ref=e113]
+          - generic [ref=e114]: R$ 0,00
+  - contentinfo [ref=e115]:
+    - paragraph [ref=e116]: Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.
 ```

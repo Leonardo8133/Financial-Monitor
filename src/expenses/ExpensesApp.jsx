@@ -28,13 +28,13 @@ import {
   SettingsIcon,
 } from "../components/icons.jsx";
 import { CalculatorIcon } from "@heroicons/react/24/outline";
-import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm, toNumber } from "../utils/formatters.js";
+import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm, toNumber, LS_KEY } from "../utils/formatters.js";
 import {
   EXPENSES_LS_KEY,
   EXPENSES_STORAGE_SEED,
   ensureExpensesDefaults,
 } from "./config/storage.js";
-import { UNIFIED_LS_KEY, ensureUnifiedDefaults, migrateToUnifiedStorage } from "../utils/unifiedStorage.js";
+import { UNIFIED_LS_KEY, UNIFIED_STORAGE_SEED, ensureUnifiedDefaults, migrateToUnifiedStorage, resetDataAndLoadDefaults } from "../utils/unifiedStorage.js";
 
 // merge artifact removed: duplicate icon import
 
@@ -48,8 +48,45 @@ export default function ExpensesApp() {
   const [unifiedState, setUnifiedStore] = useLocalStorageState(UNIFIED_LS_KEY, null);
   const [legacyState, setLegacyStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
   
-  // Se não há dados unificados, migrar dos dados legados
-  const storeState = unifiedState || migrateToUnifiedStorage();
+  // Check simples ao entrar no site: se não tem dados, carregar template inicial
+  useEffect(() => {
+    async function initializeExpenses() {
+      // Verificar se há alguma menção do nosso app no localStorage
+      const hasAnyAppData = localStorage.getItem(UNIFIED_LS_KEY) || 
+                           localStorage.getItem(LS_KEY) || 
+                           localStorage.getItem('financial-monitor-expenses-v1');
+      
+      if (hasAnyAppData) {
+        // Já tem dados, usar migração normal
+        if (unifiedState) return;
+        try {
+          const result = await migrateToUnifiedStorage();
+          if (result && Object.keys(result).length > 0) {
+            setUnifiedStore(result);
+          }
+        } catch (error) {
+          console.error('Erro na migração (gastos):', error);
+        }
+      } else {
+        // Não tem nenhuma menção do app, carregar template inicial
+        console.log('🆕 Primeiro acesso detectado (gastos), carregando template inicial...');
+        try {
+          const result = await resetDataAndLoadDefaults();
+          if (result && Object.keys(result).length > 0) {
+            setUnifiedStore(result);
+            console.log('✅ Template inicial carregado com sucesso (gastos)');
+          }
+        } catch (error) {
+          console.error('Erro ao carregar template inicial (gastos):', error);
+        }
+      }
+    }
+    initializeExpenses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Se não há dados unificados ainda, usar seed padrão
+  const storeState = unifiedState || UNIFIED_STORAGE_SEED;
   const store = ensureUnifiedDefaults(storeState);
   
   // Extrair dados de gastos

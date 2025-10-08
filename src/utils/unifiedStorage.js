@@ -1,6 +1,6 @@
 import { LS_KEY } from "./formatters.js";
 import { EXPENSES_LS_KEY } from "../expenses/config/storage.js";
-import { initializeNewUserConfig } from "./defaultConfigLoader.js";
+import { initializeNewUserConfig, loadDefaultConfigFromFile } from "./defaultConfigLoader.js";
 
 // Chave unificada para dados combinados
 export const UNIFIED_LS_KEY = "financial-monitor-unified-v1";
@@ -49,15 +49,39 @@ export const UNIFIED_STORAGE_SEED = {
 export async function migrateToUnifiedStorage() {
   try {
     // Verificar se já existe dados unificados
-    const existingUnified = localStorage.getItem(UNIFIED_LS_KEY);
-    if (existingUnified) {
-      return JSON.parse(existingUnified);
+    const existingUnifiedRaw = localStorage.getItem(UNIFIED_LS_KEY);
+    if (existingUnifiedRaw) {
+      try {
+        const parsed = JSON.parse(existingUnifiedRaw);
+        const isValid = parsed && typeof parsed === 'object' && (parsed.investimentos || parsed.gastos);
+        if (isValid) {
+          return parsed;
+        }
+      } catch {
+        // continua
+      }
     }
     
     // Verificar se é usuário novo e inicializar com configurações padrão
     const initializedData = await initializeNewUserConfig(UNIFIED_LS_KEY);
     if (initializedData) {
       return initializedData;
+    }
+    
+    // Se não é usuário novo, verificar se precisa carregar configurações padrão
+    const currentData = localStorage.getItem(UNIFIED_LS_KEY);
+    if (currentData) {
+      try {
+        const parsed = JSON.parse(currentData);
+        const enhancedData = await ensureUnifiedDefaultsWithConfig(parsed);
+        if (enhancedData !== parsed) {
+          localStorage.setItem(UNIFIED_LS_KEY, JSON.stringify(enhancedData));
+          return enhancedData;
+        }
+        return parsed;
+      } catch {
+        // continua para migração
+      }
     }
     
     // Buscar dados existentes (migração de versões antigas)
@@ -99,7 +123,7 @@ export async function migrateToUnifiedStorage() {
   }
 }
 
-// Função para garantir dados unificados
+// Função síncrona para garantir dados unificados (para componentes)
 export function ensureUnifiedDefaults(store) {
   // Se store é null ou undefined, retornar seed padrão
   if (!store) {
@@ -112,10 +136,9 @@ export function ensureUnifiedDefaults(store) {
     investimentos: {
       ...UNIFIED_STORAGE_SEED.investimentos,
       ...(store.investimentos || {}),
-      // Permitir arrays vazios - não forçar restauração dos padrões
-      banks: Array.isArray(store.investimentos?.banks) ? store.investimentos.banks : UNIFIED_STORAGE_SEED.investimentos.banks,
-      sources: Array.isArray(store.investimentos?.sources) ? store.investimentos.sources : UNIFIED_STORAGE_SEED.investimentos.sources,
-      entries: Array.isArray(store.investimentos?.entries) ? store.investimentos.entries : UNIFIED_STORAGE_SEED.investimentos.entries,
+      banks: Array.isArray(store.investimentos?.banks) ? store.investimentos.banks : [],
+      sources: Array.isArray(store.investimentos?.sources) ? store.investimentos.sources : [],
+      entries: Array.isArray(store.investimentos?.entries) ? store.investimentos.entries : [],
       personalInfo: {
         ...UNIFIED_STORAGE_SEED.investimentos.personalInfo,
         ...(store.investimentos?.personalInfo || {}),
@@ -128,12 +151,107 @@ export function ensureUnifiedDefaults(store) {
     gastos: {
       ...UNIFIED_STORAGE_SEED.gastos,
       ...(store.gastos || {}),
-      // Permitir arrays vazios - não forçar restauração dos padrões
-      categories: Array.isArray(store.gastos?.categories) ? store.gastos.categories : UNIFIED_STORAGE_SEED.gastos.categories,
-      sources: Array.isArray(store.gastos?.sources) ? store.gastos.sources : UNIFIED_STORAGE_SEED.gastos.sources,
-      expenses: Array.isArray(store.gastos?.expenses) ? store.gastos.expenses : UNIFIED_STORAGE_SEED.gastos.expenses,
-      descriptionCategoryMappings: Array.isArray(store.gastos?.descriptionCategoryMappings) ? store.gastos.descriptionCategoryMappings : UNIFIED_STORAGE_SEED.gastos.descriptionCategoryMappings,
-      ignoredDescriptions: Array.isArray(store.gastos?.ignoredDescriptions) ? store.gastos.ignoredDescriptions : UNIFIED_STORAGE_SEED.gastos.ignoredDescriptions,
+      categories: Array.isArray(store.gastos?.categories) ? store.gastos.categories : [],
+      sources: Array.isArray(store.gastos?.sources) ? store.gastos.sources : [],
+      expenses: Array.isArray(store.gastos?.expenses) ? store.gastos.expenses : [],
+      descriptionCategoryMappings: Array.isArray(store.gastos?.descriptionCategoryMappings) ? store.gastos.descriptionCategoryMappings : [],
+      ignoredDescriptions: Array.isArray(store.gastos?.ignoredDescriptions) ? store.gastos.ignoredDescriptions : [],
+      personalInfo: {
+        ...UNIFIED_STORAGE_SEED.gastos.personalInfo,
+        ...(store.gastos?.personalInfo || {}),
+      },
+      settings: {
+        ...UNIFIED_STORAGE_SEED.gastos.settings,
+        ...(store.gastos?.settings || {}),
+      },
+    },
+  };
+}
+
+// Função assíncrona para carregar configurações padrão quando necessário
+export async function ensureUnifiedDefaultsWithConfig(store) {
+  // Se store é null ou undefined, inicializar com configurações padrão
+  if (!store) {
+    console.log('🔄 Store vazio, carregando configurações padrão...');
+    return await initializeNewUserConfig(UNIFIED_LS_KEY) || UNIFIED_STORAGE_SEED;
+  }
+  
+  // Verificar se precisa carregar configurações padrão (arrays vazios)
+  const needsDefaultBanks = !store.investimentos?.banks || store.investimentos.banks.length === 0;
+  const needsDefaultSources = !store.investimentos?.sources || store.investimentos.sources.length === 0;
+  const needsDefaultCategories = !store.gastos?.categories || store.gastos.categories.length === 0;
+  const needsDefaultExpenseSources = !store.gastos?.sources || store.gastos.sources.length === 0;
+  const needsDefaultMappings = !store.gastos?.descriptionCategoryMappings || store.gastos.descriptionCategoryMappings.length === 0;
+  const needsDefaultIgnored = !store.gastos?.ignoredDescriptions || store.gastos.ignoredDescriptions.length === 0;
+  
+  if (needsDefaultBanks || needsDefaultSources || needsDefaultCategories || needsDefaultExpenseSources || needsDefaultMappings || needsDefaultIgnored) {
+    console.log('🔄 Dados incompletos detectados, carregando configurações padrão...');
+    const defaultConfig = await loadDefaultConfigFromFile();
+    
+    return {
+      ...UNIFIED_STORAGE_SEED,
+      ...store,
+      investimentos: {
+        ...UNIFIED_STORAGE_SEED.investimentos,
+        ...(store.investimentos || {}),
+        banks: needsDefaultBanks ? defaultConfig.investimentos.banks : (store.investimentos?.banks || []),
+        sources: needsDefaultSources ? defaultConfig.investimentos.sources : (store.investimentos?.sources || []),
+        entries: Array.isArray(store.investimentos?.entries) ? store.investimentos.entries : [],
+        personalInfo: {
+          ...defaultConfig.investimentos.personalInfo,
+          ...(store.investimentos?.personalInfo || {}),
+        },
+        settings: {
+          ...defaultConfig.investimentos.settings,
+          ...(store.investimentos?.settings || {}),
+        },
+      },
+      gastos: {
+        ...UNIFIED_STORAGE_SEED.gastos,
+        ...(store.gastos || {}),
+        categories: needsDefaultCategories ? defaultConfig.gastos.categories : (store.gastos?.categories || []),
+        sources: needsDefaultExpenseSources ? defaultConfig.gastos.sources : (store.gastos?.sources || []),
+        expenses: Array.isArray(store.gastos?.expenses) ? store.gastos.expenses : [],
+        descriptionCategoryMappings: needsDefaultMappings ? defaultConfig.gastos.descriptionCategoryMappings : (store.gastos?.descriptionCategoryMappings || []),
+        ignoredDescriptions: needsDefaultIgnored ? defaultConfig.gastos.ignoredDescriptions : (store.gastos?.ignoredDescriptions || []),
+        personalInfo: {
+          ...defaultConfig.gastos.personalInfo,
+          ...(store.gastos?.personalInfo || {}),
+        },
+        settings: {
+          ...defaultConfig.gastos.settings,
+          ...(store.gastos?.settings || {}),
+        },
+      },
+    };
+  }
+  
+  return {
+    ...UNIFIED_STORAGE_SEED,
+    ...store,
+    investimentos: {
+      ...UNIFIED_STORAGE_SEED.investimentos,
+      ...(store.investimentos || {}),
+      banks: Array.isArray(store.investimentos?.banks) ? store.investimentos.banks : [],
+      sources: Array.isArray(store.investimentos?.sources) ? store.investimentos.sources : [],
+      entries: Array.isArray(store.investimentos?.entries) ? store.investimentos.entries : [],
+      personalInfo: {
+        ...UNIFIED_STORAGE_SEED.investimentos.personalInfo,
+        ...(store.investimentos?.personalInfo || {}),
+      },
+      settings: {
+        ...UNIFIED_STORAGE_SEED.investimentos.settings,
+        ...(store.investimentos?.settings || {}),
+      },
+    },
+    gastos: {
+      ...UNIFIED_STORAGE_SEED.gastos,
+      ...(store.gastos || {}),
+      categories: Array.isArray(store.gastos?.categories) ? store.gastos.categories : [],
+      sources: Array.isArray(store.gastos?.sources) ? store.gastos.sources : [],
+      expenses: Array.isArray(store.gastos?.expenses) ? store.gastos.expenses : [],
+      descriptionCategoryMappings: Array.isArray(store.gastos?.descriptionCategoryMappings) ? store.gastos.descriptionCategoryMappings : [],
+      ignoredDescriptions: Array.isArray(store.gastos?.ignoredDescriptions) ? store.gastos.ignoredDescriptions : [],
       personalInfo: {
         ...UNIFIED_STORAGE_SEED.gastos.personalInfo,
         ...(store.gastos?.personalInfo || {}),
@@ -198,4 +316,29 @@ export function importUnifiedData(file) {
     
     reader.readAsText(file);
   });
+}
+
+// Função para resetar dados e carregar configurações padrão
+export async function resetDataAndLoadDefaults() {
+  try {
+    console.log('🔄 Resetando dados e carregando configurações padrão...');
+    
+    // Limpar localStorage
+    localStorage.removeItem(UNIFIED_LS_KEY);
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(EXPENSES_LS_KEY);
+    
+    // Carregar configurações padrão
+    const initializedData = await initializeNewUserConfig(UNIFIED_LS_KEY);
+    
+    if (initializedData) {
+      console.log('✅ Dados resetados e configurações padrão carregadas');
+      return initializedData;
+    }
+    
+    throw new Error('Falha ao carregar configurações padrão');
+  } catch (error) {
+    console.error('Erro ao resetar dados:', error);
+    throw error;
+  }
 }

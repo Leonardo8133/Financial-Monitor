@@ -47,7 +47,7 @@ import {
   INVESTMENT_STORAGE_SEED,
 } from "./config/investmentStorage.js";
 import { Link } from "react-router-dom";
-import { UNIFIED_LS_KEY, UNIFIED_STORAGE_SEED, ensureUnifiedDefaults, migrateToUnifiedStorage } from "./utils/unifiedStorage.js";
+import { UNIFIED_LS_KEY, UNIFIED_STORAGE_SEED, ensureUnifiedDefaults, migrateToUnifiedStorage, resetDataAndLoadDefaults } from "./utils/unifiedStorage.js";
 
 export default function App() {
   const navigate = useNavigate();
@@ -57,21 +57,36 @@ export default function App() {
   const [unifiedState, setUnifiedStore] = useLocalStorageState(UNIFIED_LS_KEY, null);
   const [legacyState, setLegacyStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
   
-  // Inicialização assíncrona (apenas para usuários novos, uma única vez)
+  // Check simples ao entrar no site: se não tem dados, carregar template inicial
   useEffect(() => {
     async function initializeApp() {
-      if (unifiedState) {
-        // Já tem dados, não precisa inicializar
-        return;
-      }
+      // Verificar se há alguma menção do nosso app no localStorage
+      const hasAnyAppData = localStorage.getItem(UNIFIED_LS_KEY) || 
+                           localStorage.getItem(LS_KEY) || 
+                           localStorage.getItem('financial-monitor-expenses-v1');
       
-      try {
-        const result = await migrateToUnifiedStorage();
-        if (result && Object.keys(result).length > 0) {
-          setUnifiedStore(result);
+      if (hasAnyAppData) {
+        // Já tem dados, usar migração normal
+        try {
+          const result = await migrateToUnifiedStorage();
+          if (result && Object.keys(result).length > 0) {
+            setUnifiedStore(result);
+          }
+        } catch (error) {
+          console.error('Erro na migração:', error);
         }
-      } catch (error) {
-        console.error('Erro na inicialização:', error);
+      } else {
+        // Não tem nenhuma menção do app, carregar template inicial
+        console.log('🆕 Primeiro acesso detectado, carregando template inicial...');
+        try {
+          const result = await resetDataAndLoadDefaults();
+          if (result && Object.keys(result).length > 0) {
+            setUnifiedStore(result);
+            console.log('✅ Template inicial carregado com sucesso');
+          }
+        } catch (error) {
+          console.error('Erro ao carregar template inicial:', error);
+        }
       }
     }
     
@@ -579,9 +594,16 @@ export default function App() {
 
   // Botão/ação para carregar dados de exemplo removidos
 
-  function handleClearEntries() {
-    if (window.confirm("Tem certeza que deseja apagar todos os lançamentos?")) {
-      setEntries([]);
+  async function handleClearEntries() {
+    if (window.confirm("Tem certeza que deseja resetar todos os dados e carregar configurações padrão?")) {
+      try {
+        const resetData = await resetDataAndLoadDefaults();
+        setUnifiedStore(resetData);
+        console.log('✅ Dados resetados com sucesso');
+      } catch (error) {
+        console.error('❌ Erro ao resetar dados:', error);
+        alert('Erro ao resetar dados. Tente novamente.');
+      }
     }
   }
 

@@ -27,7 +27,7 @@ function toDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function computeRange(monthKeys) {
+function computeRange(monthKeys, monthsWindow = 12) {
   if (!monthKeys.length) {
     return { months: [], startYm: undefined, endYm: undefined };
   }
@@ -38,7 +38,8 @@ function computeRange(monthKeys) {
   const endDate = new Date(year, month - 1, 1);
   endDate.setHours(0, 0, 0, 0);
   const startDate = new Date(endDate);
-  startDate.setMonth(startDate.getMonth() - 11);
+  const safeWindow = Math.max(1, Math.min(12, Math.floor(monthsWindow || 12)));
+  startDate.setMonth(startDate.getMonth() - (safeWindow - 1));
   const startYm = yyyymm(startDate);
   const months = enumerateMonths(startYm, endYm);
   return { months, startYm, endYm };
@@ -52,6 +53,7 @@ export function buildReportDataset({
   dateSelector = defaultDateSelector,
   computeMonthlySummary = () => ({}),
   computeTotals = () => ({}),
+  monthsWindow = 12,
 } = {}) {
   const validItems = (Array.isArray(items) ? items : []).filter((item) => {
     const dateValue = dateSelector(item);
@@ -59,7 +61,7 @@ export function buildReportDataset({
   });
 
   const monthKeys = validItems.map((item) => yyyymm(dateSelector(item))).filter(Boolean);
-  const { months, startYm, endYm } = computeRange(monthKeys);
+  const { months, startYm, endYm } = computeRange(monthKeys, monthsWindow);
   const monthSet = new Set(months);
 
   const filteredItems = validItems

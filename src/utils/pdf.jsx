@@ -56,11 +56,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 4,
     fontSize: 10,
-    flexGrow: 1,
+    width: 120,
+  },
+  tableCellRight: {
+    borderStyle: "solid",
+    borderColor: "#d1d5db",
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    fontSize: 10,
+    textAlign: "right",
+    width: 90,
+  },
+  tableCellCategory: {
+    borderStyle: "solid",
+    borderColor: "#d1d5db",
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    fontSize: 10,
+    width: 150,
   },
   tableHeaderCell: {
     fontWeight: "bold",
     backgroundColor: "#f3f4f6",
+  },
+  tableHeaderCellRight: {
+    fontWeight: "bold",
+    backgroundColor: "#f3f4f6",
+    textAlign: "right",
+    width: 90,
+  },
+  tableHeaderCellCategory: {
+    fontWeight: "bold",
+    backgroundColor: "#f3f4f6",
+    width: 150,
   },
 });
 
@@ -99,24 +131,59 @@ function renderNotes(notes) {
   );
 }
 
-function renderTable(headers, rows) {
+function renderTable(headers, rows, columnAlignments = []) {
   if (!rows.length) return null;
   return (
     <View style={[styles.table, styles.section]} wrap>
       <View style={styles.tableRow}>
-        {headers.map((header, index) => (
-          <Text key={`header-${index}`} style={[styles.tableCell, styles.tableHeaderCell]}>
-            {header}
-          </Text>
-        ))}
+        {headers.map((header, index) => {
+          const alignment = columnAlignments[index];
+          let cellStyle, headerStyle;
+          
+          if (alignment === 'right') {
+            cellStyle = styles.tableCellRight;
+            headerStyle = styles.tableHeaderCellRight;
+          } else if (alignment === 'category') {
+            cellStyle = styles.tableCellCategory;
+            headerStyle = styles.tableHeaderCellCategory;
+          } else {
+            cellStyle = styles.tableCell;
+            headerStyle = styles.tableHeaderCell;
+          }
+          
+          return (
+            <Text 
+              key={`header-${index}`} 
+              style={[cellStyle, headerStyle]}
+            >
+              {header}
+            </Text>
+          );
+        })}
       </View>
       {rows.map((row, rowIndex) => (
         <View key={`row-${rowIndex}`} style={styles.tableRow}>
-          {row.map((cell, cellIndex) => (
-            <Text key={`cell-${rowIndex}-${cellIndex}`} style={styles.tableCell}>
-              {cell}
-            </Text>
-          ))}
+          {row.map((cell, cellIndex) => {
+            const alignment = columnAlignments[cellIndex];
+            let cellStyle;
+            
+            if (alignment === 'right') {
+              cellStyle = styles.tableCellRight;
+            } else if (alignment === 'category') {
+              cellStyle = styles.tableCellCategory;
+            } else {
+              cellStyle = styles.tableCell;
+            }
+            
+            return (
+              <Text 
+                key={`cell-${rowIndex}-${cellIndex}`} 
+                style={cellStyle}
+              >
+                {cell}
+              </Text>
+            );
+          })}
         </View>
       ))}
     </View>
@@ -184,6 +251,27 @@ function expensesBreakdownRows(breakdown = []) {
   return breakdown.map((item) => [item.name || "–", formatCurrency(item.total)]);
 }
 
+function groupByCategory(items = []) {
+  const map = new Map();
+  (items || []).forEach((expense) => {
+    const key = expense.category || "Sem categoria";
+    const value = Number(expense.value ?? expense.absValue ?? 0);
+    const total = map.get(key) || 0;
+    map.set(key, total + Math.abs(value));
+  });
+  return Array.from(map.entries())
+    .map(([name, total]) => ({ name, total }))
+    .sort((a, b) => b.total - a.total);
+}
+
+function monthCategoryRows(monthSummary) {
+  if (!monthSummary) return [];
+  const breakdown = groupByCategory(monthSummary.items || []);
+  const monthsCount = Math.max(1, Math.floor(monthSummary.monthsWindow || 1));
+  const monthlyAvg = item => item.total / monthsCount;
+  return breakdown.map((item) => [item.name || "–", formatCurrency(monthlyAvg(item)), formatCurrency(item.total)]);
+}
+
 function renderSection(title, content) {
   if (!content) return null;
   return (
@@ -202,14 +290,18 @@ export function createInvestmentReportDocument({
   notes = "",
   entries = [],
   sourceBreakdown = [],
+  monthsWindow = 12,
 } = {}) {
   const headerSubtitleParts = [
     `Gerado em ${formatDateTime(exportedAt)}`,
-    "Período considerado: últimos 12 meses",
+    `Período considerado: últimos ${Math.max(1, Math.min(12, Math.floor(monthsWindow || 12)))} meses`,
   ];
 
+  // Get the last month's invested amount from monthly summaries
+  const lastMonthInvested = monthlySummaries.length > 0 ? monthlySummaries[0].invested || 0 : 0;
+  
   const totalsRows = [
-    [`Total investido`, formatCurrency(totals.total_invested)],
+    [`Total investido (último mês)`, formatCurrency(lastMonthInvested)],
     [`Total em conta`, formatCurrency(totals.total_in_account)],
     [`Entradas/Saídas`, formatCurrency(totals.total_input)],
     [
@@ -246,7 +338,7 @@ export function createInvestmentReportDocument({
         {sourcesRows.length
           ? renderSection(
               "Distribuição por fonte",
-              renderTable(["Fonte", "Investido", "Em conta"], sourcesRows)
+              renderTable(["Fonte", "Investido", "Em conta"], sourcesRows, ['category', 'right', 'right'])
             )
           : null}
 
@@ -255,7 +347,8 @@ export function createInvestmentReportDocument({
               "Resumo mensal",
               renderTable(
                 ["Mês", "Investido", "Em conta", "Fluxo", "Rentabilidade"],
-                monthlyRows
+                monthlyRows,
+                ['left', 'right', 'right', 'right', 'right']
               )
             )
           : null}
@@ -265,7 +358,8 @@ export function createInvestmentReportDocument({
               "Lançamentos recentes",
               renderTable(
                 ["Data", "Banco", "Fonte", "Investido", "Em conta", "Fluxo"],
-                entriesRows
+                entriesRows,
+                ['left', 'category', 'category', 'right', 'right', 'right']
               )
             )
           : renderSection(
@@ -288,10 +382,11 @@ export function createExpensesReportDocument({
   expenses = [],
   categoryBreakdown = [],
   sourceBreakdown = [],
+  monthsWindow = 12,
 } = {}) {
   const headerSubtitleParts = [
     `Gerado em ${formatDateTime(exportedAt)}`,
-    "Período considerado: últimos 12 meses",
+    `Período considerado: últimos ${Math.max(1, Math.min(12, Math.floor(monthsWindow || 12)))} meses`,
   ];
 
   const totalsRows = [[`Total gasto`, formatCurrency(totals.total_spent)]];
@@ -299,6 +394,10 @@ export function createExpensesReportDocument({
   const expenseRows = expensesEntriesRows(expenses);
   const categoryRows = expensesBreakdownRows(categoryBreakdown);
   const sourceRows = expensesBreakdownRows(sourceBreakdown);
+
+  const lastTwoMonths = Array.isArray(monthlySummaries) ? monthlySummaries.slice(0, 2) : [];
+  // Enriquecer cada mês com o período selecionado para cálculo da média
+  const enrichedMonths = lastTwoMonths.map(m => ({ ...m, monthsWindow }));
 
   return (
     <Document>
@@ -319,19 +418,35 @@ export function createExpensesReportDocument({
           </View>
         )}
 
+        {enrichedMonths.length
+          ? renderSection(
+              "Total gastos nos últimos 2 meses por categoria",
+              <View>
+                {enrichedMonths.map((m, idx) => (
+                  <View key={`cat-month-${m.ym || idx}`}>
+                    <Text style={[styles.listItem, { fontWeight: "bold", marginTop: 6 }]}>
+                      {idx === 0 ? `Último mês (${m.label})` : m.label}
+                    </Text>
+                    {renderTable(["Categoria", "Média mensal", "Total"], monthCategoryRows(m), ['category', 'right', 'right'])}
+                  </View>
+                ))}
+              </View>
+            )
+          : null}
+
         {categoryRows.length
           ? renderSection(
               "Por categoria",
-              renderTable(["Categoria", "Total"], categoryRows)
+              renderTable(["Categoria", "Total"], categoryRows, ['category', 'right'])
             )
           : null}
 
         {sourceRows.length
-          ? renderSection("Por fonte", renderTable(["Fonte", "Total"], sourceRows))
+          ? renderSection("Por fonte", renderTable(["Fonte", "Total"], sourceRows, ['category', 'right']))
           : null}
 
         {monthlyRows.length
-          ? renderSection("Resumo mensal", renderTable(["Mês", "Total gasto"], monthlyRows))
+          ? renderSection("Resumo mensal", renderTable(["Mês", "Total gasto"], monthlyRows, ['left', 'right']))
           : null}
 
         {expenseRows.length
@@ -339,7 +454,8 @@ export function createExpensesReportDocument({
               "Despesas recentes",
               renderTable(
                 ["Data", "Descrição", "Categoria", "Fonte", "Valor"],
-                expenseRows
+                expenseRows,
+                ['left', 'category', 'category', 'category', 'right']
               )
             )
           : renderSection(

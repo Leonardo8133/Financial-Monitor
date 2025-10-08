@@ -92,16 +92,8 @@ export function Projecoes({ timeline = [], defaults = {} }) {
   }, [safeTimeline]);
 
   const [form, setForm] = useState(() => ({
-    initialBalance: withPrecision(Math.max(safeDefaults.initialBalance ?? 0, 0)),
-    monthlyContribution: withPrecision(
-      Math.max(
-        safeDefaults.monthlyContribution ??
-          trailingStats.lastMonth.invested ??
-          trailingStats.contributionAverage ??
-          0,
-        0
-      )
-    ),
+    initialBalance: trailingStats.lastMonth.invested || 0,
+    monthlyContribution: trailingStats.cashFlowAverage || 0,
     horizonMonths: 60,
     monthlyReturnPct: withPrecision(
       decimalToPercent(
@@ -109,48 +101,11 @@ export function Projecoes({ timeline = [], defaults = {} }) {
       )
     ),
     inflationPct: withPrecision(decimalToPercent(safeDefaults.inflationRate ?? 0.04)),
-    contributionGrowthPct: withPrecision(decimalToPercent(safeDefaults.contributionGrowth ?? 0.02)),
-    goalAmount: withPrecision(
-      Math.max(
-        safeDefaults.goalAmount ??
-          (Math.max(safeDefaults.initialBalance ?? 0, 0) * 2 || (trailingStats.lastMonth.invested || 500) * 200),
-        0
-      )
-    ),
-    withdrawalRatePct: withPrecision(decimalToPercent(0.04)),
+    contributionGrowthPct: withPrecision(decimalToPercent(safeDefaults.contributionGrowth ?? 0.05)),
+    goalAmount: 1000000,
+    withdrawalRatePct: withPrecision(decimalToPercent(0.01)),
   }));
   const [showAdvanced, setShowAdvanced] = useState(false);
-
-  useEffect(() => {
-    setForm((prev) => ({
-      ...prev,
-      initialBalance: withPrecision(
-        Math.max(safeDefaults.initialBalance ?? prev.initialBalance, 0),
-        2,
-        prev.initialBalance
-      ),
-      monthlyContribution: withPrecision(
-        Math.max(
-          safeDefaults.monthlyContribution ?? trailingStats.lastMonth.invested ?? prev.monthlyContribution,
-          0
-        ),
-        2,
-        prev.monthlyContribution
-      ),
-      goalAmount: withPrecision(
-        safeDefaults.goalAmount !== undefined && safeDefaults.goalAmount !== null
-          ? Math.max(safeDefaults.goalAmount, 0)
-          : prev.goalAmount,
-        2,
-        prev.goalAmount
-      ),
-    }));
-  }, [
-    safeDefaults.initialBalance,
-    safeDefaults.monthlyContribution,
-    safeDefaults.goalAmount,
-    trailingStats.lastMonth.invested,
-  ]);
 
   useEffect(() => {
     setForm((prev) => ({
@@ -199,7 +154,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
         goal: Math.max(readNumber(form.goalAmount, 0), 0),
         goalMonths: null,
         monthlyContributionStart: contribution,
-        passiveIncomeMonthly: goal > 0 && balance >= goal ? goal * withdrawalRate / 12 : balance * withdrawalRate / 12,
+        passiveIncomeMonthly: goal > 0 && balance >= goal ? goal * withdrawalRate : balance * withdrawalRate,
         withdrawalRate,
       };
     }
@@ -244,7 +199,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
       }
     }
 
-    const passiveIncomeMonthly = goal > 0 && balance >= goal ? goal * withdrawalRate / 12 : balance * withdrawalRate / 12;
+    const passiveIncomeMonthly = goal > 0 && balance >= goal ? goal * withdrawalRate : balance * withdrawalRate;
 
     return {
       horizon,
@@ -322,7 +277,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
               />
               {trailingStats.monthsConsidered > 0 && (
                 <span className="text-xs text-slate-500">
-                  Média últimos {trailingStats.monthsConsidered} meses: {fmtBRL(trailingStats.contributionAverage || 0)}
+                  Média últimos {trailingStats.monthsConsidered} meses: {fmtBRL(trailingStats.cashFlowAverage || 0)}
                 </span>
               )}
             </label>

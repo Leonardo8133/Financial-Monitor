@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { usePDF } from "@react-pdf/renderer";
+import { usePDF, pdf as pdfRenderer } from "@react-pdf/renderer";
 import { DocumentArrowDownIcon } from "../../components/icons.jsx";
 import { useLocalStorageState } from "../../hooks/useLocalStorageState.js";
 import { buildReportDataset } from "../../utils/reporting.js";
@@ -33,6 +33,7 @@ function buildBreakdown(expenses = [], key) {
 
 export default function ExpensesReport() {
   const [generatedAt] = useState(() => new Date());
+  const [monthsWindow, setMonthsWindow] = useState(12);
   const [storeState] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
   const store = ensureExpensesDefaults(storeState);
   const derivedExpenses = useMemo(() => computeDerivedExpenses(store.expenses || []), [store.expenses]);
@@ -46,8 +47,9 @@ export default function ExpensesReport() {
         exportedAt: generatedAt,
         computeMonthlySummary: (items) => sumExpensesMonthly(items),
         computeTotals,
+        monthsWindow,
       }),
-    [derivedExpenses, store.personalInfo, generatedAt]
+    [derivedExpenses, store.personalInfo, generatedAt, monthsWindow]
   );
 
   const categoryBreakdown = useMemo(() => buildBreakdown(report.items, "category"), [report.items]);
@@ -64,6 +66,7 @@ export default function ExpensesReport() {
         expenses: report.items,
         categoryBreakdown,
         sourceBreakdown,
+        monthsWindow,
       }),
     [
       report.exportedAt,
@@ -74,21 +77,55 @@ export default function ExpensesReport() {
       report.items,
       categoryBreakdown,
       sourceBreakdown,
+      monthsWindow,
     ]
   );
 
   const { url, loading, error, update } = usePDF({ document });
   const [pendingOpen, setPendingOpen] = useState(false);
   const [popupBlocked, setPopupBlocked] = useState(false);
+  const openWindowRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const [manualUrl, setManualUrl] = useState(null);
+  const revokeRef = useRef(null);
 
   useEffect(() => {
     if (typeof update === "function") {
       update(document);
     }
+    // Reset manual url when document changes
+    if (revokeRef.current) {
+      URL.revokeObjectURL(revokeRef.current);
+      revokeRef.current = null;
+    }
+    setManualUrl(null);
   }, [document, update]);
 
   useEffect(() => {
     if (!pendingOpen || loading || !url) return;
+    const pendingWin = openWindowRef.current;
+    if (pendingWin && !pendingWin.closed) {
+      try {
+        pendingWin.location.href = url;
+        pendingWin.focus();
+        setPopupBlocked(false);
+      } catch (_) {
+        const opened = window.open(url, "_blank", "noopener,noreferrer");
+        if (opened) {
+          opened.focus();
+          setPopupBlocked(false);
+        } else {
+          setPopupBlocked(true);
+        }
+      }
+      openWindowRef.current = null;
+      setPendingOpen(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      return;
+    }
     const opened = window.open(url, "_blank", "noopener,noreferrer");
     if (opened) {
       opened.focus();
@@ -100,22 +137,86 @@ export default function ExpensesReport() {
     }
   }, [pendingOpen, loading, url]);
 
+  // If the hook URL is not ready, generate a fallback blob and navigate
+  useEffect(() => {
+    if (!pendingOpen || url || loading) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const blob = await pdfRenderer(document).toBlob();
+        if (cancelled) return;
+        const blobUrl = URL.createObjectURL(blob);
+        revokeRef.current = blobUrl;
+        setManualUrl(blobUrl);
+        const pendingWin = openWindowRef.current;
+        if (pendingWin && !pendingWin.closed) {
+          try {
+            pendingWin.location.href = blobUrl;
+            pendingWin.focus();
+            setPopupBlocked(false);
+            openWindowRef.current = null;
+            setPendingOpen(false);
+          } catch (_) {}
+        }
+      } catch (_) {
+        // ignore; error path handled by hook's error state
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [pendingOpen, loading, url, document]);
+
   useEffect(() => {
     if (error) {
       setPendingOpen(false);
+      if (openWindowRef.current && !openWindowRef.current.closed) {
+        try {
+          openWindowRef.current.document.title = "Falha ao gerar PDF";
+          openWindowRef.current.document.body.innerHTML = "<p style=\"font:14px system-ui; color:#b91c1c; padding:16px\">Falha ao gerar PDF. Feche esta aba e tente novamente.</p>";
+        } catch (_) {}
+      }
+      openWindowRef.current = null;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     }
   }, [error]);
 
   const handleOpenPdf = () => {
-    if (loading || !url) {
-      setPendingOpen(true);
+    if (typeof update === "function") {
+      try { update(document); } catch (_) {}
+    }
+    if (!loading && url) {
+      const opened = window.open(url, "_blank", "noopener,noreferrer");
+      if (opened) {
+        opened.focus();
+        setPopupBlocked(false);
+        setPendingOpen(false);
+      } else {
+        setPopupBlocked(true);
+      }
       return;
     }
-    const opened = window.open(url, "_blank", "noopener,noreferrer");
+    const opened = window.open("about:blank", "_blank");
     if (opened) {
-      opened.focus();
+      try {
+        opened.document.title = "Gerando PDF...";
+        opened.document.body.innerHTML = "<p style=\"font:14px system-ui; color:#334155; padding:16px\">Gerando PDF... aguarde.</p>";
+      } catch (_) {}
+      openWindowRef.current = opened;
+      setPendingOpen(true);
       setPopupBlocked(false);
-      setPendingOpen(false);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        if (openWindowRef.current && !url) {
+          setPopupBlocked(true);
+          try {
+            openWindowRef.current.document.body.innerHTML = "<p style=\"font:14px system-ui; color:#b45309; padding:16px\">Demorando mais que o esperado. Volte e use o link manual para abrir o PDF quando estiver pronto.</p>";
+          } catch (_) {}
+        }
+      }, 10000);
     } else {
       setPopupBlocked(true);
     }
@@ -153,6 +254,19 @@ export default function ExpensesReport() {
             <p className="text-sm text-slate-600">
               O relatório abre em uma nova aba. Caso o navegador bloqueie pop-ups, libere a visualização para continuar.
             </p>
+            <div className="flex items-center gap-3">
+              <label className="text-xs text-slate-600">Período (meses):
+                <select
+                  value={monthsWindow}
+                  onChange={(e) => setMonthsWindow(Math.max(1, Math.min(12, Number(e.target.value) || 12)))}
+                  className="ml-2 rounded border border-slate-200 px-2 py-1 text-xs"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <div>
               <button
                 type="button"
@@ -167,6 +281,16 @@ export default function ExpensesReport() {
             {popupBlocked && (
               <p className="text-sm text-amber-600">
                 Não foi possível abrir a nova aba. Desative o bloqueio de pop-ups e tente novamente.
+                {(url || manualUrl) ? (
+                  <>
+                    {" "}Ou <a className="underline" href={url || manualUrl} target="_blank" rel="noopener noreferrer">clique aqui</a> para abrir manualmente.
+                  </>
+                ) : null}
+              </p>
+            )}
+            {!popupBlocked && (url || manualUrl) && (
+              <p className="text-xs text-slate-500">
+                Se a nova aba não abrir automaticamente, <a className="underline" href={url || manualUrl} target="_blank" rel="noopener noreferrer">clique aqui</a>.
               </p>
             )}
             {error && <p className="text-sm text-red-600">Não foi possível gerar o PDF. Tente novamente em instantes.</p>}

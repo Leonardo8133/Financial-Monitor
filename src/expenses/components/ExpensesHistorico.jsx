@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useOpenDatePickerProps } from "../../hooks/useOpenDatePickerProps.js";
 import { fmtBRL, monthLabel, toNumber, yyyymm } from "../../utils/formatters.js";
 import { MultiPillSelect } from "./MultiPillSelect.jsx";
+import { resetDataAndLoadDefaults } from "../../utils/unifiedStorage.js";
 
 export function ExpensesHistorico({ expenses, derived, setExpenses, categories, sources }) {
   const dateOpenProps = useOpenDatePickerProps();
@@ -164,9 +165,16 @@ export function ExpensesHistorico({ expenses, derived, setExpenses, categories, 
 
   function cancelEdit() { setEditingId(null); setDraft(null); }
 
-  function clearAllHistory() {
-    if (window.confirm("Tem certeza que deseja limpar todo o histórico? Esta ação não pode ser desfeita.")) {
-      setExpenses([]);
+  async function clearAllHistory() {
+    if (window.confirm("Tem certeza que deseja resetar todos os dados e carregar configurações padrão?")) {
+      try {
+        await resetDataAndLoadDefaults();
+        // Recarregar a página para aplicar as mudanças
+        window.location.reload();
+      } catch (error) {
+        console.error('❌ Erro ao resetar dados:', error);
+        alert('Erro ao resetar dados. Tente novamente.');
+      }
     }
   }
 

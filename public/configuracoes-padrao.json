@@ -1,0 +1,358 @@
+{
+  "investimentos": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "document": "",
+      "phone": ""
+    },
+    "settings": {
+      "defaultTab": "dashboard",
+      "defaultFocusArea": "investimentos",
+      "reportNotes": ""
+    },
+    "banks": [
+      { "name": "Nubank", "color": "#8A05BE", "icon": "🟣" },
+      { "name": "XP", "color": "#000000", "icon": "⚫" },
+      { "name": "Inter", "color": "#FF7A00", "icon": "🟠" },
+      { "name": "Binance", "color": "#F3BA2F", "icon": "🟡" },
+      { "name": "Mercado Livre", "color": "#000000", "icon": "🟡" },
+      { "name": "Mercado Pago", "color": "#000000", "icon": "🟡" },
+      { "name": "Itaú", "color": "#000000", "icon": "⚫" },
+      { "name": "Santander", "color": "#000000", "icon": "⚫" },
+      { "name": "Bradesco", "color": "#000000", "icon": "⚫" },
+      { "name": "Banco do Brasil", "color": "#000000", "icon": "🟡" },
+      { "name": "Caixa", "color": "#000000", "icon": "🔵" },
+      { "name": "C6 Bank", "color": "#000000", "icon": "⚫" },
+      { "name": "Pagseguro", "color": "#000000", "icon": "⚫" },
+      { "name": "PicPay", "color": "#00C86F", "icon": "🟢" },
+      { "name": "Nomad", "color": "#00C86F", "icon": "🟡" }
+    ],
+    "sources": [
+      { "name": "Pessoal", "color": "#0EA5E9", "icon": "👤" },
+      { "name": "Empresa", "color": "#9333EA", "icon": "🏢" }
+    ]
+  },
+  "gastos": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "householdSize": 1
+    },
+    "settings": {
+      "defaultTab": "dashboard",
+      "monthlyBudget": 0,
+      "currency": "BRL"
+    },
+    "categories": [
+      { "name": "Moradia", "color": "#1F2937", "icon": "🏠" },
+      { "name": "Assinaturas", "color": "#EC4899", "icon": "📱" },
+      { "name": "Alimentação", "color": "#10B981", "icon": "🍔" },
+      { "name": "Mercado", "color": "#10B981", "icon": "🛒" },
+      { "name": "Transporte", "color": "#2563EB", "icon": "🚌" },
+      { "name": "Saúde", "color": "#EF4444", "icon": "🩺" },
+      { "name": "Educação", "color": "#8B5CF6", "icon": "📚" },
+      { "name": "Lazer", "color": "#F59E0B", "icon": "🎮" },
+      { "name": "Viagem", "color": "#0EA5E9", "icon": "🛫" },
+      { "name": "Investimentos", "color": "#22C55E", "icon": "💰" },
+      { "name": "Desconhecido", "color": "#EC4899", "icon": "❓" },
+      { "name": "Outros", "color": "#6B7280", "icon": "🧩" }
+    ],
+    "sources": [
+      { "name": "Pessoal", "color": "#0EA5E9", "icon": "👤" },
+      { "name": "Empresa", "color": "#9333EA", "icon": "🏢" },
+      { "name": "Família", "color": "#F43F5E", "icon": "👪" }
+    ],
+    "descriptionCategoryMappings": [
+      {
+        "keyword": "uber",
+        "categories": ["Transporte"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "99",
+        "categories": ["Transporte"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "ifood",
+        "categories": ["Alimentação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "ifd*",
+        "categories": ["Alimentação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "rappi",
+        "categories": ["Alimentação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "supermercado",
+        "categories": ["Mercado"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "mercado",
+        "categories": ["Mercado"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "padaria",
+        "categories": ["Mercado"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "farmacia",
+        "categories": ["Saúde"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "farmácia",
+        "categories": ["Saúde"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "drogaria",
+        "categories": ["Saúde"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "hospital",
+        "categories": ["Saúde"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "clinica",
+        "categories": ["Saúde"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "agua",
+        "categories": ["Moradia"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "gas",
+        "categories": ["Moradia"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "internet",
+        "categories": ["Moradia"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "netflix",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "spotify",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "youtube",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "prime",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "disney",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "gasolina",
+        "categories": ["Transporte"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "posto",
+        "categories": ["Transporte"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "estacionamento",
+        "categories": ["Transporte"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "park",
+        "categories": ["Transporte"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "cinema",
+        "categories": ["Lazer"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "restaurante",
+        "categories": ["Alimentação", "Lazer"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "bar",
+        "categories": ["Lazer"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "academia",
+        "categories": ["Saúde", "Lazer"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "escola",
+        "categories": ["Educação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "curso",
+        "categories": ["Educação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "universidade",
+        "categories": ["Educação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "livraria",
+        "categories": ["Educação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "celesc",
+        "categories": ["Moradia"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "barbearia",
+        "categories": ["Saúde"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "parque",
+        "categories": ["Lazer"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "compra de etf",
+        "categories": ["Investimentos"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "aplicação rdb",
+        "categories": ["Investimentos"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "compra de bdr",
+        "categories": ["Investimentos"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "seguro ",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "imperatriz",
+        "categories": ["Mercado"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "carrefour",
+        "categories": ["Mercado"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "microsoft*subscription",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "subscription",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "pizza",
+        "categories": ["Alimentação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "crédito de rotativo",
+        "categories": ["Outros"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "saldo em rotativo",
+        "categories": ["Outros"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "pagamento de conta",
+        "categories": ["Outros"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "steam",
+        "categories": ["Lazer"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "youtubeprem",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "fort atacadista",
+        "categories": ["Mercado"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "creche",
+        "categories": ["Educação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "cafe",
+        "categories": ["Alimentação"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "cofre",
+        "categories": ["Moradia"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "chatgpt",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      },
+      {
+        "keyword": "openai",
+        "categories": ["Assinaturas"],
+        "exactMatch": false
+      }
+    ],
+    "ignoredDescriptions": [
+      "Pagamento recebido",
+      "Transferência enviada",
+      "Transferência recebida",
+      "PIX recebido",
+      "PIX enviado",
+      "Estorno",
+      "Reembolso"
+    ]
+  }
+}

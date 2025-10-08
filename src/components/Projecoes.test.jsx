@@ -1,3 +1,28 @@
+import { render, screen } from '@testing-library/react';
+import { Projecoes } from './Projecoes.jsx';
+
+function brl(n) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+}
+
+describe('Projecoes - passive income', () => {
+  test('uses 1% of patrimonio monthly after goal (no /12)', () => {
+    const patrimonio = 922_961.31;
+    const timeline = [{ invested: patrimonio, yieldPct: 0.01 }];
+    render(
+      <Projecoes
+        timeline={timeline}
+        defaults={{ monthlyReturn: 0.01, contributionGrowth: 0, inflationRate: 0 }}
+      />
+    );
+    // Show advanced to ensure the component mounts and computes
+    // The text should display passive income equals 1% * patrimonio
+    const expected = patrimonio * 0.01; // 1% per month
+    const text = screen.getByText(/Renda passiva mensal após a meta:/i).parentElement.textContent;
+    expect(text).toContain(brl(expected));
+  });
+});
+
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Projecoes } from "./Projecoes.jsx";

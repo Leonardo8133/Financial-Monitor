@@ -22,15 +22,35 @@ const EMPTY_CONFIG = {
  */
 export async function loadDefaultConfigFromFile() {
   try {
-    const response = await fetch('/configuracoes-padrao.json');
-    if (response.ok) {
-      const config = await response.json();
-      console.log('✅ Configurações carregadas do arquivo configuracoes-padrao.json');
-      return config;
-    } else {
-      console.warn('⚠️ Arquivo configuracoes-padrao.json não encontrado');
-      return EMPTY_CONFIG;
+    const base = (import.meta && import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/';
+    const candidates = [
+      `${base}configuracoes-padrao.json`,
+      `/configuracoes-padrao.json`,
+    ];
+
+    for (const url of candidates) {
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const config = await response.json();
+          if (config && config.investimentos && Array.isArray(config.investimentos.banks)) {
+            console.log('✅ Configurações carregadas do arquivo configuracoes-padrao.json');
+            return config;
+          }
+        }
+      } catch {}
     }
+    // Último fallback: tentar importar JSON do repositório (dev/build)
+    try {
+      const mod = await import('../../configuracoes-padrao.json');
+      const cfg = mod?.default || mod;
+      if (cfg && cfg.investimentos && Array.isArray(cfg.investimentos.banks)) {
+        console.log('✅ Configurações carregadas via import de configuracoes-padrao.json');
+        return cfg;
+      }
+    } catch {}
+    console.warn('⚠️ Arquivo configuracoes-padrao.json não encontrado em caminhos conhecidos');
+    return EMPTY_CONFIG;
   } catch (error) {
     console.warn('⚠️ Erro ao carregar configuracoes-padrao.json:', error);
     return EMPTY_CONFIG;
@@ -104,8 +124,13 @@ export function applyDefaultConfigForNewUser(defaultConfig, existingData = {}) {
         ...defaultConfig.gastos.settings,
         ...(existingData.gastos?.settings || {})
       },
-      descriptionCategoryMappings: existingData.gastos?.descriptionCategoryMappings || [],
-      ignoredDescriptions: existingData.gastos?.ignoredDescriptions || [],
+      // Use mappings/ignored from defaults if missing
+      descriptionCategoryMappings: Array.isArray(existingData.gastos?.descriptionCategoryMappings) && existingData.gastos.descriptionCategoryMappings.length > 0
+        ? existingData.gastos.descriptionCategoryMappings
+        : (defaultConfig.gastos.descriptionCategoryMappings || []),
+      ignoredDescriptions: Array.isArray(existingData.gastos?.ignoredDescriptions) && existingData.gastos.ignoredDescriptions.length > 0
+        ? existingData.gastos.ignoredDescriptions
+        : (defaultConfig.gastos.ignoredDescriptions || []),
       createdAt: existingData.gastos?.createdAt || new Date().toISOString(),
     },
     unifiedAt: existingData.unifiedAt || new Date().toISOString(),
