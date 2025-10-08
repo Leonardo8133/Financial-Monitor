@@ -53,12 +53,30 @@ export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Migrar para dados unificados se necessário
+  // Estados para inicialização
+  const [isInitializing, setIsInitializing] = useState(true);
   const [unifiedState, setUnifiedStore] = useLocalStorageState(UNIFIED_LS_KEY, null);
   const [legacyState, setLegacyStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
   
-  // Se não há dados unificados, migrar dos dados legados
-  const storeState = unifiedState || migrateToUnifiedStorage();
+  // Inicialização assíncrona
+  useEffect(() => {
+    async function initializeApp() {
+      try {
+        if (!unifiedState) {
+          await migrateToUnifiedStorage();
+        }
+      } catch (error) {
+        console.error('Erro na inicialização:', error);
+      } finally {
+        setIsInitializing(false);
+      }
+    }
+    
+    initializeApp();
+  }, [unifiedState]);
+  
+  // Se não há dados unificados, usar seed padrão
+  const storeState = unifiedState || UNIFIED_STORAGE_SEED;
   const store = ensureUnifiedDefaults(storeState);
   
   // Extrair dados de investimentos
@@ -90,6 +108,19 @@ export default function App() {
     focus: settings.defaultFocusArea,
   });
   const fileRef = useRef(null);
+
+  // Mostrar tela de carregamento durante inicialização
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">Inicializando...</h2>
+          <p className="text-sm text-slate-600">Carregando configurações do arquivo JSON</p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (settings.defaultTab && defaultsRef.current.tab !== settings.defaultTab) {

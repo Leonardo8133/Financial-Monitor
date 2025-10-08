@@ -47,6 +47,7 @@ export default function ExpensesSettings() {
   const [newMappingCategories, setNewMappingCategories] = useState([]);
   const [newIgnoredKeyword, setNewIgnoredKeyword] = useState("");
   const [mappingFilter, setMappingFilter] = useState("");
+  const [editingMapping, setEditingMapping] = useState(null);
 
   const creationDate = useMemo(() => (createdAt ? createdAt.slice(0, 10) : ""), [createdAt]);
   const mappingList = useMemo(
@@ -251,6 +252,46 @@ export default function ExpensesSettings() {
       );
       return { ...safePrev, descriptionCategoryMappings: filtered };
     });
+  }
+
+  function startEditMapping(mapping) {
+    setEditingMapping({
+      keyword: mapping.keyword,
+      categories: [...mapping.categories],
+      exactMatch: mapping.exactMatch || false
+    });
+  }
+
+  function cancelEditMapping() {
+    setEditingMapping(null);
+  }
+
+  function saveEditMapping() {
+    if (!editingMapping || !editingMapping.keyword.trim() || editingMapping.categories.length === 0) {
+      return;
+    }
+
+    setStore((prev) => {
+      const safePrev = ensureExpensesDefaults(prev);
+      const filtered = safePrev.descriptionCategoryMappings.filter(
+        (entry) => normalizeMappingKeyword(entry.keyword) !== normalizeMappingKeyword(editingMapping.keyword)
+      );
+      const updated = [...filtered, {
+        keyword: editingMapping.keyword.trim(),
+        categories: editingMapping.categories,
+        exactMatch: editingMapping.exactMatch
+      }];
+      return { ...safePrev, descriptionCategoryMappings: updated };
+    });
+
+    setEditingMapping(null);
+  }
+
+  function updateEditingMapping(field, value) {
+    setEditingMapping(prev => ({
+      ...prev,
+      [field]: value
+    }));
   }
 
   function resetDescriptionMappingsToDefault() {
@@ -573,11 +614,29 @@ export default function ExpensesSettings() {
         </section>
 
         <section className="rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Mapeamentos automáticos por descrição</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Quando a descrição contiver a palavra-chave abaixo, as categorias associadas serão aplicadas automaticamente na tela
-            de novas transações.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Mapeamentos automáticos por descrição</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Quando a descrição contiver a palavra-chave abaixo, as categorias associadas serão aplicadas automaticamente na tela
+                de novas transações.
+                {editingMapping && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+                    Editando: {editingMapping.keyword}
+                  </span>
+                )}
+              </p>
+            </div>
+            {editingMapping && (
+              <button
+                type="button"
+                onClick={cancelEditMapping}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+              >
+                Cancelar edição
+              </button>
+            )}
+          </div>
           <div className="mt-4">
             {mappingList.length > 0 && (
               <>
@@ -603,38 +662,94 @@ export default function ExpensesSettings() {
                   </div>
                 </div>
                 <div className="mb-4 max-h-[400px] overflow-y-auto space-y-2 pr-2">
-                  {filteredMappingList.map((mapping) => (
-                  <div
-                    key={mapping.keyword}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2"
-                  >
-                    <div>
-                      <div className="text-[0.65rem] uppercase text-slate-400">Palavra-chave</div>
-                      <div className="text-sm font-semibold text-slate-700">{mapping.keyword}</div>
-                    </div>
-                    <div className="flex flex-1 flex-wrap items-center gap-2">
-                      {mapping.categories.length > 0 ? (
-                        mapping.categories.map((category) => (
-                          <span
-                            key={`${mapping.keyword}-${category}`}
-                            className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] text-slate-600"
-                          >
-                            {category}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-xs text-slate-400">Sem categorias associadas</span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeDescriptionMapping(mapping.keyword)}
-                      className="rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
-                    >
-                      Remover
-                    </button>
-                  </div>
-                  ))}
+                  {filteredMappingList.map((mapping) => {
+                    const isEditing = editingMapping && editingMapping.keyword === mapping.keyword;
+                    return (
+                      <div
+                        key={mapping.keyword}
+                        className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2 ${
+                          isEditing ? 'border-blue-300 bg-blue-50' : 'border-slate-200'
+                        }`}
+                      >
+                        {isEditing ? (
+                          <>
+                            <div className="flex-1">
+                              <div className="text-[0.65rem] uppercase text-slate-400 mb-1">Palavra-chave</div>
+                              <input
+                                type="text"
+                                value={editingMapping.keyword}
+                                onChange={(e) => updateEditingMapping('keyword', e.target.value)}
+                                className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-[0.65rem] uppercase text-slate-400 mb-1">Categorias</div>
+                              <MultiPillSelect
+                                values={editingMapping.categories}
+                                options={categoryOptions}
+                                onChange={(values) => updateEditingMapping('categories', values)}
+                                placeholder="Selecionar categorias"
+                                inputPlaceholder="Nova categoria"
+                              />
+                            </div>
+                            <div className="flex items-end gap-2">
+                              <button
+                                type="button"
+                                onClick={saveEditMapping}
+                                className="rounded-lg bg-green-500 px-3 py-1 text-xs font-semibold text-white hover:bg-green-600"
+                              >
+                                Salvar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelEditMapping}
+                                className="rounded-lg bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-300"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <div className="text-[0.65rem] uppercase text-slate-400">Palavra-chave</div>
+                              <div className="text-sm font-semibold text-slate-700">{mapping.keyword}</div>
+                            </div>
+                            <div className="flex flex-1 flex-wrap items-center gap-2">
+                              {mapping.categories.length > 0 ? (
+                                mapping.categories.map((category) => (
+                                  <span
+                                    key={`${mapping.keyword}-${category}`}
+                                    className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] text-slate-600"
+                                  >
+                                    {category}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-slate-400">Sem categorias associadas</span>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditMapping(mapping)}
+                                className="rounded-lg border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeDescriptionMapping(mapping.keyword)}
+                                className="rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-50"
+                              >
+                                Remover
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </>
             )}

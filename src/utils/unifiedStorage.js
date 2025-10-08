@@ -1,5 +1,6 @@
 import { LS_KEY } from "./formatters.js";
 import { EXPENSES_LS_KEY } from "../expenses/config/storage.js";
+import { initializeNewUserConfig } from "./defaultConfigLoader.js";
 
 // Chave unificada para dados combinados
 export const UNIFIED_LS_KEY = "financial-monitor-unified-v1";
@@ -45,7 +46,7 @@ export const UNIFIED_STORAGE_SEED = {
 };
 
 // Função para migrar dados existentes para estrutura unificada
-export function migrateToUnifiedStorage() {
+export async function migrateToUnifiedStorage() {
   try {
     // Verificar se já existe dados unificados
     const existingUnified = localStorage.getItem(UNIFIED_LS_KEY);
@@ -53,7 +54,13 @@ export function migrateToUnifiedStorage() {
       return JSON.parse(existingUnified);
     }
     
-    // Buscar dados existentes
+    // Verificar se é usuário novo e inicializar com configurações padrão
+    const initializedData = await initializeNewUserConfig(UNIFIED_LS_KEY);
+    if (initializedData) {
+      return initializedData;
+    }
+    
+    // Buscar dados existentes (migração de versões antigas)
     const investmentData = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
     const expensesData = JSON.parse(localStorage.getItem(EXPENSES_LS_KEY) || '{}');
     
