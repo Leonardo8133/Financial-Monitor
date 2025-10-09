@@ -94,7 +94,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
   const [form, setForm] = useState(() => ({
     initialBalance: trailingStats.lastMonth.invested || 0,
     monthlyContribution: trailingStats.cashFlowAverage || 0,
-    horizonMonths: 60,
+    horizonMonths: safeDefaults.horizonMonths ?? 60,
     monthlyReturnPct: withPrecision(
       decimalToPercent(
         safeDefaults.monthlyReturn ?? trailingStats.lastMonth.yieldPct ?? trailingStats.yieldAverage ?? 0.005
@@ -138,6 +138,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
     let balance = initialBalance;
     let contributionTotal = initialBalance;
     const checkpoints = [];
+    const goal = Math.max(readNumber(form.goalAmount, 0), 0);
 
     if (horizon === 0) {
       const annualRate = Math.pow(1 + monthlyRate, 12) - 1;
@@ -151,7 +152,7 @@ export function Projecoes({ timeline = [], defaults = {} }) {
         totalYield: balance - contributionTotal,
         finalContribution: contribution,
         checkpoints,
-        goal: Math.max(readNumber(form.goalAmount, 0), 0),
+        goal,
         goalMonths: null,
         monthlyContributionStart: contribution,
         passiveIncomeMonthly: goal > 0 && balance >= goal ? goal * withdrawalRate : balance * withdrawalRate,
@@ -181,7 +182,6 @@ export function Projecoes({ timeline = [], defaults = {} }) {
     const realBalance = balance / Math.pow(1 + monthlyInflation, horizon);
     const finalContribution = contribution;
     const annualRate = Math.pow(1 + monthlyRate, 12) - 1;
-    const goal = Math.max(readNumber(form.goalAmount, 0), 0);
 
     let goalMonths = null;
     if (goal > 0) {

@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { Projecoes } from './Projecoes.jsx';
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, expect, it, test } from "vitest";
+import { Projecoes } from "./Projecoes.jsx";
 
 function brl(n) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
@@ -12,7 +13,7 @@ describe('Projecoes - passive income', () => {
     render(
       <Projecoes
         timeline={timeline}
-        defaults={{ monthlyReturn: 0.01, contributionGrowth: 0, inflationRate: 0 }}
+        defaults={{ monthlyReturn: 0.01, contributionGrowth: 0, inflationRate: 0, horizonMonths: 0 }}
       />
     );
     // Show advanced to ensure the component mounts and computes
@@ -22,10 +23,6 @@ describe('Projecoes - passive income', () => {
     expect(text).toContain(brl(expected));
   });
 });
-
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { Projecoes } from "./Projecoes.jsx";
 
 function makeTimeline({ months = 6, invested = 1000, yieldPct = 0.01 } = {}) {
   const start = new Date(2024, 0, 15);
