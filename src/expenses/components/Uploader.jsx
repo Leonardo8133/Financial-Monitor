@@ -5,6 +5,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import { parseExpensePdfWithTemplates } from "../utils/pdfTemplates.js";
 import { detectCsvImportTemplate, normalizeImportedItems } from "../utils/importTemplates.js";
 import { toNumber } from "../../utils/formatters.js";
+import { Select } from "../../components/Select.jsx";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -617,21 +618,20 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
             <span className="font-semibold">Pré-visualização do arquivo</span>
             <label className="flex items-center gap-2">
               <span>Selecionar linha de cabeçalho:</span>
-              <select
+              <Select
                 value={headerRowIndex}
                 onChange={(event) => {
                   const index = Number(event.target.value);
                   setHeaderRowIndex(index);
                   applyHeaderSelection(rawRows, index, fileInfo?.name || "");
                 }}
-                className="rounded-lg border border-slate-200 px-2 py-1 text-xs focus:border-slate-400 focus:outline-none"
-              >
-                {rawRows.slice(0, 10).map((_, idx) => (
-                  <option key={idx} value={idx}>
-                    Linha {idx + 1}
-                  </option>
-                ))}
-              </select>
+                options={rawRows.slice(0, 10).map((_, idx) => ({
+                  value: idx,
+                  label: `Linha ${idx + 1}`
+                }))}
+                className="ml-2"
+                size="sm"
+              />
             </label>
           </div>
           <div className="max-h-60 overflow-auto rounded-lg border border-slate-100">
@@ -664,18 +664,17 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
             {mapping.map((entry) => (
               <div key={entry.field} className="rounded-lg border border-slate-200 p-3">
                 <div className="text-xs font-semibold text-slate-600">{entry.label}</div>
-                <select
+                <Select
                   value={entry.header || ""}
                   onChange={(event) => updateMapping(entry.field, event.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1 text-sm focus:border-slate-400 focus:outline-none"
-                >
-                  <option value="">— Não mapear —</option>
-                  {headers.map((header) => (
-                    <option key={header} value={header}>
-                      {header}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: "", label: "— Não mapear —" },
+                    ...headers.map((header) => ({ value: header, label: header }))
+                  ]}
+                  placeholder="— Não mapear —"
+                  className="mt-1"
+                  size="sm"
+                />
                 <div className="mt-1 text-[0.7rem] text-slate-500">Ex.: {entry.sample}</div>
               </div>
             ))}

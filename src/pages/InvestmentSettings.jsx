@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
-import { LS_KEY } from "../utils/formatters.js";
-import { ensureInvestmentDefaults, INVESTMENT_STORAGE_SEED } from "../config/investmentStorage.js";
+import { ensureUnifiedDefaults, UNIFIED_LS_KEY } from "../utils/unifiedStorage.js";
 import { ensureBankInLibrary } from "../config/banks.js";
 import { ensureSourceInLibrary } from "../config/sources.js";
-import { SettingsIcon } from "../components/icons.jsx";
+import { SettingsIcon, TrashIcon } from "../components/icons.jsx";
+import { Select } from "../components/Select.jsx";
 
 const PERSONAL_FIELDS = [
   { name: "fullName", label: "Nome completo", placeholder: "Nome que aparecerá nos relatórios" },
@@ -27,9 +27,9 @@ const FOCUS_OPTIONS = [
 ];
 
 export default function InvestmentSettings() {
-  const [storeState, setStore] = useLocalStorageState(LS_KEY, INVESTMENT_STORAGE_SEED);
-  const store = ensureInvestmentDefaults(storeState);
-  const { personalInfo, settings, banks, sources, createdAt } = store;
+  const [storeState, setStore] = useLocalStorageState(UNIFIED_LS_KEY, {});
+  const store = ensureUnifiedDefaults(storeState);
+  const { personalInfo, settings, banks, sources, createdAt } = store.investimentos;
 
   const [newBank, setNewBank] = useState({ name: "", icon: "", color: "" });
   const [newSource, setNewSource] = useState({ name: "", icon: "", color: "" });
@@ -39,20 +39,26 @@ export default function InvestmentSettings() {
 
   function updatePersonalInfo(field, value) {
     setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
+      const safePrev = ensureUnifiedDefaults(prev);
       return {
         ...safePrev,
-        personalInfo: { ...safePrev.personalInfo, [field]: value },
+        investimentos: {
+          ...safePrev.investimentos,
+          personalInfo: { ...safePrev.investimentos.personalInfo, [field]: value },
+        },
       };
     });
   }
 
   function updateSettings(field, value) {
     setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
+      const safePrev = ensureUnifiedDefaults(prev);
       return {
         ...safePrev,
-        settings: { ...safePrev.settings, [field]: value },
+        investimentos: {
+          ...safePrev.investimentos,
+          settings: { ...safePrev.investimentos.settings, [field]: value },
+        },
       };
     });
   }
@@ -62,8 +68,11 @@ export default function InvestmentSettings() {
     if (!value) return;
     const iso = new Date(value).toISOString();
     setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      return { ...safePrev, createdAt: iso };
+      const safePrev = ensureUnifiedDefaults(prev);
+      return { 
+        ...safePrev, 
+        investimentos: { ...safePrev.investimentos, createdAt: iso }
+      };
     });
   }
 
@@ -71,8 +80,8 @@ export default function InvestmentSettings() {
     event.preventDefault();
     if (!newBank.name.trim()) return;
     setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      const ensured = ensureBankInLibrary(newBank.name.trim(), safePrev.banks);
+      const safePrev = ensureUnifiedDefaults(prev);
+      const ensured = ensureBankInLibrary(newBank.name.trim(), safePrev.investimentos.banks);
       const exists = ensured.some((bank) => bank.name.toLowerCase() === newBank.name.trim().toLowerCase());
       const nextBanks = exists
         ? ensured.map((bank) =>
@@ -81,21 +90,24 @@ export default function InvestmentSettings() {
               : bank
           )
         : [...ensured, { name: newBank.name.trim(), icon: newBank.icon || "🏦", color: newBank.color || "#2563EB" }];
-      return { ...safePrev, banks: nextBanks };
+      return { 
+        ...safePrev, 
+        investimentos: { ...safePrev.investimentos, banks: nextBanks }
+      };
     });
     setNewBank({ name: "", icon: "", color: "" });
   }
 
   function updateBank(index, field, value) {
     setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      const oldBank = safePrev.banks[index];
-      const nextBanks = safePrev.banks.map((bank, idx) => (idx === index ? { ...bank, [field]: value } : bank));
+      const safePrev = ensureUnifiedDefaults(prev);
+      const oldBank = safePrev.investimentos.banks[index];
+      const nextBanks = safePrev.investimentos.banks.map((bank, idx) => (idx === index ? { ...bank, [field]: value } : bank));
       
       // Se o nome do banco foi alterado, atualizar todas as entradas no histórico
-      let nextEntries = safePrev.entries;
+      let nextEntries = safePrev.investimentos.entries;
       if (field === "name" && oldBank && oldBank.name !== value) {
-        nextEntries = safePrev.entries.map(entry => 
+        nextEntries = safePrev.investimentos.entries.map(entry => 
           entry.bank === oldBank.name ? { ...entry, bank: value } : entry
         );
         // Mostrar aviso de atualização
@@ -103,24 +115,32 @@ export default function InvestmentSettings() {
         setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
       }
       
-      return { ...safePrev, banks: nextBanks, entries: nextEntries };
+      return { 
+        ...safePrev, 
+        investimentos: { ...safePrev.investimentos, banks: nextBanks, entries: nextEntries }
+      };
     });
   }
 
   function removeBank(index) {
-    setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      const nextBanks = safePrev.banks.filter((_, idx) => idx !== index);
-      return { ...safePrev, banks: nextBanks };
-    });
+    if (window.confirm(`Tem certeza que deseja remover o banco "${banks[index].name}"?`)) {
+      setStore((prev) => {
+        const safePrev = ensureUnifiedDefaults(prev);
+        const nextBanks = safePrev.investimentos.banks.filter((_, idx) => idx !== index);
+        return { 
+          ...safePrev, 
+          investimentos: { ...safePrev.investimentos, banks: nextBanks }
+        };
+      });
+    }
   }
 
   function handleAddSource(event) {
     event.preventDefault();
     if (!newSource.name.trim()) return;
     setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      const ensured = ensureSourceInLibrary(newSource.name.trim(), safePrev.sources);
+      const safePrev = ensureUnifiedDefaults(prev);
+      const ensured = ensureSourceInLibrary(newSource.name.trim(), safePrev.investimentos.sources);
       const exists = ensured.some((source) => source.name.toLowerCase() === newSource.name.trim().toLowerCase());
       const nextSources = exists
         ? ensured.map((source) =>
@@ -132,23 +152,26 @@ export default function InvestmentSettings() {
             ...ensured,
             { name: newSource.name.trim(), icon: newSource.icon || "💼", color: newSource.color || "#0EA5E9" },
           ];
-      return { ...safePrev, sources: nextSources };
+      return { 
+        ...safePrev, 
+        investimentos: { ...safePrev.investimentos, sources: nextSources }
+      };
     });
     setNewSource({ name: "", icon: "", color: "" });
   }
 
   function updateSource(index, field, value) {
     setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      const oldSource = safePrev.sources[index];
-      const nextSources = safePrev.sources.map((source, idx) =>
+      const safePrev = ensureUnifiedDefaults(prev);
+      const oldSource = safePrev.investimentos.sources[index];
+      const nextSources = safePrev.investimentos.sources.map((source, idx) =>
         idx === index ? { ...source, [field]: value } : source
       );
       
       // Se o nome da fonte foi alterado, atualizar todas as entradas no histórico
-      let nextEntries = safePrev.entries;
+      let nextEntries = safePrev.investimentos.entries;
       if (field === "name" && oldSource && oldSource.name !== value) {
-        nextEntries = safePrev.entries.map(entry => 
+        nextEntries = safePrev.investimentos.entries.map(entry => 
           entry.source === oldSource.name ? { ...entry, source: value } : entry
         );
         // Mostrar aviso de atualização
@@ -156,16 +179,24 @@ export default function InvestmentSettings() {
         setTimeout(() => setShowUpdateWarning({ type: null, index: null }), 3000);
       }
       
-      return { ...safePrev, sources: nextSources, entries: nextEntries };
+      return { 
+        ...safePrev, 
+        investimentos: { ...safePrev.investimentos, sources: nextSources, entries: nextEntries }
+      };
     });
   }
 
   function removeSource(index) {
-    setStore((prev) => {
-      const safePrev = ensureInvestmentDefaults(prev);
-      const nextSources = safePrev.sources.filter((_, idx) => idx !== index);
-      return { ...safePrev, sources: nextSources };
-    });
+    if (window.confirm(`Tem certeza que deseja remover a fonte "${sources[index].name}"?`)) {
+      setStore((prev) => {
+        const safePrev = ensureUnifiedDefaults(prev);
+        const nextSources = safePrev.investimentos.sources.filter((_, idx) => idx !== index);
+        return { 
+          ...safePrev, 
+          investimentos: { ...safePrev.investimentos, sources: nextSources }
+        };
+      });
+    }
   }
 
   return (
@@ -228,17 +259,13 @@ export default function InvestmentSettings() {
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <label className="text-sm font-medium text-slate-700">
               Aba inicial
-              <select
+              <Select
                 value={settings.defaultTab}
                 onChange={(event) => updateSettings("defaultTab", event.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400"
-              >
-                {DEFAULT_TAB_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                options={DEFAULT_TAB_OPTIONS}
+                className="mt-1"
+                size="md"
+              />
             </label>
             <fieldset className="text-sm font-medium text-slate-700">
               <legend className="text-sm font-medium text-slate-700">Área em foco ao abrir</legend>

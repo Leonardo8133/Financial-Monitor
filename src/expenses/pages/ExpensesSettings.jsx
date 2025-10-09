@@ -4,14 +4,11 @@ import { useLocalStorageState } from "../../hooks/useLocalStorageState.js";
 import { ensureCategoryInLibrary } from "../config/categories.js";
 import { ensureSourceInLibrary } from "../config/sources.js";
 import { SettingsIcon } from "../../components/icons.jsx";
+import { Select } from "../../components/Select.jsx";
 import {
   normalizeMappingKeyword,
 } from "../config/descriptionMappings.js";
-import {
-  EXPENSES_LS_KEY,
-  EXPENSES_STORAGE_SEED,
-  ensureExpensesDefaults,
-} from "../config/storage.js";
+import { UNIFIED_LS_KEY, ensureUnifiedDefaults } from "../../utils/unifiedStorage.js";
 import { MultiPillSelect } from "../components/MultiPillSelect.jsx";
 
 const PERSONAL_FIELDS = [
@@ -33,9 +30,9 @@ const CURRENCIES = [
 ];
 
 export default function ExpensesSettings() {
-  const [storeState, setStore] = useLocalStorageState(EXPENSES_LS_KEY, EXPENSES_STORAGE_SEED);
-  const store = ensureExpensesDefaults(storeState);
-  const { personalInfo, settings, categories, sources, createdAt, descriptionCategoryMappings = [], ignoredDescriptions = [] } = store;
+  const [storeState, setStore] = useLocalStorageState(UNIFIED_LS_KEY, {});
+  const store = ensureUnifiedDefaults(storeState);
+  const { personalInfo, settings, categories, sources, createdAt, descriptionCategoryMappings = [], ignoredDescriptions = [] } = store.gastos;
   const ignoredList = Array.isArray(ignoredDescriptions) ? ignoredDescriptions : [];
 
   const [newCategory, setNewCategory] = useState({ name: "", icon: "", color: "" });
@@ -72,10 +69,13 @@ export default function ExpensesSettings() {
   function updatePersonalInfo(field, value) {
     const parsedValue = field === "householdSize" ? Number(value) || 0 : value;
     setStore((prev) => {
-      const safePrev = ensureExpensesDefaults(prev);
+      const safePrev = ensureUnifiedDefaults(prev);
       return {
         ...safePrev,
-        personalInfo: { ...safePrev.personalInfo, [field]: parsedValue },
+        gastos: {
+          ...safePrev.gastos,
+          personalInfo: { ...safePrev.gastos.personalInfo, [field]: parsedValue },
+        },
       };
     });
   }
@@ -83,10 +83,13 @@ export default function ExpensesSettings() {
   function updateSettings(field, value) {
     const parsedValue = field === "monthlyBudget" ? Number(value) || 0 : value;
     setStore((prev) => {
-      const safePrev = ensureExpensesDefaults(prev);
+      const safePrev = ensureUnifiedDefaults(prev);
       return {
         ...safePrev,
-        settings: { ...safePrev.settings, [field]: parsedValue },
+        gastos: {
+          ...safePrev.gastos,
+          settings: { ...safePrev.gastos.settings, [field]: parsedValue },
+        },
       };
     });
   }
@@ -96,8 +99,11 @@ export default function ExpensesSettings() {
     if (!value) return;
     const iso = new Date(value).toISOString();
     setStore((prev) => {
-      const safePrev = ensureExpensesDefaults(prev);
-      return { ...safePrev, createdAt: iso };
+      const safePrev = ensureUnifiedDefaults(prev);
+      return { 
+        ...safePrev, 
+        gastos: { ...safePrev.gastos, createdAt: iso }
+      };
     });
   }
 
@@ -389,31 +395,23 @@ export default function ExpensesSettings() {
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <label className="text-sm font-medium text-slate-700">
               Aba inicial
-              <select
+              <Select
                 value={settings.defaultTab}
                 onChange={(event) => updateSettings("defaultTab", event.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400"
-              >
-                {TAB_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                options={TAB_OPTIONS}
+                className="mt-1"
+                size="md"
+              />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Moeda padrão
-              <select
+              <Select
                 value={settings.currency}
                 onChange={(event) => updateSettings("currency", event.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400"
-              >
-                {CURRENCIES.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                options={CURRENCIES}
+                className="mt-1"
+                size="md"
+              />
             </label>
             <label className="text-sm font-medium text-slate-700">
               Meta mensal de gastos

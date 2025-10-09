@@ -10,8 +10,30 @@ export function FinancingCalculator() {
     interestRate: 0,
     termMonths: 0,
   });
+  const [showTooltip, setShowTooltip] = useState(null);
 
-  
+  // Componente de botão de ajuda reutilizável
+  function HelpButton({ helpText, id }) {
+    return (
+      <div className="relative inline-block ml-2">
+        <button
+          type="button"
+          className="w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors duration-0 opacity-0 group-hover:opacity-100"
+          onMouseEnter={() => setShowTooltip(id)}
+          onMouseLeave={() => setShowTooltip(null)}
+          style={{ transitionDelay: '0ms' }}
+        >
+          ?
+        </button>
+        {showTooltip === id && (
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-50">
+            {helpText}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const [results, setResults] = useState(null);
 
@@ -83,13 +105,7 @@ export function FinancingCalculator() {
               <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                 Valor Principal (R$)
-                <button
-                  type="button"
-                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Valor total do financiamento"
-                >
-                  ?
-                </button>
+                <HelpButton helpText="Valor total do financiamento" id="principal" />
               </label>
               <CurrencyInput
                 value={formData.principal}
@@ -102,13 +118,7 @@ export function FinancingCalculator() {
               <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
                 Pagamento Mensal (R$)
-                <button
-                  type="button"
-                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Valor fixo pago mensalmente"
-                >
-                  ?
-                </button>
+                <HelpButton helpText="Valor fixo pago mensalmente" id="monthlyPayment" />
               </label>
               <CurrencyInput
                 value={formData.monthlyPayment}
@@ -122,13 +132,7 @@ export function FinancingCalculator() {
               <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <ChartBarIcon className="inline h-4 w-4 mr-1" />
                 Taxa de Juros Anual (%)
-                <button
-                  type="button"
-                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Taxa de juros anual em percentual"
-                >
-                  ?
-                </button>
+                <HelpButton helpText="Taxa de juros anual em percentual" id="interestRate" />
               </label>
               <input
                 type="number"
@@ -144,13 +148,7 @@ export function FinancingCalculator() {
               <label className="block text-sm font-medium text-slate-700 mb-2 group">
                 <CalendarIcon className="inline h-4 w-4 mr-1" />
                 Prazo Total (meses)
-                <button
-                  type="button"
-                  className="ml-2 w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Número total de meses para quitar o financiamento"
-                >
-                  ?
-                </button>
+                <HelpButton helpText="Número total de meses para quitar o financiamento" id="termMonths" />
               </label>
               <input
                 type="number"

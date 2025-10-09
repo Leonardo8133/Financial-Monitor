@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { usePDF, pdf as pdfRenderer } from "@react-pdf/renderer";
 import { DocumentArrowDownIcon } from "../components/icons.jsx";
+import { Select } from "../components/Select.jsx";
 import { useLocalStorageState } from "../hooks/useLocalStorageState.js";
 import { toNumber, monthLabel } from "../utils/formatters.js";
 import { computeDerivedEntries, computeTotals } from "../utils/entries.js";
@@ -252,15 +253,13 @@ export default function InvestmentReport() {
             </p>
             <div className="flex items-center gap-3">
               <label className="text-xs text-slate-600">Período (meses):
-                <select
+                <Select
                   value={monthsWindow}
                   onChange={(e) => setMonthsWindow(Math.max(1, Math.min(12, Number(e.target.value) || 12)))}
-                  className="ml-2 rounded border border-slate-200 px-2 py-1 text-xs"
-                >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
+                  options={Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `${i + 1}` }))}
+                  className="ml-2"
+                  size="sm"
+                />
               </label>
             </div>
             <div>
