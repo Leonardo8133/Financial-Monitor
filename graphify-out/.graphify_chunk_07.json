@@ -1,0 +1,509 @@
+{
+  "nodes": [
+    {
+      "id": "debug-investments_investments_dashboard",
+      "label": "Investments Dashboard Screen",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_monitor_de_investimentos",
+      "label": "Monitor de Investimentos (Investment Monitor App)",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_tab_investimentos",
+      "label": "Investimentos Tab",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_tab_gastos",
+      "label": "Gastos Tab",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_nav_dashboard",
+      "label": "Dashboard Navigation Tab",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_nav_historico",
+      "label": "Historico Navigation Tab",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_nav_nova_entrada",
+      "label": "Nova Entrada Navigation Tab",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_nav_projecoes",
+      "label": "Projecoes Navigation Tab",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_kpi_total_investimentos",
+      "label": "Total de Investimentos KPI Card",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_kpi_rendimento",
+      "label": "Rendimento Ultimo Mes KPI Card",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_kpi_entrada_saida",
+      "label": "Entrada/Saida Ultimo Mes KPI Card",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_kpi_total_em_conta",
+      "label": "Total em Conta Ultimo Mes KPI Card",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_chart_fluxo_por_fonte",
+      "label": "Fluxo por Fonte ao Longo do Tempo Chart",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_chart_rendimento_mensal",
+      "label": "Rendimento Mensal por Fonte Chart",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_action_exportar",
+      "label": "Exportar Action Button",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_action_importar",
+      "label": "Importar Action Button",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_action_relatorio_pdf",
+      "label": "Relatorio PDF Action Button",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_action_configuracoes",
+      "label": "Configuracoes Action Button",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_localstorage_data",
+      "label": "LocalStorage Data Persistence",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "debug-investments_empty_state",
+      "label": "Empty State (No Data)",
+      "file_type": "image",
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_monitor_de_investimentos",
+      "relation": "is_screen_of",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_tab_investimentos",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_tab_gastos",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_nav_dashboard",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_nav_historico",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_nav_nova_entrada",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_nav_projecoes",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_kpi_total_investimentos",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_kpi_rendimento",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_kpi_entrada_saida",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_kpi_total_em_conta",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_chart_fluxo_por_fonte",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_chart_rendimento_mensal",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_action_exportar",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_action_importar",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_action_relatorio_pdf",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_action_configuracoes",
+      "relation": "contains",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_monitor_de_investimentos",
+      "target": "debug-investments_localstorage_data",
+      "relation": "uses",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_investments_dashboard",
+      "target": "debug-investments_empty_state",
+      "relation": "displays",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_empty_state",
+      "target": "debug-investments_chart_fluxo_por_fonte",
+      "relation": "affects",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_empty_state",
+      "target": "debug-investments_chart_rendimento_mensal",
+      "relation": "affects",
+      "confidence": "OBSERVED",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_tab_investimentos",
+      "target": "debug-investments_tab_gastos",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_kpi_total_investimentos",
+      "target": "debug-investments_kpi_rendimento",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_kpi_entrada_saida",
+      "target": "debug-investments_kpi_total_em_conta",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_nav_nova_entrada",
+      "target": "debug-investments_localstorage_data",
+      "relation": "writes_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_action_exportar",
+      "target": "debug-investments_localstorage_data",
+      "relation": "reads_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_action_importar",
+      "target": "debug-investments_localstorage_data",
+      "relation": "writes_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "debug-investments_action_relatorio_pdf",
+      "target": "debug-investments_localstorage_data",
+      "relation": "reads_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "docs/screenshots/debug-investments.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 1124,
+  "output_tokens": 892
+}

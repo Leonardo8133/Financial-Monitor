@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from "react-router-dom";
-import App from "./App.jsx";
+import InvestmentsApp from "./investments/InvestmentsApp.jsx";
 import ExpensesApp from "./expenses/ExpensesApp.jsx";
-import InvestmentSettings from "./pages/InvestmentSettings.jsx";
+import InvestmentSettings from "./investments/pages/InvestmentSettings.jsx";
 import ExpensesSettings from "./expenses/pages/ExpensesSettings.jsx";
-import InvestmentReport from "./pages/InvestmentReport.jsx";
+import InvestmentReport from "./investments/pages/InvestmentReport.jsx";
 import ExpensesReport from "./expenses/pages/ExpensesReport.jsx";
 import ErrorPage from "./components/ErrorPage.jsx";
 import { HomePage } from "./components/HomePage.jsx";
@@ -19,7 +19,7 @@ const router = createBrowserRouter(
       errorElement: <ErrorPage />,
       children: [
         { index: true, element: <HomePage /> },
-        { path: "investimentos", element: <App /> },
+        { path: "investimentos", element: <InvestmentsApp /> },
         { path: "investimentos/configuracoes", element: <InvestmentSettings /> },
         { path: "investimentos/relatorio", element: <InvestmentReport /> },
         { path: "gastos", element: <ExpensesApp /> },

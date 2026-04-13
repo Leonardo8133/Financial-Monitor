@@ -1,0 +1,800 @@
+{
+  "nodes": [
+    {
+      "id": "expensesapp_expensesapp",
+      "label": "ExpensesApp (Root Component)",
+      "file_type": "code",
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "expensesapp_test_expensesapptest",
+      "label": "ExpensesApp Test Suite",
+      "file_type": "code",
+      "source_file": "src/expenses/ExpensesApp.test.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "expensesdashboard_expensesdashboard",
+      "label": "ExpensesDashboard Component",
+      "file_type": "code",
+      "source_file": "src/expenses/components/ExpensesDashboard.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "expensesentrada_expensesentrada",
+      "label": "ExpensesEntrada (Transaction Entry Form)",
+      "file_type": "code",
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "expenseshistorico_expenseshistorico",
+      "label": "ExpensesHistorico (Transaction History)",
+      "file_type": "code",
+      "source_file": "src/expenses/components/ExpensesHistorico.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "financingcalculator_financingcalculator",
+      "label": "FinancingCalculator Component",
+      "file_type": "code",
+      "source_file": "src/expenses/components/FinancingCalculator.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "multipillselect_multipillselect",
+      "label": "MultiPillSelect Component",
+      "file_type": "code",
+      "source_file": "src/expenses/components/MultiPillSelect.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "uploader_uploader",
+      "label": "Uploader Component (CSV/XLSX/PDF Import)",
+      "file_type": "code",
+      "source_file": "src/expenses/components/Uploader.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "uploader_test_uploadertest",
+      "label": "Uploader Test Suite",
+      "file_type": "code",
+      "source_file": "src/expenses/components/Uploader.test.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "categories_categories",
+      "label": "Categories Config (DEFAULT_CATEGORIES)",
+      "file_type": "code",
+      "source_file": "src/expenses/config/categories.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "descriptionmappings_descriptionmappings",
+      "label": "Description Mappings Config",
+      "file_type": "code",
+      "source_file": "src/expenses/config/descriptionMappings.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sources_sources",
+      "label": "Sources Config (DEFAULT_SOURCES)",
+      "file_type": "code",
+      "source_file": "src/expenses/config/sources.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "storage_storage",
+      "label": "Expenses Storage Config (EXPENSES_LS_KEY / seed / defaults)",
+      "file_type": "code",
+      "source_file": "src/expenses/config/storage.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "expensesreport_expensesreport",
+      "label": "ExpensesReport Page (PDF Generator)",
+      "file_type": "code",
+      "source_file": "src/expenses/pages/ExpensesReport.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "expensessettings_expensessettings",
+      "label": "ExpensesSettings Page",
+      "file_type": "code",
+      "source_file": "src/expenses/pages/ExpensesSettings.jsx",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "expenses_utils_expenses",
+      "label": "Expenses Utilities (makeId, withId, computeDerivedExpenses, computeTotals)",
+      "file_type": "code",
+      "source_file": "src/expenses/utils/expenses.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "importtemplates_importtemplates",
+      "label": "Import Templates (CSV: Nubank, Inter)",
+      "file_type": "code",
+      "source_file": "src/expenses/utils/importTemplates.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pdftemplates_pdftemplates",
+      "label": "PDF Templates (Nubank Card, Itaú, Telecom)",
+      "file_type": "code",
+      "source_file": "src/expenses/utils/pdfTemplates.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pdftemplates_test_pdftemplatestest",
+      "label": "PDF Templates Test Suite",
+      "file_type": "code",
+      "source_file": "src/expenses/utils/pdfTemplates.test.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expensesdashboard_expensesdashboard",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expensesentrada_expensesentrada",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expenseshistorico_expenseshistorico",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "financingcalculator_financingcalculator",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "categories_categories",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "sources_sources",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "descriptionmappings_descriptionmappings",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expenses_utils_expenses",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "storage_storage",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "categories_categories",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "sources_sources",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "descriptionmappings_descriptionmappings",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "expensesapp_test_expensesapptest",
+      "target": "expensesapp_expensesapp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.test.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_test_expensesapptest",
+      "target": "pdftemplates_pdftemplates",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.test.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesentrada_expensesentrada",
+      "target": "uploader_uploader",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesentrada_expensesentrada",
+      "target": "multipillselect_multipillselect",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesentrada_expensesentrada",
+      "target": "storage_storage",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesentrada_expensesentrada",
+      "target": "descriptionmappings_descriptionmappings",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "expensesentrada_expensesentrada",
+      "target": "categories_categories",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "expensesentrada_expensesentrada",
+      "target": "sources_sources",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "uploader_uploader",
+      "target": "pdftemplates_pdftemplates",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/Uploader.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "uploader_uploader",
+      "target": "importtemplates_importtemplates",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/Uploader.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "uploader_test_uploadertest",
+      "target": "uploader_uploader",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/Uploader.test.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "uploader_test_uploadertest",
+      "target": "pdftemplates_pdftemplates",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/Uploader.test.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "storage_storage",
+      "target": "descriptionmappings_descriptionmappings",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/config/storage.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "storage_storage",
+      "target": "categories_categories",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/expenses/config/storage.js",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "storage_storage",
+      "target": "sources_sources",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/expenses/config/storage.js",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "expensesreport_expensesreport",
+      "target": "storage_storage",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/pages/ExpensesReport.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesreport_expensesreport",
+      "target": "expenses_utils_expenses",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/pages/ExpensesReport.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensessettings_expensessettings",
+      "target": "categories_categories",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/pages/ExpensesSettings.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensessettings_expensessettings",
+      "target": "sources_sources",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/pages/ExpensesSettings.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensessettings_expensessettings",
+      "target": "descriptionmappings_descriptionmappings",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/pages/ExpensesSettings.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensessettings_expensessettings",
+      "target": "multipillselect_multipillselect",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/pages/ExpensesSettings.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "importtemplates_importtemplates",
+      "target": "sources_sources",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/expenses/utils/importTemplates.js",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "pdftemplates_pdftemplates",
+      "target": "sources_sources",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "src/expenses/utils/pdfTemplates.js",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "pdftemplates_test_pdftemplatestest",
+      "target": "pdftemplates_pdftemplates",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/utils/pdfTemplates.test.js",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesdashboard_expensesdashboard",
+      "target": "categories_categories",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/expenses/components/ExpensesDashboard.jsx",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "expensesdashboard_expensesdashboard",
+      "target": "sources_sources",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/expenses/components/ExpensesDashboard.jsx",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "expensesdashboard_expensesdashboard",
+      "target": "expenses_utils_expenses",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/expenses/components/ExpensesDashboard.jsx",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "expenseshistorico_expenseshistorico",
+      "target": "categories_categories",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/expenses/components/ExpensesHistorico.jsx",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "expenseshistorico_expenseshistorico",
+      "target": "sources_sources",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/expenses/components/ExpensesHistorico.jsx",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "expenseshistorico_expenseshistorico",
+      "target": "expenses_utils_expenses",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/expenses/components/ExpensesHistorico.jsx",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expensesdashboard_expensesdashboard",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expenseshistorico_expenseshistorico",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expensesentrada_expensesentrada",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "importtemplates_importtemplates",
+      "target": "categories_categories",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "src/expenses/utils/importTemplates.js",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expensesreport_expensesreport",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "expensesapp_expensesapp",
+      "target": "expensessettings_expensessettings",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/expenses/ExpensesApp.jsx",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "expensesentrada_expensesentrada",
+      "target": "expenses_utils_expenses",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "uploader_uploader",
+      "target": "importtemplates_importtemplates",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/Uploader.jsx",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "uploader_uploader",
+      "target": "pdftemplates_pdftemplates",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/Uploader.jsx",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "expenses_module_core",
+      "label": "Expenses Module Core (App + Config + Utils)",
+      "nodes": [
+        "expensesapp_expensesapp",
+        "categories_categories",
+        "sources_sources",
+        "descriptionmappings_descriptionmappings",
+        "storage_storage",
+        "expenses_utils_expenses"
+      ],
+      "relation": "implement",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/expenses/ExpensesApp.jsx"
+    },
+    {
+      "id": "file_import_pipeline",
+      "label": "File Import Pipeline (Uploader + CSV Templates + PDF Templates)",
+      "nodes": [
+        "uploader_uploader",
+        "importtemplates_importtemplates",
+        "pdftemplates_pdftemplates"
+      ],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/components/Uploader.jsx"
+    },
+    {
+      "id": "expenses_ui_tabs",
+      "label": "Expenses UI Tabs (Dashboard, Histórico, Entrada, Financiamentos)",
+      "nodes": [
+        "expensesapp_expensesapp",
+        "expensesdashboard_expensesdashboard",
+        "expenseshistorico_expenseshistorico",
+        "expensesentrada_expensesentrada",
+        "financingcalculator_financingcalculator"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.jsx"
+    },
+    {
+      "id": "description_category_mapping_system",
+      "label": "Description-to-Category Auto-Mapping System",
+      "nodes": [
+        "descriptionmappings_descriptionmappings",
+        "expensesapp_expensesapp",
+        "expensesentrada_expensesentrada",
+        "expensessettings_expensessettings"
+      ],
+      "relation": "implement",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/expenses/components/ExpensesEntrada.jsx"
+    },
+    {
+      "id": "expenses_test_suite",
+      "label": "Expenses Test Suite",
+      "nodes": [
+        "expensesapp_test_expensesapptest",
+        "uploader_test_uploadertest",
+        "pdftemplates_test_pdftemplatestest"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/expenses/ExpensesApp.test.jsx"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

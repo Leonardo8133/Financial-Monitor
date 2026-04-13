@@ -1,0 +1,5426 @@
+{
+  "nodes": [
+    {
+      "id": "playwright_config_js",
+      "label": "playwright.config.js",
+      "file_type": "code",
+      "source_file": "playwright.config.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "postcss_config_js",
+      "label": "postcss.config.js",
+      "file_type": "code",
+      "source_file": "postcss.config.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "tailwind_config_js",
+      "label": "tailwind.config.js",
+      "file_type": "code",
+      "source_file": "tailwind.config.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "vite_config_js",
+      "label": "vite.config.js",
+      "file_type": "code",
+      "source_file": "vite.config.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "vitest_config_js",
+      "label": "vitest.config.js",
+      "file_type": "code",
+      "source_file": "vitest.config.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "scripts_console_merge_js",
+      "label": "console-merge.js",
+      "file_type": "code",
+      "source_file": "scripts\\console-merge.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "scripts_merge_data_js",
+      "label": "merge-data.js",
+      "file_type": "code",
+      "source_file": "scripts\\merge-data.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "merge_data_mergeinvestmentandexpensedata",
+      "label": "mergeInvestmentAndExpenseData()",
+      "file_type": "code",
+      "source_file": "scripts\\merge-data.js",
+      "source_location": "L4"
+    },
+    {
+      "id": "scripts_test_unified_export_both_apps_js",
+      "label": "test-unified-export-both-apps.js",
+      "file_type": "code",
+      "source_file": "scripts\\test-unified-export-both-apps.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_unified_export_both_apps_testunifiedexportbothapps",
+      "label": "testUnifiedExportBothApps()",
+      "file_type": "code",
+      "source_file": "scripts\\test-unified-export-both-apps.js",
+      "source_location": "L4"
+    },
+    {
+      "id": "scripts_test_unified_export_js",
+      "label": "test-unified-export.js",
+      "file_type": "code",
+      "source_file": "scripts\\test-unified-export.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_unified_export_testunifiedexport",
+      "label": "testUnifiedExport()",
+      "file_type": "code",
+      "source_file": "scripts\\test-unified-export.js",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_main_jsx",
+      "label": "main.jsx",
+      "file_type": "code",
+      "source_file": "src\\main.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_setuptests_js",
+      "label": "setupTests.js",
+      "file_type": "code",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "setuptests_constructor",
+      "label": "constructor()",
+      "file_type": "code",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L14"
+    },
+    {
+      "id": "setuptests_observe",
+      "label": "observe()",
+      "file_type": "code",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L22"
+    },
+    {
+      "id": "setuptests_unobserve",
+      "label": "unobserve()",
+      "file_type": "code",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L23"
+    },
+    {
+      "id": "setuptests_disconnect",
+      "label": "disconnect()",
+      "file_type": "code",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_components_actionbutton_jsx",
+      "label": "ActionButton.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\ActionButton.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "actionbutton_actionbutton",
+      "label": "ActionButton()",
+      "file_type": "code",
+      "source_file": "src\\components\\ActionButton.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_components_backtohomebutton_jsx",
+      "label": "BackToHomeButton.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\BackToHomeButton.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "backtohomebutton_backtohomebutton",
+      "label": "BackToHomeButton()",
+      "file_type": "code",
+      "source_file": "src\\components\\BackToHomeButton.jsx",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_components_currencyinput_jsx",
+      "label": "CurrencyInput.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\CurrencyInput.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "currencyinput_currencyinput",
+      "label": "CurrencyInput()",
+      "file_type": "code",
+      "source_file": "src\\components\\CurrencyInput.jsx",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_components_errorpage_jsx",
+      "label": "ErrorPage.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\ErrorPage.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "errorpage_errorpage",
+      "label": "ErrorPage()",
+      "file_type": "code",
+      "source_file": "src\\components\\ErrorPage.jsx",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_components_homepage_jsx",
+      "label": "HomePage.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\HomePage.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "homepage_homepage",
+      "label": "HomePage()",
+      "file_type": "code",
+      "source_file": "src\\components\\HomePage.jsx",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_components_icons_jsx",
+      "label": "icons.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "icons_icon",
+      "label": "Icon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "icons_arrowdowntrayicon",
+      "label": "ArrowDownTrayIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L18"
+    },
+    {
+      "id": "icons_arrowuptrayicon",
+      "label": "ArrowUpTrayIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L28"
+    },
+    {
+      "id": "icons_arrowlefticon",
+      "label": "ArrowLeftIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L38"
+    },
+    {
+      "id": "icons_documenticon",
+      "label": "DocumentIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L47"
+    },
+    {
+      "id": "icons_trashicon",
+      "label": "TrashIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L56"
+    },
+    {
+      "id": "icons_chartbaricon",
+      "label": "ChartBarIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L68"
+    },
+    {
+      "id": "icons_tablecellsicon",
+      "label": "TableCellsIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L79"
+    },
+    {
+      "id": "icons_plusicon",
+      "label": "PlusIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L90"
+    },
+    {
+      "id": "icons_documentarrowdownicon",
+      "label": "DocumentArrowDownIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L99"
+    },
+    {
+      "id": "icons_usercircleicon",
+      "label": "UserCircleIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L110"
+    },
+    {
+      "id": "icons_trendingupicon",
+      "label": "TrendingUpIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L120"
+    },
+    {
+      "id": "icons_settingsicon",
+      "label": "SettingsIcon()",
+      "file_type": "code",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L130"
+    },
+    {
+      "id": "src_components_importmodal_jsx",
+      "label": "ImportModal.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\ImportModal.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "importmodal_importmodal",
+      "label": "ImportModal()",
+      "file_type": "code",
+      "source_file": "src\\components\\ImportModal.jsx",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_components_kpicard_jsx",
+      "label": "KPICard.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\KPICard.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "kpicard_kpicard",
+      "label": "KPICard()",
+      "file_type": "code",
+      "source_file": "src\\components\\KPICard.jsx",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_components_kpicard_test_jsx",
+      "label": "KPICard.test.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\KPICard.test.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_components_select_jsx",
+      "label": "Select.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\Select.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "select_select",
+      "label": "Select()",
+      "file_type": "code",
+      "source_file": "src\\components\\Select.jsx",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_components_tab_jsx",
+      "label": "Tab.jsx",
+      "file_type": "code",
+      "source_file": "src\\components\\Tab.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "tab_tabs",
+      "label": "Tabs()",
+      "file_type": "code",
+      "source_file": "src\\components\\Tab.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_expenses_expensesapp_jsx",
+      "label": "ExpensesApp.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "expensesapp_expensesapp",
+      "label": "ExpensesApp()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L43"
+    },
+    {
+      "id": "src_expenses_expensesapp_test_jsx",
+      "label": "ExpensesApp.test.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\ExpensesApp.test.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_expenses_components_expensesdashboard_jsx",
+      "label": "ExpensesDashboard.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesDashboard.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "expensesdashboard_expensesdashboard",
+      "label": "ExpensesDashboard()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesDashboard.jsx",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_expenses_components_expensesentrada_jsx",
+      "label": "ExpensesEntrada.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "expensesentrada_generateid",
+      "label": "generateId()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L8"
+    },
+    {
+      "id": "expensesentrada_expensesentrada",
+      "label": "ExpensesEntrada()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_expenses_components_expenseshistorico_jsx",
+      "label": "ExpensesHistorico.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "expenseshistorico_expenseshistorico",
+      "label": "ExpensesHistorico()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L7"
+    },
+    {
+      "id": "expenseshistorico_detailedtable",
+      "label": "DetailedTable()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L472"
+    },
+    {
+      "id": "expenseshistorico_collapsedtable",
+      "label": "CollapsedTable()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L671"
+    },
+    {
+      "id": "expenseshistorico_monthchartmodal",
+      "label": "MonthChartModal()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L732"
+    },
+    {
+      "id": "expenseshistorico_th",
+      "label": "Th()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L826"
+    },
+    {
+      "id": "expenseshistorico_td",
+      "label": "Td()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L838"
+    },
+    {
+      "id": "expenseshistorico_batcheditmodal",
+      "label": "BatchEditModal()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L843"
+    },
+    {
+      "id": "src_expenses_components_financingcalculator_jsx",
+      "label": "FinancingCalculator.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\FinancingCalculator.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "financingcalculator_financingcalculator",
+      "label": "FinancingCalculator()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\FinancingCalculator.jsx",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_expenses_components_multipillselect_jsx",
+      "label": "MultiPillSelect.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\MultiPillSelect.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "multipillselect_normalizevalues",
+      "label": "normalizeValues()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\MultiPillSelect.jsx",
+      "source_location": "L4"
+    },
+    {
+      "id": "multipillselect_multipillselect",
+      "label": "MultiPillSelect()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\MultiPillSelect.jsx",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_expenses_components_uploader_jsx",
+      "label": "Uploader.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "uploader_normalizetext",
+      "label": "normalizeText()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L20"
+    },
+    {
+      "id": "uploader_parselist",
+      "label": "parseList()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L24"
+    },
+    {
+      "id": "uploader_inferheaderrowindex",
+      "label": "inferHeaderRowIndex()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L33"
+    },
+    {
+      "id": "uploader_uploader",
+      "label": "Uploader()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_expenses_components_uploader_test_jsx",
+      "label": "Uploader.test.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\Uploader.test.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "uploader_test_makefile",
+      "label": "makeFile()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\components\\Uploader.test.jsx",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_expenses_config_categories_js",
+      "label": "categories.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "categories_stringtocolor",
+      "label": "stringToColor()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L12"
+    },
+    {
+      "id": "categories_resolvecategoryvisual",
+      "label": "resolveCategoryVisual()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L22"
+    },
+    {
+      "id": "categories_ensurecategoryinlibrary",
+      "label": "ensureCategoryInLibrary()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L29"
+    },
+    {
+      "id": "src_expenses_config_descriptionmappings_js",
+      "label": "descriptionMappings.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\descriptionMappings.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "descriptionmappings_normalizemappingkeyword",
+      "label": "normalizeMappingKeyword()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\descriptionMappings.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "descriptionmappings_mergedescriptionmappings",
+      "label": "mergeDescriptionMappings()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\descriptionMappings.js",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_expenses_config_sources_js",
+      "label": "sources.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "sources_stringtocolor",
+      "label": "stringToColor()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L7"
+    },
+    {
+      "id": "sources_resolvesourcevisual",
+      "label": "resolveSourceVisual()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L17"
+    },
+    {
+      "id": "sources_ensuresourceinlibrary",
+      "label": "ensureSourceInLibrary()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L24"
+    },
+    {
+      "id": "src_expenses_config_storage_js",
+      "label": "storage.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\storage.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "storage_ensureexpensesdefaults",
+      "label": "ensureExpensesDefaults()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\config\\storage.js",
+      "source_location": "L26"
+    },
+    {
+      "id": "src_expenses_pages_expensesreport_jsx",
+      "label": "ExpensesReport.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "expensesreport_sumexpensesmonthly",
+      "label": "sumExpensesMonthly()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L13"
+    },
+    {
+      "id": "expensesreport_buildbreakdown",
+      "label": "buildBreakdown()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L23"
+    },
+    {
+      "id": "expensesreport_expensesreport",
+      "label": "ExpensesReport()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_expenses_pages_expensessettings_jsx",
+      "label": "ExpensesSettings.jsx",
+      "file_type": "code",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "expensessettings_expensessettings",
+      "label": "ExpensesSettings()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L32"
+    },
+    {
+      "id": "src_expenses_utils_expenses_js",
+      "label": "expenses.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "expenses_makeid",
+      "label": "makeId()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "expenses_withid",
+      "label": "withId()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L10"
+    },
+    {
+      "id": "expenses_computederivedexpenses",
+      "label": "computeDerivedExpenses()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L16"
+    },
+    {
+      "id": "expenses_computetotals",
+      "label": "computeTotals()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L20"
+    },
+    {
+      "id": "src_expenses_utils_importtemplates_js",
+      "label": "importTemplates.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "importtemplates_normalizeheaders",
+      "label": "normalizeHeaders()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "importtemplates_parsevalue",
+      "label": "parseValue()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L7"
+    },
+    {
+      "id": "importtemplates_parsenubankvalue",
+      "label": "parseNubankValue()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L15"
+    },
+    {
+      "id": "importtemplates_importtemplate",
+      "label": "ImportTemplate",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L25"
+    },
+    {
+      "id": "importtemplates_importtemplate_constructor",
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L26"
+    },
+    {
+      "id": "importtemplates_importtemplate_detect",
+      "label": ".detect()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L37"
+    },
+    {
+      "id": "importtemplates_importtemplate_processrows",
+      "label": ".processRows()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L52"
+    },
+    {
+      "id": "importtemplates_detectcsvimporttemplate",
+      "label": "detectCsvImportTemplate()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L250"
+    },
+    {
+      "id": "importtemplates_normalizeimporteditems",
+      "label": "normalizeImportedItems()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L260"
+    },
+    {
+      "id": "src_expenses_utils_pdftemplates_js",
+      "label": "pdfTemplates.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "pdftemplates_normalize",
+      "label": "normalize()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L4"
+    },
+    {
+      "id": "pdftemplates_detectexpensetemplate",
+      "label": "detectExpenseTemplate()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L73"
+    },
+    {
+      "id": "pdftemplates_parseexpensepdfwithtemplates",
+      "label": "parseExpensePdfWithTemplates()",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L80"
+    },
+    {
+      "id": "src_expenses_utils_pdftemplates_test_js",
+      "label": "pdfTemplates.test.js",
+      "file_type": "code",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.test.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_hooks_uselocalstoragestate_js",
+      "label": "useLocalStorageState.js",
+      "file_type": "code",
+      "source_file": "src\\hooks\\useLocalStorageState.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "uselocalstoragestate_uselocalstoragestate",
+      "label": "useLocalStorageState()",
+      "file_type": "code",
+      "source_file": "src\\hooks\\useLocalStorageState.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_hooks_useofflinemode_js",
+      "label": "useOfflineMode.js",
+      "file_type": "code",
+      "source_file": "src\\hooks\\useOfflineMode.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "useofflinemode_useofflinemode",
+      "label": "useOfflineMode()",
+      "file_type": "code",
+      "source_file": "src\\hooks\\useOfflineMode.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_hooks_useopendatepickerprops_js",
+      "label": "useOpenDatePickerProps.js",
+      "file_type": "code",
+      "source_file": "src\\hooks\\useOpenDatePickerProps.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "useopendatepickerprops_useopendatepickerprops",
+      "label": "useOpenDatePickerProps()",
+      "file_type": "code",
+      "source_file": "src\\hooks\\useOpenDatePickerProps.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_investments_investmentsapp_jsx",
+      "label": "InvestmentsApp.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "investmentsapp_investmentsapp",
+      "label": "InvestmentsApp()",
+      "file_type": "code",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L52"
+    },
+    {
+      "id": "investmentsapp_resolvetone",
+      "label": "resolveTone()",
+      "file_type": "code",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L791"
+    },
+    {
+      "id": "investmentsapp_mergebanksfromentries",
+      "label": "mergeBanksFromEntries()",
+      "file_type": "code",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L798"
+    },
+    {
+      "id": "investmentsapp_mergesourcesfromentries",
+      "label": "mergeSourcesFromEntries()",
+      "file_type": "code",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L806"
+    },
+    {
+      "id": "src_investments_investmentsapp_test_jsx",
+      "label": "InvestmentsApp.test.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\InvestmentsApp.test.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "investmentsapp_test_renderapp",
+      "label": "renderApp()",
+      "file_type": "code",
+      "source_file": "src\\investments\\InvestmentsApp.test.jsx",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_investments_components_dashboard_jsx",
+      "label": "Dashboard.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "dashboard_formatvalueink",
+      "label": "formatValueInK()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L21"
+    },
+    {
+      "id": "dashboard_dashboard",
+      "label": "Dashboard()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_investments_components_entrada_jsx",
+      "label": "Entrada.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "entrada_entrada",
+      "label": "Entrada()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L8"
+    },
+    {
+      "id": "src_investments_components_field_jsx",
+      "label": "Field.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Field.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "field_field",
+      "label": "Field()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Field.jsx",
+      "source_location": "L3"
+    },
+    {
+      "id": "src_investments_components_historico_jsx",
+      "label": "Historico.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "historico_historico",
+      "label": "Historico()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L9"
+    },
+    {
+      "id": "historico_detailedtable",
+      "label": "DetailedTable()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L222"
+    },
+    {
+      "id": "historico_collapsedtable",
+      "label": "CollapsedTable()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L396"
+    },
+    {
+      "id": "historico_toneclass",
+      "label": "toneClass()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L453"
+    },
+    {
+      "id": "historico_bankbadge",
+      "label": "BankBadge()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L460"
+    },
+    {
+      "id": "historico_sourcebadge",
+      "label": "SourceBadge()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L477"
+    },
+    {
+      "id": "src_investments_components_personalinfomodal_jsx",
+      "label": "PersonalInfoModal.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\PersonalInfoModal.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "personalinfomodal_personalinfomodal",
+      "label": "PersonalInfoModal()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\PersonalInfoModal.jsx",
+      "source_location": "L11"
+    },
+    {
+      "id": "src_investments_components_projecoes_jsx",
+      "label": "Projecoes.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "projecoes_withprecision",
+      "label": "withPrecision()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L7"
+    },
+    {
+      "id": "projecoes_decimaltopercent",
+      "label": "decimalToPercent()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L14"
+    },
+    {
+      "id": "projecoes_percenttodecimal",
+      "label": "percentToDecimal()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L19"
+    },
+    {
+      "id": "projecoes_readnumber",
+      "label": "readNumber()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L24"
+    },
+    {
+      "id": "projecoes_formatgoalmessage",
+      "label": "formatGoalMessage()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L29"
+    },
+    {
+      "id": "projecoes_resultitem",
+      "label": "ResultItem()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L39"
+    },
+    {
+      "id": "projecoes_projecoes",
+      "label": "Projecoes()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L49"
+    },
+    {
+      "id": "src_investments_components_projecoes_test_jsx",
+      "label": "Projecoes.test.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "projecoes_test_brl",
+      "label": "brl()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L5"
+    },
+    {
+      "id": "projecoes_test_maketimeline",
+      "label": "makeTimeline()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_investments_components_tablecells_jsx",
+      "label": "TableCells.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\TableCells.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "tablecells_th",
+      "label": "Th()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\TableCells.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "tablecells_td",
+      "label": "Td()",
+      "file_type": "code",
+      "source_file": "src\\investments\\components\\TableCells.jsx",
+      "source_location": "L9"
+    },
+    {
+      "id": "src_investments_config_banks_js",
+      "label": "banks.js",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "banks_stringtocolor",
+      "label": "stringToColor()",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L21"
+    },
+    {
+      "id": "banks_resolvebankvisual",
+      "label": "resolveBankVisual()",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L31"
+    },
+    {
+      "id": "banks_ensurebankinlibrary",
+      "label": "ensureBankInLibrary()",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L38"
+    },
+    {
+      "id": "src_investments_config_investmentstorage_js",
+      "label": "investmentStorage.js",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\investmentStorage.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "investmentstorage_ensureinvestmentdefaults",
+      "label": "ensureInvestmentDefaults()",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\investmentStorage.js",
+      "source_location": "L21"
+    },
+    {
+      "id": "src_investments_config_sources_js",
+      "label": "sources.js",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "sources_stringtosourcecolor",
+      "label": "stringToSourceColor()",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L8"
+    },
+    {
+      "id": "sources_resolvesourcevisual",
+      "label": "resolveSourceVisual()",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L18"
+    },
+    {
+      "id": "sources_ensuresourceinlibrary",
+      "label": "ensureSourceInLibrary()",
+      "file_type": "code",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L25"
+    },
+    {
+      "id": "src_investments_data_demoentries_js",
+      "label": "demoEntries.js",
+      "file_type": "code",
+      "source_file": "src\\investments\\data\\demoEntries.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_investments_pages_investmentreport_jsx",
+      "label": "InvestmentReport.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "investmentreport_suminvestmentmonthly",
+      "label": "sumInvestmentMonthly()",
+      "file_type": "code",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L13"
+    },
+    {
+      "id": "investmentreport_buildsourcebreakdown",
+      "label": "buildSourceBreakdown()",
+      "file_type": "code",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L28"
+    },
+    {
+      "id": "investmentreport_investmentreport",
+      "label": "InvestmentReport()",
+      "file_type": "code",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_investments_pages_investmentsettings_jsx",
+      "label": "InvestmentSettings.jsx",
+      "file_type": "code",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "investmentsettings_investmentsettings",
+      "label": "InvestmentSettings()",
+      "file_type": "code",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L29"
+    },
+    {
+      "id": "src_utils_defaultconfigloader_js",
+      "label": "defaultConfigLoader.js",
+      "file_type": "code",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "defaultconfigloader_loaddefaultconfigfromfile",
+      "label": "loadDefaultConfigFromFile()",
+      "file_type": "code",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L23"
+    },
+    {
+      "id": "defaultconfigloader_isnewuser",
+      "label": "isNewUser()",
+      "file_type": "code",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L65"
+    },
+    {
+      "id": "defaultconfigloader_applydefaultconfigfornewuser",
+      "label": "applyDefaultConfigForNewUser()",
+      "file_type": "code",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L90"
+    },
+    {
+      "id": "defaultconfigloader_initializenewuserconfig",
+      "label": "initializeNewUserConfig()",
+      "file_type": "code",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L146"
+    },
+    {
+      "id": "src_utils_entries_js",
+      "label": "entries.js",
+      "file_type": "code",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "entries_makeid",
+      "label": "makeId()",
+      "file_type": "code",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L4"
+    },
+    {
+      "id": "entries_withid",
+      "label": "withId()",
+      "file_type": "code",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L11"
+    },
+    {
+      "id": "entries_createdraftentry",
+      "label": "createDraftEntry()",
+      "file_type": "code",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L17"
+    },
+    {
+      "id": "entries_computederivedentries",
+      "label": "computeDerivedEntries()",
+      "file_type": "code",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L28"
+    },
+    {
+      "id": "entries_computetotals",
+      "label": "computeTotals()",
+      "file_type": "code",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L87"
+    },
+    {
+      "id": "src_utils_entries_test_js",
+      "label": "entries.test.js",
+      "file_type": "code",
+      "source_file": "src\\utils\\entries.test.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_utils_formatters_js",
+      "label": "formatters.js",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "formatters_fmtbrl",
+      "label": "fmtBRL()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "formatters_fmtpct",
+      "label": "fmtPct()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L12"
+    },
+    {
+      "id": "formatters_tonumber",
+      "label": "toNumber()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L17"
+    },
+    {
+      "id": "formatters_yyyymm",
+      "label": "yyyymm()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L24"
+    },
+    {
+      "id": "formatters_monthlabel",
+      "label": "monthLabel()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L30"
+    },
+    {
+      "id": "formatters_midofmonth",
+      "label": "midOfMonth()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L36"
+    },
+    {
+      "id": "formatters_enumeratemonths",
+      "label": "enumerateMonths()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L41"
+    },
+    {
+      "id": "formatters_download",
+      "label": "download()",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L59"
+    },
+    {
+      "id": "src_utils_formatters_test_js",
+      "label": "formatters.test.js",
+      "file_type": "code",
+      "source_file": "src\\utils\\formatters.test.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_utils_pdf_jsx",
+      "label": "pdf.jsx",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "pdf_formatdatetime",
+      "label": "formatDateTime()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L99"
+    },
+    {
+      "id": "pdf_renderkeyvaluelist",
+      "label": "renderKeyValueList()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L105"
+    },
+    {
+      "id": "pdf_rendernotes",
+      "label": "renderNotes()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L120"
+    },
+    {
+      "id": "pdf_rendertable",
+      "label": "renderTable()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L134"
+    },
+    {
+      "id": "pdf_formatcurrency",
+      "label": "formatCurrency()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L193"
+    },
+    {
+      "id": "pdf_investmentmonthlyrows",
+      "label": "investmentMonthlyRows()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L197"
+    },
+    {
+      "id": "pdf_investmententriesrows",
+      "label": "investmentEntriesRows()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L207"
+    },
+    {
+      "id": "pdf_investmentsourcerows",
+      "label": "investmentSourceRows()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L224"
+    },
+    {
+      "id": "pdf_expensesmonthlyrows",
+      "label": "expensesMonthlyRows()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L229"
+    },
+    {
+      "id": "pdf_expensesentriesrows",
+      "label": "expensesEntriesRows()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L233"
+    },
+    {
+      "id": "pdf_expensesbreakdownrows",
+      "label": "expensesBreakdownRows()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L249"
+    },
+    {
+      "id": "pdf_groupbycategory",
+      "label": "groupByCategory()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L254"
+    },
+    {
+      "id": "pdf_monthcategoryrows",
+      "label": "monthCategoryRows()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L267"
+    },
+    {
+      "id": "pdf_rendersection",
+      "label": "renderSection()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L275"
+    },
+    {
+      "id": "pdf_createinvestmentreportdocument",
+      "label": "createInvestmentReportDocument()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L285"
+    },
+    {
+      "id": "pdf_createexpensesreportdocument",
+      "label": "createExpensesReportDocument()",
+      "file_type": "code",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L376"
+    },
+    {
+      "id": "src_utils_reporting_js",
+      "label": "reporting.js",
+      "file_type": "code",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "reporting_sanitizepersonalinfo",
+      "label": "sanitizePersonalInfo()",
+      "file_type": "code",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L3"
+    },
+    {
+      "id": "reporting_defaultdateselector",
+      "label": "defaultDateSelector()",
+      "file_type": "code",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L21"
+    },
+    {
+      "id": "reporting_todate",
+      "label": "toDate()",
+      "file_type": "code",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L25"
+    },
+    {
+      "id": "reporting_computerange",
+      "label": "computeRange()",
+      "file_type": "code",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L30"
+    },
+    {
+      "id": "reporting_buildreportdataset",
+      "label": "buildReportDataset()",
+      "file_type": "code",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L48"
+    },
+    {
+      "id": "src_utils_unifiedstorage_js",
+      "label": "unifiedStorage.js",
+      "file_type": "code",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "unifiedstorage_migratetounifiedstorage",
+      "label": "migrateToUnifiedStorage()",
+      "file_type": "code",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L49"
+    },
+    {
+      "id": "unifiedstorage_ensureunifieddefaults",
+      "label": "ensureUnifiedDefaults()",
+      "file_type": "code",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L127"
+    },
+    {
+      "id": "unifiedstorage_ensureunifieddefaultswithconfig",
+      "label": "ensureUnifiedDefaultsWithConfig()",
+      "file_type": "code",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L172"
+    },
+    {
+      "id": "unifiedstorage_exportunifieddata",
+      "label": "exportUnifiedData()",
+      "file_type": "code",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L268"
+    },
+    {
+      "id": "unifiedstorage_importunifieddata",
+      "label": "importUnifiedData()",
+      "file_type": "code",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L291"
+    },
+    {
+      "id": "unifiedstorage_resetdataandloaddefaults",
+      "label": "resetDataAndLoadDefaults()",
+      "file_type": "code",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L322"
+    },
+    {
+      "id": "tests_e2e_basic_test_spec_js",
+      "label": "basic-test.spec.js",
+      "file_type": "code",
+      "source_file": "tests\\e2e\\basic-test.spec.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "tests_e2e_default_config_spec_js",
+      "label": "default-config.spec.js",
+      "file_type": "code",
+      "source_file": "tests\\e2e\\default-config.spec.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "tests_e2e_expenses_spec_js",
+      "label": "expenses.spec.js",
+      "file_type": "code",
+      "source_file": "tests\\e2e\\expenses.spec.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "tests_e2e_investments_spec_js",
+      "label": "investments.spec.js",
+      "file_type": "code",
+      "source_file": "tests\\e2e\\investments.spec.js",
+      "source_location": "L1"
+    }
+  ],
+  "edges": [
+    {
+      "source": "playwright_config_js",
+      "target": "test",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "playwright.config.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "vite_config_js",
+      "target": "vite",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "vite.config.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "vite_config_js",
+      "target": "plugin_react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "vite.config.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "vitest_config_js",
+      "target": "config",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "vitest.config.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "vitest_config_js",
+      "target": "plugin_react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "vitest.config.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_merge_data_js",
+      "target": "merge_data_mergeinvestmentandexpensedata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\merge-data.js",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_test_unified_export_both_apps_js",
+      "target": "test_unified_export_both_apps_testunifiedexportbothapps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\test-unified-export-both-apps.js",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_test_unified_export_js",
+      "target": "test_unified_export_testunifiedexport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\test-unified-export.js",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "client",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_investments_investmentsapp_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_expenses_expensesapp_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_investments_pages_investmentsettings_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_expenses_pages_expensessettings_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_investments_pages_investmentreport_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_expenses_pages_expensesreport_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_components_errorpage_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_components_homepage_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_jsx",
+      "target": "src_index_css",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\main.jsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_setuptests_js",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_setuptests_js",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_setuptests_js",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_setuptests_js",
+      "target": "setuptests_constructor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_setuptests_js",
+      "target": "setuptests_observe",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "src_setuptests_js",
+      "target": "setuptests_unobserve",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_setuptests_js",
+      "target": "setuptests_disconnect",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\setupTests.js",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_actionbutton_jsx",
+      "target": "actionbutton_actionbutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\ActionButton.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_backtohomebutton_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\BackToHomeButton.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_backtohomebutton_jsx",
+      "target": "src_components_icons_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\BackToHomeButton.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_backtohomebutton_jsx",
+      "target": "backtohomebutton_backtohomebutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\BackToHomeButton.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_currencyinput_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\CurrencyInput.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_currencyinput_jsx",
+      "target": "currencyinput_currencyinput",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\CurrencyInput.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_errorpage_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\ErrorPage.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_errorpage_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\ErrorPage.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_errorpage_jsx",
+      "target": "errorpage_errorpage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\ErrorPage.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_homepage_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\HomePage.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_homepage_jsx",
+      "target": "outline",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\HomePage.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_homepage_jsx",
+      "target": "homepage_homepage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\HomePage.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_icon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_arrowdowntrayicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_arrowuptrayicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_arrowlefticon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_documenticon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_trashicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_chartbaricon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_tablecellsicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_plusicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_documentarrowdownicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_usercircleicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_trendingupicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_icons_jsx",
+      "target": "icons_settingsicon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\icons.jsx",
+      "source_location": "L130",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_importmodal_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\ImportModal.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_importmodal_jsx",
+      "target": "react_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\ImportModal.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_importmodal_jsx",
+      "target": "importmodal_importmodal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\ImportModal.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_kpicard_jsx",
+      "target": "src_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\KPICard.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_kpicard_jsx",
+      "target": "kpicard_kpicard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\KPICard.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_kpicard_test_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\KPICard.test.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_kpicard_test_jsx",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\KPICard.test.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_kpicard_test_jsx",
+      "target": "src_components_kpicard",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\KPICard.test.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_select_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\Select.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_select_jsx",
+      "target": "select_select",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\Select.jsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "src_components_tab_jsx",
+      "target": "tab_tabs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\components\\Tab.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_expensesdashboard_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_expensesentrada_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_expenseshistorico_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_financingcalculator_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_actionbutton_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_backtohomebutton_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_tab_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_importmodal_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_hooks_uselocalstoragestate_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_hooks_useofflinemode_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_config_categories_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_config_descriptionmappings_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_utils_expenses_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_components_icons_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "outline",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_config_storage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "src_expenses_utils_unifiedstorage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_jsx",
+      "target": "expensesapp_expensesapp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.jsx",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_test_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.test.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_test_jsx",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.test.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_test_jsx",
+      "target": "src_expenses_expensesapp_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.test.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_test_jsx",
+      "target": "src_expenses_utils_pdftemplates_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.test.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_test_jsx",
+      "target": "src_expenses_utils_pdf_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.test.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_expensesapp_test_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\ExpensesApp.test.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesdashboard_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesDashboard.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesdashboard_jsx",
+      "target": "recharts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesDashboard.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesdashboard_jsx",
+      "target": "src_expenses_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesDashboard.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesdashboard_jsx",
+      "target": "expensesdashboard_expensesdashboard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesDashboard.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "src_expenses_components_components_currencyinput_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "src_expenses_components_hooks_useopendatepickerprops_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "src_expenses_components_uploader_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "src_expenses_components_config_storage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "src_expenses_components_multipillselect_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "expensesentrada_generateid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expensesentrada_jsx",
+      "target": "expensesentrada_expensesentrada",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesEntrada.jsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "src_expenses_components_hooks_useopendatepickerprops_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "src_expenses_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "src_expenses_components_multipillselect_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "src_expenses_components_utils_unifiedstorage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "expenseshistorico_expenseshistorico",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "expenseshistorico_detailedtable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L472",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "expenseshistorico_collapsedtable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L671",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "expenseshistorico_monthchartmodal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L732",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "expenseshistorico_th",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L826",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "expenseshistorico_td",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L838",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_expenseshistorico_jsx",
+      "target": "expenseshistorico_batcheditmodal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\ExpensesHistorico.jsx",
+      "source_location": "L843",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_financingcalculator_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\FinancingCalculator.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_financingcalculator_jsx",
+      "target": "outline",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\FinancingCalculator.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_financingcalculator_jsx",
+      "target": "src_expenses_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\FinancingCalculator.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_financingcalculator_jsx",
+      "target": "src_expenses_components_components_currencyinput_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\FinancingCalculator.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_financingcalculator_jsx",
+      "target": "financingcalculator_financingcalculator",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\FinancingCalculator.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_multipillselect_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\MultiPillSelect.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_multipillselect_jsx",
+      "target": "react_select",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\MultiPillSelect.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_multipillselect_jsx",
+      "target": "multipillselect_normalizevalues",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\MultiPillSelect.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_multipillselect_jsx",
+      "target": "multipillselect_multipillselect",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\MultiPillSelect.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "papaparse",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "xlsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "pdfjs_dist",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "src_expenses_components_utils_pdftemplates_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "src_expenses_components_utils_importtemplates_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "src_expenses_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "src_expenses_components_components_select_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "uploader_normalizetext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "uploader_parselist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "uploader_inferheaderrowindex",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_jsx",
+      "target": "uploader_uploader",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "uploader_parselist",
+      "target": "uploader_normalizetext",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.jsx",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_test_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.test.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_test_jsx",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.test.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_test_jsx",
+      "target": "src_expenses_components_utils_pdftemplates_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.test.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_components_uploader_test_jsx",
+      "target": "uploader_test_makefile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\components\\Uploader.test.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_categories_js",
+      "target": "categories_stringtocolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_categories_js",
+      "target": "categories_resolvecategoryvisual",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_categories_js",
+      "target": "categories_ensurecategoryinlibrary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "categories_resolvecategoryvisual",
+      "target": "categories_stringtocolor",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "categories_ensurecategoryinlibrary",
+      "target": "categories_resolvecategoryvisual",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\categories.js",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_descriptionmappings_js",
+      "target": "descriptionmappings_normalizemappingkeyword",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\descriptionMappings.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_descriptionmappings_js",
+      "target": "descriptionmappings_mergedescriptionmappings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\descriptionMappings.js",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "descriptionmappings_mergedescriptionmappings",
+      "target": "descriptionmappings_normalizemappingkeyword",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\descriptionMappings.js",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_sources_js",
+      "target": "sources_stringtocolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_sources_js",
+      "target": "sources_resolvesourcevisual",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_sources_js",
+      "target": "sources_ensuresourceinlibrary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "sources_resolvesourcevisual",
+      "target": "sources_stringtocolor",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "sources_ensuresourceinlibrary",
+      "target": "sources_resolvesourcevisual",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\sources.js",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_storage_js",
+      "target": "src_expenses_config_descriptionmappings_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\storage.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_config_storage_js",
+      "target": "storage_ensureexpensesdefaults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\config\\storage.js",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "renderer",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_components_icons_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_components_select_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_hooks_uselocalstoragestate_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_utils_reporting_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_config_storage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_utils_expenses_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "src_expenses_pages_utils_pdf_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "expensesreport_sumexpensesmonthly",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "expensesreport_buildbreakdown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensesreport_jsx",
+      "target": "expensesreport_expensesreport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesReport.jsx",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_hooks_uselocalstoragestate_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_config_categories_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_components_icons_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_components_select_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_config_descriptionmappings_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_utils_unifiedstorage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "src_expenses_pages_components_multipillselect_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_pages_expensessettings_jsx",
+      "target": "expensessettings_expensessettings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\pages\\ExpensesSettings.jsx",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_expenses_js",
+      "target": "src_expenses_utils_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_expenses_js",
+      "target": "expenses_makeid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_expenses_js",
+      "target": "expenses_withid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_expenses_js",
+      "target": "expenses_computederivedexpenses",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_expenses_js",
+      "target": "expenses_computetotals",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "expenses_withid",
+      "target": "expenses_makeid",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\expenses.js",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_importtemplates_js",
+      "target": "src_expenses_utils_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_importtemplates_js",
+      "target": "importtemplates_normalizeheaders",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_importtemplates_js",
+      "target": "importtemplates_parsevalue",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_importtemplates_js",
+      "target": "importtemplates_parsenubankvalue",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_importtemplates_js",
+      "target": "importtemplates_importtemplate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "importtemplates_importtemplate",
+      "target": "importtemplates_importtemplate_constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "importtemplates_importtemplate",
+      "target": "importtemplates_importtemplate_detect",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "importtemplates_importtemplate",
+      "target": "importtemplates_importtemplate_processrows",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_importtemplates_js",
+      "target": "importtemplates_detectcsvimporttemplate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L250",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_importtemplates_js",
+      "target": "importtemplates_normalizeimporteditems",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L260",
+      "weight": 1.0
+    },
+    {
+      "source": "importtemplates_importtemplate_detect",
+      "target": "importtemplates_importtemplate_processrows",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "importtemplates_detectcsvimporttemplate",
+      "target": "importtemplates_importtemplate_detect",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\importTemplates.js",
+      "source_location": "L252",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_pdftemplates_js",
+      "target": "pdftemplates_normalize",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_pdftemplates_js",
+      "target": "pdftemplates_detectexpensetemplate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_pdftemplates_js",
+      "target": "pdftemplates_parseexpensepdfwithtemplates",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "pdftemplates_detectexpensetemplate",
+      "target": "pdftemplates_normalize",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "pdftemplates_parseexpensepdfwithtemplates",
+      "target": "pdftemplates_detectexpensetemplate",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.js",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_pdftemplates_test_js",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.test.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_expenses_utils_pdftemplates_test_js",
+      "target": "src_expenses_utils_pdftemplates_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\expenses\\utils\\pdfTemplates.test.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_hooks_uselocalstoragestate_js",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\hooks\\useLocalStorageState.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_hooks_uselocalstoragestate_js",
+      "target": "uselocalstoragestate_uselocalstoragestate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\hooks\\useLocalStorageState.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_hooks_useofflinemode_js",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\hooks\\useOfflineMode.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_hooks_useofflinemode_js",
+      "target": "useofflinemode_useofflinemode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\hooks\\useOfflineMode.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_hooks_useopendatepickerprops_js",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\hooks\\useOpenDatePickerProps.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_hooks_useopendatepickerprops_js",
+      "target": "useopendatepickerprops_useopendatepickerprops",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\hooks\\useOpenDatePickerProps.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_dashboard_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_entrada_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_historico_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_kpicard_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_tab_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_actionbutton_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_backtohomebutton_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_importmodal_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_projecoes_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_hooks_useofflinemode_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_components_icons_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_hooks_uselocalstoragestate_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_utils_entries_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_config_banks_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_config_investmentstorage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "src_investments_utils_unifiedstorage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "investmentsapp_investmentsapp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "investmentsapp_resolvetone",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L791",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "investmentsapp_mergebanksfromentries",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L798",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_jsx",
+      "target": "investmentsapp_mergesourcesfromentries",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L806",
+      "weight": 1.0
+    },
+    {
+      "source": "investmentsapp_investmentsapp",
+      "target": "investmentsapp_resolvetone",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.jsx",
+      "source_location": "L730",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_test_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.test.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_test_jsx",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.test.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_test_jsx",
+      "target": "src_investments_investmentsapp_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.test.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_test_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.test.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_investmentsapp_test_jsx",
+      "target": "investmentsapp_test_renderapp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\InvestmentsApp.test.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_dashboard_jsx",
+      "target": "recharts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_dashboard_jsx",
+      "target": "src_investments_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_dashboard_jsx",
+      "target": "src_investments_components_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_dashboard_jsx",
+      "target": "dashboard_formatvalueink",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_dashboard_jsx",
+      "target": "dashboard_dashboard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Dashboard.jsx",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_entrada_jsx",
+      "target": "src_investments_components_utils_entries_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_entrada_jsx",
+      "target": "src_investments_components_field_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_entrada_jsx",
+      "target": "src_investments_components_components_currencyinput_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_entrada_jsx",
+      "target": "src_investments_components_hooks_useopendatepickerprops_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_entrada_jsx",
+      "target": "src_investments_components_config_banks_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_entrada_jsx",
+      "target": "src_investments_components_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_entrada_jsx",
+      "target": "entrada_entrada",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Entrada.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_field_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Field.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_field_jsx",
+      "target": "field_field",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Field.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "src_investments_components_config_banks_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "src_investments_components_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "src_investments_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "src_investments_components_tablecells_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "src_investments_components_hooks_useopendatepickerprops_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "src_investments_components_components_currencyinput_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "historico_historico",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "historico_detailedtable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L222",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "historico_collapsedtable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L396",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "historico_toneclass",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L453",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "historico_bankbadge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L460",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_historico_jsx",
+      "target": "historico_sourcebadge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Historico.jsx",
+      "source_location": "L477",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_personalinfomodal_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\PersonalInfoModal.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_personalinfomodal_jsx",
+      "target": "react_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\PersonalInfoModal.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_personalinfomodal_jsx",
+      "target": "personalinfomodal_personalinfomodal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\PersonalInfoModal.jsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "src_investments_components_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "src_investments_components_components_currencyinput_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "projecoes_withprecision",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "projecoes_decimaltopercent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "projecoes_percenttodecimal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "projecoes_readnumber",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "projecoes_formatgoalmessage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "projecoes_resultitem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_jsx",
+      "target": "projecoes_projecoes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "projecoes_decimaltopercent",
+      "target": "projecoes_withprecision",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "projecoes_projecoes",
+      "target": "projecoes_formatgoalmessage",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.jsx",
+      "source_location": "L222",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_test_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_test_jsx",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_test_jsx",
+      "target": "src_investments_components_projecoes_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_test_jsx",
+      "target": "projecoes_test_brl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_projecoes_test_jsx",
+      "target": "projecoes_test_maketimeline",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\Projecoes.test.jsx",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_tablecells_jsx",
+      "target": "tablecells_th",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\TableCells.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_components_tablecells_jsx",
+      "target": "tablecells_td",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\components\\TableCells.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_config_banks_js",
+      "target": "banks_stringtocolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_config_banks_js",
+      "target": "banks_resolvebankvisual",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_config_banks_js",
+      "target": "banks_ensurebankinlibrary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "banks_resolvebankvisual",
+      "target": "banks_stringtocolor",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "banks_ensurebankinlibrary",
+      "target": "banks_resolvebankvisual",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\banks.js",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_config_investmentstorage_js",
+      "target": "investmentstorage_ensureinvestmentdefaults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\investmentStorage.js",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_config_sources_js",
+      "target": "sources_stringtosourcecolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_config_sources_js",
+      "target": "sources_resolvesourcevisual",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_config_sources_js",
+      "target": "sources_ensuresourceinlibrary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "sources_resolvesourcevisual",
+      "target": "sources_stringtosourcecolor",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "sources_ensuresourceinlibrary",
+      "target": "sources_resolvesourcevisual",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\config\\sources.js",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_data_demoentries_js",
+      "target": "src_investments_data_config_banks_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\data\\demoEntries.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_data_demoentries_js",
+      "target": "src_investments_data_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\data\\demoEntries.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "renderer",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_components_icons_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_components_select_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_hooks_uselocalstoragestate_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_utils_entries_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_utils_pdf_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_utils_reporting_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "src_investments_pages_utils_unifiedstorage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "investmentreport_suminvestmentmonthly",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "investmentreport_buildsourcebreakdown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentreport_jsx",
+      "target": "investmentreport_investmentreport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentReport.jsx",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "react",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "react_router_dom",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "src_investments_pages_hooks_uselocalstoragestate_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "src_investments_pages_utils_unifiedstorage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "src_investments_pages_config_banks_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "src_investments_pages_config_sources_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "src_investments_pages_components_icons_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "src_investments_pages_components_select_tsx",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_investments_pages_investmentsettings_jsx",
+      "target": "investmentsettings_investmentsettings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\investments\\pages\\InvestmentSettings.jsx",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_defaultconfigloader_js",
+      "target": "defaultconfigloader_loaddefaultconfigfromfile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_defaultconfigloader_js",
+      "target": "defaultconfigloader_isnewuser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_defaultconfigloader_js",
+      "target": "defaultconfigloader_applydefaultconfigfornewuser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_defaultconfigloader_js",
+      "target": "defaultconfigloader_initializenewuserconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "defaultconfigloader_initializenewuserconfig",
+      "target": "defaultconfigloader_isnewuser",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "defaultconfigloader_initializenewuserconfig",
+      "target": "defaultconfigloader_loaddefaultconfigfromfile",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "defaultconfigloader_initializenewuserconfig",
+      "target": "defaultconfigloader_applydefaultconfigfornewuser",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\defaultConfigLoader.js",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_js",
+      "target": "src_utils_investments_data_demoentries_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_js",
+      "target": "src_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_js",
+      "target": "entries_makeid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_js",
+      "target": "entries_withid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_js",
+      "target": "entries_createdraftentry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_js",
+      "target": "entries_computederivedentries",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_js",
+      "target": "entries_computetotals",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "entries_withid",
+      "target": "entries_makeid",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "entries_createdraftentry",
+      "target": "entries_makeid",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.js",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_test_js",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.test.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_entries_test_js",
+      "target": "src_utils_entries",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\entries.test.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_fmtbrl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_fmtpct",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_tonumber",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_yyyymm",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_monthlabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_midofmonth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_enumeratemonths",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_js",
+      "target": "formatters_download",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.js",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_test_js",
+      "target": "vitest",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.test.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_formatters_test_js",
+      "target": "src_utils_formatters",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\formatters.test.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "renderer",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "src_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_formatdatetime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_renderkeyvaluelist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_rendernotes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_rendertable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_formatcurrency",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L193",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_investmentmonthlyrows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_investmententriesrows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L207",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_investmentsourcerows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L224",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_expensesmonthlyrows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L229",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_expensesentriesrows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L233",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_expensesbreakdownrows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L249",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_groupbycategory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L254",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_monthcategoryrows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L267",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_rendersection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L275",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_createinvestmentreportdocument",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L285",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_pdf_jsx",
+      "target": "pdf_createexpensesreportdocument",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L376",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_monthcategoryrows",
+      "target": "pdf_groupbycategory",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L269",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_formatdatetime",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L296",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_formatcurrency",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L304",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_investmentmonthlyrows",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L315",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_investmententriesrows",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L316",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_investmentsourcerows",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L317",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_rendersection",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L327",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_renderkeyvaluelist",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L327",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_rendertable",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L341",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createinvestmentreportdocument",
+      "target": "pdf_rendernotes",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L370",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_formatdatetime",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L388",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_formatcurrency",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L392",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_expensesmonthlyrows",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L393",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_expensesentriesrows",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L394",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_expensesbreakdownrows",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L395",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_rendersection",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L410",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_renderkeyvaluelist",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L410",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_rendertable",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L440",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_createexpensesreportdocument",
+      "target": "pdf_rendernotes",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\pdf.jsx",
+      "source_location": "L466",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_reporting_js",
+      "target": "src_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_reporting_js",
+      "target": "reporting_sanitizepersonalinfo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_reporting_js",
+      "target": "reporting_defaultdateselector",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_reporting_js",
+      "target": "reporting_todate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_reporting_js",
+      "target": "reporting_computerange",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_reporting_js",
+      "target": "reporting_buildreportdataset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "reporting_buildreportdataset",
+      "target": "reporting_computerange",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "reporting_buildreportdataset",
+      "target": "reporting_sanitizepersonalinfo",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "reporting_buildreportdataset",
+      "target": "reporting_todate",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\reporting.js",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "src_utils_formatters_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "src_utils_expenses_config_storage_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "src_utils_defaultconfigloader_ts",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "unifiedstorage_migratetounifiedstorage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "unifiedstorage_ensureunifieddefaults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "unifiedstorage_ensureunifieddefaultswithconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "unifiedstorage_exportunifieddata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L268",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "unifiedstorage_importunifieddata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L291",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_unifiedstorage_js",
+      "target": "unifiedstorage_resetdataandloaddefaults",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L322",
+      "weight": 1.0
+    },
+    {
+      "source": "unifiedstorage_migratetounifiedstorage",
+      "target": "unifiedstorage_ensureunifieddefaultswithconfig",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src\\utils\\unifiedStorage.js",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_basic_test_spec_js",
+      "target": "test",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\basic-test.spec.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_default_config_spec_js",
+      "target": "test",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\default-config.spec.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_expenses_spec_js",
+      "target": "test",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\expenses.spec.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_expenses_spec_js",
+      "target": "path",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\expenses.spec.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_expenses_spec_js",
+      "target": "fs",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\expenses.spec.js",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_investments_spec_js",
+      "target": "test",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\investments.spec.js",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_investments_spec_js",
+      "target": "path",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\investments.spec.js",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_e2e_investments_spec_js",
+      "target": "fs",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\e2e\\investments.spec.js",
+      "source_location": "L3",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

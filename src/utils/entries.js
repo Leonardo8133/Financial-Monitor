@@ -1,4 +1,4 @@
-import { emptyEntry } from "../data/demoEntries.js";
+import { emptyEntry } from "../investments/data/demoEntries.js";
 import { toNumber } from "./formatters.js";
 
 export function makeId() {

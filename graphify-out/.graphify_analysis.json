@@ -1,0 +1,850 @@
+{
+  "communities": {
+    "0": [
+      "categories_categories",
+      "descriptionmappings_descriptionmappings",
+      "expenses_utils_expenses",
+      "expensesapp_expensesapp",
+      "expensesapp_test_expensesapptest",
+      "expensesdashboard_expensesdashboard",
+      "expensesentrada_expensesentrada",
+      "expensesentrada_generateid",
+      "expenseshistorico_expenseshistorico",
+      "expensesreport_buildbreakdown",
+      "expensesreport_expensesreport",
+      "expensesreport_sumexpensesmonthly",
+      "expensessettings_expensessettings",
+      "financingcalculator_financingcalculator",
+      "importtemplates_importtemplates",
+      "multipillselect_multipillselect",
+      "multipillselect_normalizevalues",
+      "pdftemplates_pdftemplates",
+      "pdftemplates_test_pdftemplatestest",
+      "sources_sources",
+      "src_expenses_components_expensesdashboard_jsx",
+      "src_expenses_components_expensesentrada_jsx",
+      "src_expenses_components_financingcalculator_jsx",
+      "src_expenses_components_multipillselect_jsx",
+      "src_expenses_components_uploader_jsx",
+      "src_expenses_expensesapp_jsx",
+      "src_expenses_pages_expensesreport_jsx",
+      "src_expenses_pages_expensessettings_jsx",
+      "storage_storage",
+      "uploader_inferheaderrowindex",
+      "uploader_normalizetext",
+      "uploader_parselist",
+      "uploader_test_uploadertest",
+      "uploader_uploader"
+    ],
+    "1": [
+      "nova-despesa-form_adicionar_despesas_button",
+      "nova-despesa-form_categoria_field",
+      "nova-despesa-form_controle_de_gastos_page",
+      "nova-despesa-form_data_field",
+      "nova-despesa-form_descricao_field",
+      "nova-despesa-form_despesa_id_field",
+      "nova-despesa-form_exportar_importar_relatorio_actions",
+      "nova-despesa-form_fonte_field",
+      "nova-despesa-form_importar_csv_section",
+      "nova-despesa-form_nav_tabs",
+      "nova-despesa-form_nova_despesa_form",
+      "nova-despesa-form_valor_rs_field",
+      "nova-entrada-form_adicionar_lancamentos_button",
+      "nova-entrada-form_balanco_field",
+      "nova-entrada-form_custo_rs_field",
+      "nova-entrada-form_data_field",
+      "nova-entrada-form_entrada_id_field",
+      "nova-entrada-form_exportar_importar_relatorio_actions",
+      "nova-entrada-form_final_rs_field",
+      "nova-entrada-form_fonte_field",
+      "nova-entrada-form_lucro_rs_field",
+      "nova-entrada-form_monitor_de_investimentos_page",
+      "nova-entrada-form_nav_tabs",
+      "nova-entrada-form_nova_entrada_form",
+      "nova-entrada-form_summary_cards"
+    ],
+    "2": [
+      "concept_pdf_report",
+      "concept_report_dataset",
+      "doc_architecture_overview",
+      "doc_e2e_readme",
+      "e2e_expenses",
+      "e2e_investments",
+      "formatters_download",
+      "formatters_enumerateMonths",
+      "formatters_enumeratemonths",
+      "formatters_fmtBRL",
+      "formatters_fmtbrl",
+      "formatters_fmtpct",
+      "formatters_midofmonth",
+      "formatters_monthLabel",
+      "formatters_monthlabel",
+      "formatters_tonumber",
+      "formatters_yyyymm",
+      "pdf_createExpensesReportDocument",
+      "pdf_createInvestmentReportDocument",
+      "reporting_buildReportDataset",
+      "src_utils_formatters_js"
+    ],
+    "3": [
+      "debug-investments_action_configuracoes",
+      "debug-investments_action_exportar",
+      "debug-investments_action_importar",
+      "debug-investments_action_relatorio_pdf",
+      "debug-investments_chart_fluxo_por_fonte",
+      "debug-investments_chart_rendimento_mensal",
+      "debug-investments_empty_state",
+      "debug-investments_investments_dashboard",
+      "debug-investments_kpi_entrada_saida",
+      "debug-investments_kpi_rendimento",
+      "debug-investments_kpi_total_em_conta",
+      "debug-investments_kpi_total_investimentos",
+      "debug-investments_localstorage_data",
+      "debug-investments_monitor_de_investimentos",
+      "debug-investments_nav_dashboard",
+      "debug-investments_nav_historico",
+      "debug-investments_nav_nova_entrada",
+      "debug-investments_nav_projecoes",
+      "debug-investments_tab_gastos",
+      "debug-investments_tab_investimentos"
+    ],
+    "4": [
+      "concept_default_config_json",
+      "concept_new_user_init",
+      "concept_unified_storage",
+      "defaultconfigloader_EMPTY_CONFIG",
+      "defaultconfigloader_applyDefaultConfigForNewUser",
+      "defaultconfigloader_initializeNewUserConfig",
+      "defaultconfigloader_isNewUser",
+      "defaultconfigloader_loadDefaultConfigFromFile",
+      "doc_configuracoes",
+      "doc_readme",
+      "doc_readme_expenses",
+      "doc_unified_system",
+      "e2e_defaultconfig",
+      "unifiedstorage_UNIFIED_LS_KEY",
+      "unifiedstorage_UNIFIED_STORAGE_SEED",
+      "unifiedstorage_ensureUnifiedDefaults",
+      "unifiedstorage_ensureUnifiedDefaultsWithConfig",
+      "unifiedstorage_migrateToUnifiedStorage",
+      "unifiedstorage_resetDataAndLoadDefaults"
+    ],
+    "5": [
+      "hooks_useLocalStorageState",
+      "hooks_useOfflineMode",
+      "hooks_useOpenDatePickerProps",
+      "investments_InvestmentsApp",
+      "investments_InvestmentsApp_test",
+      "investments_components_Dashboard",
+      "investments_components_Entrada",
+      "investments_components_Field",
+      "investments_components_Historico",
+      "investments_components_Projecoes",
+      "investments_components_Projecoes_test",
+      "investments_components_TableCells",
+      "investments_config_banks",
+      "investments_config_investmentStorage",
+      "investments_config_sources",
+      "investments_data_demoEntries",
+      "investments_pages_InvestmentReport",
+      "investments_pages_InvestmentSettings"
+    ],
+    "6": [
+      "pdf_createexpensesreportdocument",
+      "pdf_createinvestmentreportdocument",
+      "pdf_expensesbreakdownrows",
+      "pdf_expensesentriesrows",
+      "pdf_expensesmonthlyrows",
+      "pdf_formatcurrency",
+      "pdf_formatdatetime",
+      "pdf_groupbycategory",
+      "pdf_investmententriesrows",
+      "pdf_investmentmonthlyrows",
+      "pdf_investmentsourcerows",
+      "pdf_monthcategoryrows",
+      "pdf_renderkeyvaluelist",
+      "pdf_rendernotes",
+      "pdf_rendersection",
+      "pdf_rendertable",
+      "src_utils_pdf_jsx"
+    ],
+    "7": [
+      "debug-initial-load_configuracoes-button",
+      "debug-initial-load_dashboard-tab",
+      "debug-initial-load_distribuicao-por-fonte-de-investimento-chart",
+      "debug-initial-load_empty-state",
+      "debug-initial-load_exportar-button",
+      "debug-initial-load_fluxo-por-fonte-ao-longo-do-tempo-chart",
+      "debug-initial-load_historico-tab",
+      "debug-initial-load_importar-button",
+      "debug-initial-load_monitor-de-investimentos-dashboard",
+      "debug-initial-load_nova-entrada-tab",
+      "debug-initial-load_projecoes-tab",
+      "debug-initial-load_relatorio-pdf-button",
+      "debug-initial-load_rendimento-atual-kpi",
+      "debug-initial-load_rendimento-mensal-por-fonte-chart",
+      "debug-initial-load_total-investido-kpi",
+      "debug-initial-load_total-investido-por-mes-chart"
+    ],
+    "8": [
+      "debug-expenses_configuracoes_button",
+      "debug-expenses_controle_de_gastos",
+      "debug-expenses_dashboard_tab",
+      "debug-expenses_distribuicao_por_categoria_chart",
+      "debug-expenses_empty_state",
+      "debug-expenses_exportar_button",
+      "debug-expenses_financiamentos_tab",
+      "debug-expenses_gasto_total_por_mes_chart",
+      "debug-expenses_gastos_mode",
+      "debug-expenses_historico_tab",
+      "debug-expenses_importar_button",
+      "debug-expenses_investimentos_mode",
+      "debug-expenses_nova_despesa_tab",
+      "debug-expenses_relatorio_pdf_button",
+      "debug-expenses_total_acumulado"
+    ],
+    "9": [
+      "icons_arrowdowntrayicon",
+      "icons_arrowlefticon",
+      "icons_arrowuptrayicon",
+      "icons_chartbaricon",
+      "icons_documentarrowdownicon",
+      "icons_documenticon",
+      "icons_icon",
+      "icons_plusicon",
+      "icons_settingsicon",
+      "icons_tablecellsicon",
+      "icons_trashicon",
+      "icons_trendingupicon",
+      "icons_usercircleicon",
+      "src_components_icons_jsx"
+    ],
+    "10": [
+      "components_errorpage",
+      "components_homepage",
+      "expenses_app",
+      "expenses_report",
+      "expenses_settings",
+      "investments_app",
+      "investments_report",
+      "investments_settings",
+      "main_entrypoint",
+      "playwrightconfig_config",
+      "postcssconfig_config",
+      "tailwindconfig_config"
+    ],
+    "11": [
+      "expenses-history-after-add_controle_de_gastos_screen",
+      "expenses-history-after-add_expense_row",
+      "expenses-history-after-add_expenses_history_view",
+      "expenses-history-after-add_export_import_controls",
+      "expenses-history-after-add_filter_bar",
+      "expenses-history-after-add_historico_tab",
+      "history-after-add_export_pdf_control",
+      "history-after-add_historico_tab",
+      "history-after-add_investment_entry_row",
+      "history-after-add_investment_summary_metrics",
+      "history-after-add_investments_history_view",
+      "history-after-add_monitor_de_investimentos_screen"
+    ],
+    "12": [
+      "importtemplates_detectcsvimporttemplate",
+      "importtemplates_importtemplate",
+      "importtemplates_importtemplate_constructor",
+      "importtemplates_importtemplate_detect",
+      "importtemplates_importtemplate_processrows",
+      "importtemplates_normalizeheaders",
+      "importtemplates_normalizeimporteditems",
+      "importtemplates_parsenubankvalue",
+      "importtemplates_parsevalue",
+      "src_expenses_utils_importtemplates_js"
+    ],
+    "13": [
+      "projecoes_decimaltopercent",
+      "projecoes_formatgoalmessage",
+      "projecoes_percenttodecimal",
+      "projecoes_projecoes",
+      "projecoes_readnumber",
+      "projecoes_resultitem",
+      "projecoes_withprecision",
+      "src_investments_components_projecoes_jsx"
+    ],
+    "14": [
+      "localstorage_expenseskey",
+      "localstorage_investmentskey",
+      "localstorage_mergedkey",
+      "localstorage_unifiedkey",
+      "scripts_consolemerge",
+      "scripts_mergedata",
+      "scripts_testunifiedexport",
+      "scripts_testunifiedexportbothapps"
+    ],
+    "15": [
+      "expenseshistorico_batcheditmodal",
+      "expenseshistorico_collapsedtable",
+      "expenseshistorico_detailedtable",
+      "expenseshistorico_monthchartmodal",
+      "expenseshistorico_td",
+      "expenseshistorico_th",
+      "src_expenses_components_expenseshistorico_jsx"
+    ],
+    "16": [
+      "historico_bankbadge",
+      "historico_collapsedtable",
+      "historico_detailedtable",
+      "historico_historico",
+      "historico_sourcebadge",
+      "historico_toneclass",
+      "src_investments_components_historico_jsx"
+    ],
+    "17": [
+      "src_utils_unifiedstorage_js",
+      "unifiedstorage_ensureunifieddefaults",
+      "unifiedstorage_ensureunifieddefaultswithconfig",
+      "unifiedstorage_exportunifieddata",
+      "unifiedstorage_importunifieddata",
+      "unifiedstorage_migratetounifiedstorage",
+      "unifiedstorage_resetdataandloaddefaults"
+    ],
+    "18": [
+      "sources_ensuresourceinlibrary",
+      "sources_resolvesourcevisual",
+      "sources_stringtocolor",
+      "sources_stringtosourcecolor",
+      "src_expenses_config_sources_js",
+      "src_investments_config_sources_js"
+    ],
+    "19": [
+      "entries_computederivedentries",
+      "entries_computetotals",
+      "entries_createdraftentry",
+      "entries_makeid",
+      "entries_withid",
+      "src_utils_entries_js"
+    ],
+    "20": [
+      "reporting_buildreportdataset",
+      "reporting_computerange",
+      "reporting_defaultdateselector",
+      "reporting_sanitizepersonalinfo",
+      "reporting_todate",
+      "src_utils_reporting_js"
+    ],
+    "21": [
+      "components_kpicard",
+      "components_kpicard_test",
+      "setuptests_setup",
+      "utils_formatters",
+      "viteconfig_config",
+      "vitestconfig_config"
+    ],
+    "22": [
+      "setuptests_constructor",
+      "setuptests_disconnect",
+      "setuptests_observe",
+      "setuptests_unobserve",
+      "src_setuptests_js"
+    ],
+    "23": [
+      "expenses_computederivedexpenses",
+      "expenses_computetotals",
+      "expenses_makeid",
+      "expenses_withid",
+      "src_expenses_utils_expenses_js"
+    ],
+    "24": [
+      "investmentsapp_investmentsapp",
+      "investmentsapp_mergebanksfromentries",
+      "investmentsapp_mergesourcesfromentries",
+      "investmentsapp_resolvetone",
+      "src_investments_investmentsapp_jsx"
+    ],
+    "25": [
+      "defaultconfigloader_applydefaultconfigfornewuser",
+      "defaultconfigloader_initializenewuserconfig",
+      "defaultconfigloader_isnewuser",
+      "defaultconfigloader_loaddefaultconfigfromfile",
+      "src_utils_defaultconfigloader_js"
+    ],
+    "26": [
+      "screenshot_20251004_151412_entry_form",
+      "screenshot_20251004_151412_investment_monitor_dashboard",
+      "screenshot_20251004_151412_localstorage_note",
+      "screenshot_20251004_151412_nav_buttons",
+      "screenshot_20251004_151412_summary_cards"
+    ],
+    "27": [
+      "categories_ensurecategoryinlibrary",
+      "categories_resolvecategoryvisual",
+      "categories_stringtocolor",
+      "src_expenses_config_categories_js"
+    ],
+    "28": [
+      "pdftemplates_detectexpensetemplate",
+      "pdftemplates_normalize",
+      "pdftemplates_parseexpensepdfwithtemplates",
+      "src_expenses_utils_pdftemplates_js"
+    ],
+    "29": [
+      "banks_ensurebankinlibrary",
+      "banks_resolvebankvisual",
+      "banks_stringtocolor",
+      "src_investments_config_banks_js"
+    ],
+    "30": [
+      "investmentreport_buildsourcebreakdown",
+      "investmentreport_investmentreport",
+      "investmentreport_suminvestmentmonthly",
+      "src_investments_pages_investmentreport_jsx"
+    ],
+    "31": [
+      "concept_investment_yield_derivation",
+      "entries_computeDerivedEntries",
+      "entries_computeTotals",
+      "formatters_toNumber"
+    ],
+    "32": [
+      "descriptionmappings_mergedescriptionmappings",
+      "descriptionmappings_normalizemappingkeyword",
+      "src_expenses_config_descriptionmappings_js"
+    ],
+    "33": [
+      "dashboard_dashboard",
+      "dashboard_formatvalueink",
+      "src_investments_components_dashboard_jsx"
+    ],
+    "34": [
+      "projecoes_test_brl",
+      "projecoes_test_maketimeline",
+      "src_investments_components_projecoes_test_jsx"
+    ],
+    "35": [
+      "src_investments_components_tablecells_jsx",
+      "tablecells_td",
+      "tablecells_th"
+    ],
+    "36": [
+      "components_actionbutton",
+      "components_backtohomebutton",
+      "components_icons"
+    ],
+    "37": [
+      "entries_createDraftEntry",
+      "entries_makeId",
+      "entries_withId"
+    ],
+    "38": [
+      "merge_data_mergeinvestmentandexpensedata",
+      "scripts_merge_data_js"
+    ],
+    "39": [
+      "scripts_test_unified_export_both_apps_js",
+      "test_unified_export_both_apps_testunifiedexportbothapps"
+    ],
+    "40": [
+      "scripts_test_unified_export_js",
+      "test_unified_export_testunifiedexport"
+    ],
+    "41": [
+      "actionbutton_actionbutton",
+      "src_components_actionbutton_jsx"
+    ],
+    "42": [
+      "backtohomebutton_backtohomebutton",
+      "src_components_backtohomebutton_jsx"
+    ],
+    "43": [
+      "currencyinput_currencyinput",
+      "src_components_currencyinput_jsx"
+    ],
+    "44": [
+      "errorpage_errorpage",
+      "src_components_errorpage_jsx"
+    ],
+    "45": [
+      "homepage_homepage",
+      "src_components_homepage_jsx"
+    ],
+    "46": [
+      "importmodal_importmodal",
+      "src_components_importmodal_jsx"
+    ],
+    "47": [
+      "kpicard_kpicard",
+      "src_components_kpicard_jsx"
+    ],
+    "48": [
+      "select_select",
+      "src_components_select_jsx"
+    ],
+    "49": [
+      "src_components_tab_jsx",
+      "tab_tabs"
+    ],
+    "50": [
+      "src_expenses_components_uploader_test_jsx",
+      "uploader_test_makefile"
+    ],
+    "51": [
+      "src_expenses_config_storage_js",
+      "storage_ensureexpensesdefaults"
+    ],
+    "52": [
+      "src_hooks_uselocalstoragestate_js",
+      "uselocalstoragestate_uselocalstoragestate"
+    ],
+    "53": [
+      "src_hooks_useofflinemode_js",
+      "useofflinemode_useofflinemode"
+    ],
+    "54": [
+      "src_hooks_useopendatepickerprops_js",
+      "useopendatepickerprops_useopendatepickerprops"
+    ],
+    "55": [
+      "investmentsapp_test_renderapp",
+      "src_investments_investmentsapp_test_jsx"
+    ],
+    "56": [
+      "entrada_entrada",
+      "src_investments_components_entrada_jsx"
+    ],
+    "57": [
+      "field_field",
+      "src_investments_components_field_jsx"
+    ],
+    "58": [
+      "personalinfomodal_personalinfomodal",
+      "src_investments_components_personalinfomodal_jsx"
+    ],
+    "59": [
+      "investmentstorage_ensureinvestmentdefaults",
+      "src_investments_config_investmentstorage_js"
+    ],
+    "60": [
+      "investmentsettings_investmentsettings",
+      "src_investments_pages_investmentsettings_jsx"
+    ],
+    "61": [
+      "playwright_config_js"
+    ],
+    "62": [
+      "postcss_config_js"
+    ],
+    "63": [
+      "tailwind_config_js"
+    ],
+    "64": [
+      "vite_config_js"
+    ],
+    "65": [
+      "vitest_config_js"
+    ],
+    "66": [
+      "scripts_console_merge_js"
+    ],
+    "67": [
+      "src_main_jsx"
+    ],
+    "68": [
+      "src_components_kpicard_test_jsx"
+    ],
+    "69": [
+      "src_expenses_expensesapp_test_jsx"
+    ],
+    "70": [
+      "src_expenses_utils_pdftemplates_test_js"
+    ],
+    "71": [
+      "src_investments_data_demoentries_js"
+    ],
+    "72": [
+      "src_utils_entries_test_js"
+    ],
+    "73": [
+      "src_utils_formatters_test_js"
+    ],
+    "74": [
+      "tests_e2e_basic_test_spec_js"
+    ],
+    "75": [
+      "tests_e2e_default_config_spec_js"
+    ],
+    "76": [
+      "tests_e2e_expenses_spec_js"
+    ],
+    "77": [
+      "tests_e2e_investments_spec_js"
+    ],
+    "78": [
+      "components_currencyinput"
+    ],
+    "79": [
+      "components_importmodal"
+    ],
+    "80": [
+      "components_select"
+    ],
+    "81": [
+      "components_tab"
+    ],
+    "82": [
+      "investments_components_PersonalInfoModal"
+    ],
+    "83": [
+      "formatters_fmtPct"
+    ],
+    "84": [
+      "formatters_midOfMonth"
+    ],
+    "85": [
+      "formatters_LS_KEY"
+    ],
+    "86": [
+      "unifiedstorage_exportUnifiedData"
+    ],
+    "87": [
+      "unifiedstorage_importUnifiedData"
+    ],
+    "88": [
+      "e2e_basictest"
+    ]
+  },
+  "cohesion": {
+    "0": 0.11,
+    "1": 0.09,
+    "2": 0.11,
+    "3": 0.15,
+    "4": 0.13,
+    "5": 0.21,
+    "6": 0.26,
+    "7": 0.17,
+    "8": 0.16,
+    "9": 0.14,
+    "10": 0.23,
+    "11": 0.2,
+    "12": 0.24,
+    "13": 0.32,
+    "14": 0.46,
+    "15": 0.29,
+    "16": 0.29,
+    "17": 0.33,
+    "18": 0.6,
+    "19": 0.47,
+    "20": 0.53,
+    "21": 0.4,
+    "22": 0.4,
+    "23": 0.5,
+    "24": 0.5,
+    "25": 0.7,
+    "26": 0.6,
+    "27": 0.83,
+    "28": 0.83,
+    "29": 0.83,
+    "30": 0.5,
+    "31": 0.5,
+    "32": 1.0,
+    "33": 0.67,
+    "34": 0.67,
+    "35": 0.67,
+    "36": 0.67,
+    "37": 0.67,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0
+  },
+  "gods": [
+    {
+      "id": "debug-investments_investments_dashboard",
+      "label": "Investments Dashboard Screen",
+      "edges": 18
+    },
+    {
+      "id": "expensesapp_expensesapp",
+      "label": "ExpensesApp()",
+      "edges": 13
+    },
+    {
+      "id": "investments_InvestmentsApp",
+      "label": "InvestmentsApp Component",
+      "edges": 12
+    },
+    {
+      "id": "pdf_createinvestmentreportdocument",
+      "label": "createInvestmentReportDocument()",
+      "edges": 10
+    },
+    {
+      "id": "pdf_createexpensesreportdocument",
+      "label": "createExpensesReportDocument()",
+      "edges": 10
+    },
+    {
+      "id": "main_entrypoint",
+      "label": "App Entry Point (main.jsx)",
+      "edges": 10
+    },
+    {
+      "id": "debug-expenses_controle_de_gastos",
+      "label": "Controle de Gastos Screen",
+      "edges": 10
+    },
+    {
+      "id": "nova-entrada-form_nova_entrada_form",
+      "label": "Nova Entrada Form (Add Investment Entry Form)",
+      "edges": 10
+    },
+    {
+      "id": "expensesentrada_expensesentrada",
+      "label": "ExpensesEntrada()",
+      "edges": 9
+    },
+    {
+      "id": "nova-despesa-form_nova_despesa_form",
+      "label": "Nova Despesa Form (Add Expense Form)",
+      "edges": 9
+    }
+  ],
+  "surprises": [
+    {
+      "source": "migrateToUnifiedStorage",
+      "target": "Unified Storage Architecture",
+      "source_files": [
+        "src/utils/unifiedStorage.js",
+        "docs/UNIFIED_SYSTEM.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "implements",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (code \u2194 doc); connects across different repos/directories"
+    },
+    {
+      "source": "Architecture Overview",
+      "target": "PDF Report Generation",
+      "source_files": [
+        "docs/ARCHITECTURE_OVERVIEW.md",
+        "src/utils/pdf.jsx"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (doc \u2194 code); connects across different repos/directories"
+    },
+    {
+      "source": "New User Initialization Pattern",
+      "target": "configuracoes-padrao.json default config file",
+      "source_files": [
+        "src/utils/defaultConfigLoader.js",
+        "docs/CONFIGURACOES.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; crosses file types (doc \u2194 code); connects across different repos/directories"
+    },
+    {
+      "source": "Playwright E2E Config",
+      "target": "App Entry Point (main.jsx)",
+      "source_files": [
+        "playwright.config.js",
+        "src/main.jsx"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `Playwright E2E Config` unexpectedly reaches hub `App Entry Point (main.jsx)`"
+    },
+    {
+      "source": "Tailwind CSS Config",
+      "target": "App Entry Point (main.jsx)",
+      "source_files": [
+        "tailwind.config.js",
+        "src/main.jsx"
+      ],
+      "confidence": "INFERRED",
+      "relation": "conceptually_related_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `Tailwind CSS Config` unexpectedly reaches hub `App Entry Point (main.jsx)`"
+    }
+  ],
+  "questions": [
+    {
+      "type": "ambiguous_edge",
+      "question": "What is the exact relationship between `Merge Data Script` and `LocalStorage Key: financial-monitor-unified-v1`?",
+      "why": "Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Unified Storage Architecture` connect `Community 4` to `Community 2`?",
+      "why": "High betweenness centrality (0.005) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Architecture Overview` connect `Community 2` to `Community 4`?",
+      "why": "High betweenness centrality (0.004) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `ExpensesApp()` (e.g. with `Description Mappings Config` and `ExpensesReport()`) actually correct?",
+      "why": "`ExpensesApp()` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 4 inferred relationships involving `InvestmentsApp Component` (e.g. with `useOfflineMode Hook` and `Projecoes Component`) actually correct?",
+      "why": "`InvestmentsApp Component` has 4 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `Playwright E2E Config`, `PostCSS Config`, `ActionButton Component` to the rest of the system?",
+      "why": "82 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "nodes": [
+    {
+      "id": "screenshot_20251004_151412_investment_monitor_dashboard",
+      "label": "Investment Monitor Dashboard - Main View",
+      "file_type": "image",
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2025-10-04T15:14:12",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "screenshot_20251004_151412_summary_cards",
+      "label": "Financial Summary Cards (Total Invested, Last Month Invested, Last Month Return, Last Month Entries, Last Month Account Balance)",
+      "file_type": "image",
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2025-10-04T15:14:12",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "screenshot_20251004_151412_entry_form",
+      "label": "Transaction Entry Form (Lancamentos em preparacao)",
+      "file_type": "image",
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2025-10-04T15:14:12",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "screenshot_20251004_151412_nav_buttons",
+      "label": "Navigation Buttons (Dashboard, Historico, Nova Entrada, Exportar, Importar, Template, Limpar)",
+      "file_type": "image",
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2025-10-04T15:14:12",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "screenshot_20251004_151412_localstorage_note",
+      "label": "LocalStorage Data Persistence Note",
+      "file_type": "image",
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2025-10-04T15:14:12",
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "screenshot_20251004_151412_investment_monitor_dashboard",
+      "target": "screenshot_20251004_151412_summary_cards",
+      "relation": "contains",
+      "confidence": "EXPLICIT",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "screenshot_20251004_151412_investment_monitor_dashboard",
+      "target": "screenshot_20251004_151412_entry_form",
+      "relation": "contains",
+      "confidence": "EXPLICIT",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "screenshot_20251004_151412_investment_monitor_dashboard",
+      "target": "screenshot_20251004_151412_nav_buttons",
+      "relation": "contains",
+      "confidence": "EXPLICIT",
+      "confidence_score": 1.0,
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "screenshot_20251004_151412_investment_monitor_dashboard",
+      "target": "screenshot_20251004_151412_localstorage_note",
+      "relation": "conceptually_related_to",
+      "confidence": "EXPLICIT",
+      "confidence_score": 0.95,
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "screenshot_20251004_151412_entry_form",
+      "target": "screenshot_20251004_151412_summary_cards",
+      "relation": "feeds_into",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "screenshot_20251004_151412_entry_form",
+      "target": "screenshot_20251004_151412_localstorage_note",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png",
+      "source_location": null,
+      "weight": 0.9
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 1024,
+  "output_tokens": 512
+}

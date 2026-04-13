@@ -42,7 +42,7 @@ export async function loadDefaultConfigFromFile() {
     }
     // Último fallback: tentar importar JSON do repositório (dev/build)
     try {
-      const mod = await import('../../configuracoes-padrao.json');
+      const mod = await import('../../public/configuracoes-padrao.json');
       const cfg = mod?.default || mod;
       if (cfg && cfg.investimentos && Array.isArray(cfg.investimentos.banks)) {
         console.log('✅ Configurações carregadas via import de configuracoes-padrao.json');
