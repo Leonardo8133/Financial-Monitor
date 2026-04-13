@@ -228,6 +228,67 @@ export function ExpensesEntrada({
   const [newCategory, setNewCategory] = useState("");
   const [newSource, setNewSource] = useState("");
   const [mappingModalOpen, setMappingModalOpen] = useState(false);
+  const [quickMapOpen, setQuickMapOpen] = useState(false);
+  const [quickMapList, setQuickMapList] = useState([]);
+  const [quickMapIndex, setQuickMapIndex] = useState(0);
+
+  const uncategorizedCount = useMemo(() => {
+    const seen = new Set();
+    for (const row of drafts) {
+      if (row.categories?.length > 0) continue;
+      const key = (row.description || "").toLowerCase().trim();
+      if (key) seen.add(key);
+    }
+    return seen.size;
+  }, [drafts]);
+
+  function openQuickMap() {
+    const seen = new Set();
+    const list = [];
+    for (const row of drafts) {
+      if (row.categories?.length > 0) continue;
+      const key = (row.description || "").toLowerCase().trim();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      list.push(row.description.trim());
+    }
+    if (!list.length) return;
+    setQuickMapList(list);
+    setQuickMapIndex(0);
+    setQuickMapOpen(true);
+  }
+
+  function handleQuickMapCategory(categoryName) {
+    const description = quickMapList[quickMapIndex];
+    if (!description) return;
+    const targetDesc = description.toLowerCase().trim();
+    setDrafts((prev) =>
+      prev.map((row) => {
+        if ((row.description || "").toLowerCase().trim() === targetDesc) {
+          return normalizeDraft({ ...row, categories: [categoryName] });
+        }
+        return row;
+      })
+    );
+    onSaveDescriptionMapping(description, [categoryName]);
+    const next = quickMapIndex + 1;
+    if (next >= quickMapList.length) {
+      setQuickMapOpen(false);
+      setQuickMapIndex(0);
+    } else {
+      setQuickMapIndex(next);
+    }
+  }
+
+  function handleQuickMapSkip() {
+    const next = quickMapIndex + 1;
+    if (next >= quickMapList.length) {
+      setQuickMapOpen(false);
+      setQuickMapIndex(0);
+    } else {
+      setQuickMapIndex(next);
+    }
+  }
 
   function addCategory() {
     const name = newCategory.trim();
@@ -645,6 +706,15 @@ export function ExpensesEntrada({
           >
             Aplicar mapeamentos
           </button>
+          {uncategorizedCount > 0 && (
+            <button
+              type="button"
+              onClick={openQuickMap}
+              className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100"
+            >
+              Mapear categorias ({uncategorizedCount})
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setMappingModalOpen(true)}
@@ -879,10 +949,82 @@ export function ExpensesEntrada({
         </div>
       </div>
 
-      <MappingModal 
-        isOpen={mappingModalOpen} 
-        onClose={() => setMappingModalOpen(false)} 
+      <MappingModal
+        isOpen={mappingModalOpen}
+        onClose={() => setMappingModalOpen(false)}
       />
+
+      {quickMapOpen && quickMapList.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setQuickMapOpen(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-700">Mapear Categorias</span>
+              <button
+                type="button"
+                onClick={() => setQuickMapOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Navigation */}
+            <div className="mb-5 flex items-center justify-between text-xs text-slate-500">
+              <button
+                type="button"
+                onClick={() => setQuickMapIndex((i) => Math.max(0, i - 1))}
+                disabled={quickMapIndex === 0}
+                className="rounded-lg border border-slate-200 px-2.5 py-1 font-medium hover:bg-slate-50 disabled:opacity-30"
+              >
+                ‹ Anterior
+              </button>
+              <span className="font-medium text-slate-600">
+                {quickMapIndex + 1} de {quickMapList.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => setQuickMapIndex((i) => Math.min(quickMapList.length - 1, i + 1))}
+                disabled={quickMapIndex === quickMapList.length - 1}
+                className="rounded-lg border border-slate-200 px-2.5 py-1 font-medium hover:bg-slate-50 disabled:opacity-30"
+              >
+                Próximo ›
+              </button>
+            </div>
+
+            {/* Description */}
+            <div className="mb-5 rounded-xl bg-slate-50 px-4 py-3 text-center text-sm font-medium text-slate-800">
+              {quickMapList[quickMapIndex]}
+            </div>
+
+            {/* Category buttons */}
+            <div className="flex flex-wrap justify-center gap-2">
+              {categoryOptions.map((cat) => (
+                <button
+                  key={cat.name}
+                  type="button"
+                  onClick={() => handleQuickMapCategory(cat.name)}
+                  className="rounded-full px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: cat.color || "#6B7280" }}
+                >
+                  {cat.icon} {cat.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Skip */}
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={handleQuickMapSkip}
+                className="text-xs text-slate-400 hover:text-slate-600 underline"
+              >
+                Pular
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

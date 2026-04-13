@@ -197,6 +197,13 @@ export default function InvestmentsApp() {
     [entriesWithIds]
   );
 
+  const lastMonthEntries = useMemo(() => {
+    const today = new Date();
+    const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const prevKey = yyyymm(prevMonth.toISOString().split('T')[0]);
+    return entries.filter(e => yyyymm(e.date) === prevKey);
+  }, [entries]);
+
   const monthly = useMemo(() => {
     const byMonth = new Map();
     for (const entry of derivedEntries) {
@@ -297,25 +304,6 @@ export default function InvestmentsApp() {
   }, [derivedEntries]);
 
   const lastMonth = timeline.at(-1);
-  const lastMonthSources = useMemo(() => {
-    if (!lastMonth || !Array.isArray(lastMonth.sources)) return [];
-    const totalMonthInvested = lastMonth.sources.reduce(
-      (acc, item) => acc + (item?.invested ?? 0),
-      0
-    );
-    return lastMonth.sources
-      .filter((item) => (item?.invested ?? 0) > 0)
-      .map((item) => ({
-        name: item.name || "Outros",
-        invested: item.invested ?? 0,
-        percentage: totalMonthInvested
-          ? Math.round(((item.invested ?? 0) / totalMonthInvested) * 100)
-          : null,
-      }))
-      .sort((a, b) => (b.invested ?? 0) - (a.invested ?? 0));
-  }, [lastMonth]);
-  const hoverSourceDetails = lastMonthSources.length ? lastMonthSources : sourceSummary;
-
   const averageMonthlyInvested = useMemo(() => {
     if (!timeline.length) return 0;
     const positiveMonths = timeline
@@ -669,8 +657,11 @@ export default function InvestmentsApp() {
             title="Total de Investimentos"
             value={fmtBRL(lastMonth?.invested ?? 0)}
             subtitle={lastMonth ? `Referente a ${lastMonth.label}` : "Sem dados do mês"}
-            hoverDetails={hoverSourceDetails}
-            tooltip="Soma dos aportes registrados no mês selecionado; passe o mouse para ver o detalhe por fonte"
+            hoverDetails={lastMonth ? [
+              { name: "Investimentos", total: lastMonth.invested ?? 0 },
+              { name: "Investido + Conta", total: (lastMonth.invested ?? 0) + (lastMonth.inAccount ?? 0) },
+            ] : []}
+            tooltip="Passe o mouse para ver total investido e posição total (investido + conta)"
           />
           <KPICard
             title="Rendimento último mês"
@@ -721,7 +712,7 @@ export default function InvestmentsApp() {
         )}
 
         {tab === "entrada" && (
-          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} sources={sources} />
+          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} sources={sources} lastMonthEntries={lastMonthEntries} />
         )}
 
         {tab === "projecoes" && (

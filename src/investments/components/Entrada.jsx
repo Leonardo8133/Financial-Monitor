@@ -5,7 +5,7 @@ import { useOpenDatePickerProps } from "../../hooks/useOpenDatePickerProps.js";
 import { resolveBankVisual } from "../config/banks.js";
 import { resolveSourceVisual } from "../config/sources.js";
 
-export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
+export function Entrada({ drafts, setDrafts, onSubmit, banks, sources, lastMonthEntries }) {
   const dateOpenProps = useOpenDatePickerProps();
   const bankOptionsId = "bank-options";
   const sourceOptionsId = "source-options";
@@ -51,7 +51,7 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
           value={value}
           disabled={disabled}
           onChange={onChange}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2 pl-10 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
+          className="w-full rounded-xl border border-slate-200 px-3 py-2 pl-14 text-sm outline-none focus:ring-2 focus:ring-slate-400 disabled:bg-slate-100"
         />
         {value && (
           <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
@@ -101,6 +101,19 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
     setDrafts([createDraftEntry()]);
   }
 
+  function loadPreviousMonth() {
+    if (!lastMonthEntries?.length) return;
+    const today = new Date().toISOString().split('T')[0];
+    setDrafts(lastMonthEntries.map(e => createDraftEntry({
+      bank: e.bank,
+      source: e.source,
+      inAccount: e.inAccount,
+      invested: e.invested,
+      cashFlow: e.cashFlow,
+      date: today,
+    })));
+  }
+
   function handleSubmit(ev) {
     ev.preventDefault();
     onSubmit(drafts);
@@ -126,6 +139,16 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
           >
             Adicionar linha
           </button>
+          {lastMonthEntries?.length > 0 && (
+            <button
+              type="button"
+              onClick={loadPreviousMonth}
+              className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+              title="Pré-preenche os cards com os dados do mês anterior"
+            >
+              Carregar mês anterior
+            </button>
+          )}
           <button
             type="button"
             onClick={resetRows}
@@ -149,12 +172,12 @@ export function Entrada({ drafts, setDrafts, onSubmit, banks, sources }) {
         ))}
       </datalist>
 
-      <div className="space-y-4">
+      <div className="space-y-1.5">
         {drafts.map((row, index) => (
-          <div key={row.id} className="space-y-3 rounded-xl border border-slate-200 p-4">
+          <div key={row.id} className="group space-y-2 rounded-xl border border-slate-200 p-2">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
               <span className="font-semibold text-slate-700">Entrada #{index + 1}</span>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className={`flex flex-wrap items-center gap-2 transition-opacity ${row.locked ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
                 {row.locked && (
                   <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[0.65rem] uppercase">Bloqueado</span>
                 )}

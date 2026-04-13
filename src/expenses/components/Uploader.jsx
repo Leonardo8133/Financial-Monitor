@@ -7,7 +7,8 @@ import { detectCsvImportTemplate, normalizeImportedItems } from "../utils/import
 import { toNumber } from "../../utils/formatters.js";
 import { Select } from "../../components/Select.jsx";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 const DEFAULT_MAPPING = [
   { field: "date", label: "Data", sample: "2025-01-31" },
