@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import * as pdfjsLib from "pdfjs-dist";
 import { parseExpensePdfWithTemplates } from "../utils/pdfTemplates.js";
 import { detectCsvImportTemplate, normalizeImportedItems } from "../utils/importTemplates.js";
-import { toNumber } from "../../utils/formatters.js";
+import { toNumber, normalizeDateInput } from "../../utils/formatters.js";
 import { Select } from "../../components/Select.jsx";
+import { applyFx, buildFxDefaults } from "../utils/wise.js";
+import { getActiveCurrency } from "../../utils/money.js";
 
 import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
@@ -42,7 +44,7 @@ function inferHeaderRowIndex(rows = []) {
   return 0;
 }
 
-export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions = [] }) {
+export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions = [], referenceRates = {} }) {
   const inputRef = useRef(null);
   const [mapping, setMapping] = useState(() => DEFAULT_MAPPING.map((entry) => ({ ...entry, header: "" })));
   const [headers, setHeaders] = useState([]);
@@ -57,6 +59,23 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
   const [statusMessage, setStatusMessage] = useState("");
   const [filesInfo, setFilesInfo] = useState([]);
   const [allParsedItems, setAllParsedItems] = useState([]);
+  const [fx, setFx] = useState(null);
+  const pendingItems = templateMatch?.items?.length ? templateMatch.items : allParsedItems.length ? allParsedItems : null;
+  useEffect(() => {
+    setFx(pendingItems ? buildFxDefaults(pendingItems, getActiveCurrency(), referenceRates) : null);
+    // referenceRates only seeds the panel; edits in the panel are kept until a new file is loaded.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingItems]);
+
+  /** Applies currency conversion; returns null (and shows an error) when a rate is missing. */
+  function convertForImport(items) {
+    const { items: converted, skipped, missing } = applyFx(items, fx);
+    if (missing.length) {
+      setError(`Informe a cotação de ${missing.join(", ")} para converter os valores em ${fx.base}.`);
+      return null;
+    }
+    return { converted, skipped };
+  }
 
   const previewRows = useMemo(() => rawRows.slice(0, 8), [rawRows]);
 
@@ -373,14 +392,16 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       return;
     }
     
-    const { filtered, ignoredCount } = filterIgnoredItems(validItems);
+    const fxResult = convertForImport(validItems);
+    if (!fxResult) return;
+    const { filtered, ignoredCount } = filterIgnoredItems(fxResult.converted);
     
     if (filtered.length === 0) {
       setError("Todos os itens foram ignorados conforme configuração.");
       return;
     }
     
-    onRecordsParsed(filtered, ignoredCount);
+    onRecordsParsed(filtered, ignoredCount + fxResult.skipped);
     
     // Limpa tudo após importação
     resetState();
@@ -433,7 +454,7 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       const sources = columnMap.source ? parseList(row[columnMap.source]) : [];
       const normalizedSources = sources.length ? sources : manualSources;
       return {
-        date: row[columnMap.date] || "",
+        date: normalizeDateInput(row[columnMap.date]) || String(row[columnMap.date] || ""),
         description: row[columnMap.description] || row["Linha"] || "",
         categories,
         sources: normalizedSources,
@@ -464,14 +485,16 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       return;
     }
     
-    const { filtered, ignoredCount } = filterIgnoredItems(validItems);
+    const fxResult = convertForImport(validItems);
+    if (!fxResult) return;
+    const { filtered, ignoredCount } = filterIgnoredItems(fxResult.converted);
     
     if (filtered.length === 0) {
       setError("Todos os itens foram ignorados conforme configuração.");
       return;
     }
     
-    onRecordsParsed(filtered, ignoredCount);
+    onRecordsParsed(filtered, ignoredCount + fxResult.skipped);
     
     // Limpa tudo após importação bem-sucedida
     setTemplateMatch(null);
@@ -495,33 +518,33 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-slate-200 overflow-hidden">
+    <div className="space-y-3 card overflow-hidden">
       {/* Header com botão de importar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 px-4 py-3 border-b border-slate-200">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-surface-2 px-4 py-3 border-b border-line">
         <button
           type="button"
           onClick={openPicker}
-          className="flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-colors"
+          className="btn-primary"
         >
-          📁 Importar Fatura (CSV)
+          Importar extrato ou fatura (CSV, XLSX, PDF)
         </button>
         
         <div className="flex items-center gap-2">
           {filesInfo.length > 0 && (
-            <div className="text-xs text-slate-600">
-              <span className="font-medium text-slate-700">{filesInfo.length} arquivo(s) selecionado(s)</span>
+            <div className="text-xs text-muted">
+              <span className="font-medium text-ink">{filesInfo.length} arquivo(s) selecionado(s)</span>
             </div>
           )}
           {fileInfo && (
-            <div className="text-xs text-slate-600">
-              <span className="font-medium text-slate-700">{fileInfo.name}</span> · {(fileInfo.size / 1024).toFixed(1)} KB
+            <div className="text-xs text-muted">
+              <span className="font-medium text-ink">{fileInfo.name}</span> · {(fileInfo.size / 1024).toFixed(1)} KB
             </div>
           )}
           {(fileInfo || filesInfo.length > 0) && (
             <button
               type="button"
               onClick={resetMapping}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              className="btn btn-xs"
             >
               Resetar
             </button>
@@ -533,30 +556,73 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       {/* Templates suportados */}
       {!fileInfo && filesInfo.length === 0 && (
         <div className="px-4 pb-3">
-          <div className="text-xs text-slate-500">
-            <span className="font-medium">Templates suportados:</span> Nubank CSV, Nubank Detalhado, Inter Extrato
+          <div className="text-xs text-muted">
+            <span className="font-medium">Reconhecidos automaticamente:</span> Nubank cartão (CSV), Nubank extrato (NU_*.csv), Inter extrato e cartão, Wise (qualquer moeda). Outros arquivos abrem o mapeamento manual de colunas. Vários arquivos podem ser selecionados de uma vez.
           </div>
         </div>
       )}
       
       <div className="px-4 pb-4 space-y-3">
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 whitespace-pre-wrap">{error}</div>}
+      {error && <div className="rounded-lg border border-neg/30 bg-neg/10 px-3 py-2 text-xs text-neg whitespace-pre-wrap">{error}</div>}
       {statusMessage && !templateMatch && allParsedItems.length === 0 && filesInfo.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">{statusMessage}</div>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">{statusMessage}</div>
       )}
       {statusMessage && !templateMatch && allParsedItems.length === 0 && filesInfo.length === 0 && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">{statusMessage}</div>
+        <div className="panel px-3 py-2 text-xs text-muted">{statusMessage}</div>
+      )}
+
+      {fx && (
+        <div className="panel space-y-2 p-3 text-sm">
+          <div className="font-semibold text-ink">Moedas e conversões</div>
+          {fx.foreign.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted">
+                Valores em {fx.foreign.join(", ")} serão convertidos para {fx.base}. A cotação sugerida vem das conversões do próprio arquivo; ajuste se quiser.
+                O valor original fica guardado na transação.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {fx.foreign.map((cur) => (
+                  <label key={cur} className="flex items-center gap-2 text-xs text-muted">
+                    <span className="font-semibold text-ink">1 {cur} =</span>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min="0"
+                      className={`input input-sm w-28 num ${Number(fx.rates[cur]) > 0 ? "" : "border-neg"}`}
+                      value={fx.rates[cur]}
+                      placeholder="cotação"
+                      onChange={(e) => setFx((p) => ({ ...p, rates: { ...p.rates, [cur]: e.target.value } }))}
+                    />
+                    <span>{fx.base}</span>
+                    {fx.origin?.[cur] === "file" && <span className="text-faint">do arquivo</span>}
+                    {fx.origin?.[cur] === "reference" && <span className="text-amber-700">cotação de referência (Configurações)</span>}
+                    {fx.origin?.[cur] === "missing" && <span className="text-neg">sem cotação: informe</span>}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+          {fx.conversions > 0 && (
+            <label className="flex items-start gap-2 text-xs text-muted">
+              <input type="checkbox" className="mt-0.5" checked={fx.ignoreConversions} onChange={(e) => setFx((p) => ({ ...p, ignoreConversions: e.target.checked }))} />
+              <span>
+                Ignorar as {fx.conversions} conversão(ões) entre moedas. Recomendado quando você importa os extratos das duas moedas, para não contar o mesmo dinheiro duas vezes.
+                Deixe desmarcado se importar só o extrato em {fx.base}: aí a conversão é o único registro do gasto.
+              </span>
+            </label>
+          )}
+        </div>
       )}
 
       {allParsedItems.length > 0 && (
-        <div className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+        <div className="space-y-2 rounded-lg border border-pos/40 bg-pos/10 p-3 text-sm text-ink">
           <div className="font-semibold">Importação múltipla</div>
-          <div className="text-xs text-emerald-600">
+          <div className="text-xs text-muted">
             {statusMessage}
           </div>
           {filesInfo.length > 0 && (
-            <div className="text-xs text-emerald-600">
+            <div className="text-xs text-muted">
               <div className="font-medium mb-1">Arquivos:</div>
               <ul className="list-disc list-inside">
                 {filesInfo.map((file, idx) => (
@@ -569,7 +635,7 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
             <button
               type="button"
               onClick={confirmMultipleFilesImport}
-              className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+              className="btn-pos btn-xs"
             >
               Confirmar importação
             </button>
@@ -580,7 +646,7 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
                 setFilesInfo([]);
                 setStatusMessage("");
               }}
-              className="rounded-lg border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+              className="btn btn-xs"
             >
               Cancelar
             </button>
@@ -589,23 +655,23 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       )}
 
       {templateMatch && (
-        <div className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+        <div className="space-y-2 rounded-lg border border-pos/40 bg-pos/10 p-3 text-sm text-ink">
           <div className="font-semibold">Modelo detectado: {templateMatch.name}</div>
-          <div className="text-xs text-emerald-600">
+          <div className="text-xs text-muted">
             Encontramos um template conhecido. Deseja importar automaticamente as {templateMatch.items.length} linhas?
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={confirmTemplateImport}
-              className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+              className="btn-pos btn-xs"
             >
               Confirmar importação
             </button>
             <button
               type="button"
               onClick={cancelTemplateImport}
-              className="rounded-lg border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+              className="btn btn-xs"
             >
               Cancelar
             </button>
@@ -614,8 +680,8 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
       )}
 
       {rawRows.length > 0 && (
-        <div className="space-y-3 rounded-lg border border-slate-200 p-3">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+        <div className="panel space-y-3 p-3">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <span className="font-semibold">Pré-visualização do arquivo</span>
             <label className="flex items-center gap-2">
               <span>Selecionar linha de cabeçalho:</span>
@@ -635,20 +701,20 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
               />
             </label>
           </div>
-          <div className="max-h-60 overflow-auto rounded-lg border border-slate-100">
-            <table className="min-w-full divide-y divide-slate-100 text-xs">
-              <tbody className="divide-y divide-slate-100">
+          <div className="max-h-60 overflow-auto rounded-lg border border-line bg-surface">
+            <table className="min-w-full divide-y divide-line text-xs">
+              <tbody className="divide-y divide-line">
                 {previewRows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className={rowIndex === headerRowIndex ? "bg-slate-100" : ""}>
-                    <td className="whitespace-nowrap px-2 py-1 font-mono text-[0.65rem] text-slate-400">{rowIndex + 1}</td>
+                  <tr key={rowIndex} className={rowIndex === headerRowIndex ? "bg-accent/10" : ""}>
+                    <td className="whitespace-nowrap px-2 py-1 font-mono text-[0.65rem] text-faint">{rowIndex + 1}</td>
                     {Array.isArray(row) && row.length > 0 ? (
                       row.map((cell, cellIndex) => (
-                        <td key={cellIndex} className="whitespace-nowrap px-2 py-1 text-[0.7rem] text-slate-600">
+                        <td key={cellIndex} className="whitespace-nowrap px-2 py-1 text-[0.7rem] text-ink">
                           {String(cell)}
                         </td>
                       ))
                     ) : (
-                      <td className="px-2 py-1 text-[0.7rem] text-slate-500">(linha vazia)</td>
+                      <td className="px-2 py-1 text-[0.7rem] text-muted">(linha vazia)</td>
                     )}
                   </tr>
                 ))}
@@ -660,11 +726,11 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
 
       {headers.length > 0 && !templateMatch && (
         <div className="space-y-4">
-          <div className="text-xs text-slate-500">Mapeie as colunas do arquivo para os campos do sistema:</div>
+          <div className="text-xs text-muted">Mapeie as colunas do arquivo para os campos do sistema:</div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {mapping.map((entry) => (
-              <div key={entry.field} className="rounded-lg border border-slate-200 p-3">
-                <div className="text-xs font-semibold text-slate-600">{entry.label}</div>
+              <div key={entry.field} className="panel p-3">
+                <div className="text-xs font-semibold text-muted">{entry.label}</div>
                 <Select
                   value={entry.header || ""}
                   onChange={(event) => updateMapping(entry.field, event.target.value)}
@@ -676,13 +742,13 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
                   className="mt-1"
                   size="sm"
                 />
-                <div className="mt-1 text-[0.7rem] text-slate-500">Ex.: {entry.sample}</div>
+                <div className="mt-1 text-[0.7rem] text-muted">Ex.: {entry.sample}</div>
               </div>
             ))}
           </div>
 
-          <div className="space-y-2 rounded-lg border border-slate-100 bg-slate-50 p-3">
-            <div className="text-xs font-semibold text-slate-600">Fontes manuais</div>
+          <div className="panel space-y-2 p-3">
+            <div className="text-xs font-semibold text-muted">Fontes manuais</div>
             <div className="flex flex-wrap items-center gap-2">
               <input
                 value={manualSourceDraft}
@@ -694,12 +760,12 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
                   }
                 }}
                 placeholder="Fonte padrão para linhas sem coluna"
-                className="w-48 rounded-lg border border-slate-200 px-2 py-1 text-xs focus:border-slate-400 focus:outline-none"
+                className="input input-sm w-48"
               />
               <button
                 type="button"
                 onClick={addManualSource}
-                className="rounded-lg border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                className="btn btn-xs"
               >
                 Adicionar fonte
               </button>
@@ -708,13 +774,13 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
                   {manualSources.map((source) => (
                     <span
                       key={source}
-                      className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[0.65rem] text-slate-600"
+                      className="chip"
                     >
                       {source}
                       <button
                         type="button"
                         onClick={() => removeManualSource(source)}
-                        className="text-slate-400 transition hover:text-red-500"
+                        className="text-faint transition hover:text-neg"
                       >
                         ×
                       </button>
@@ -729,7 +795,7 @@ export function Uploader({ onRecordsParsed, onResetMappings, ignoredDescriptions
             <button
               type="button"
               onClick={applyMapping}
-              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow hover:bg-slate-800"
+              className="btn-primary btn-sm"
             >
               Aplicar mapeamento
             </button>

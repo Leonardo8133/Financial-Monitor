@@ -1,139 +1,68 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useId } from "react";
 
 /**
- * Componente Select padrão do Tailwind CSS
- * @param {Object} props - Props do componente
- * @param {string} props.value - Valor selecionado
- * @param {function} props.onChange - Função chamada quando o valor muda
- * @param {Array} props.options - Array de opções {value, label}
- * @param {string} props.placeholder - Placeholder quando não há valor selecionado
- * @param {boolean} props.disabled - Se o select está desabilitado
- * @param {string} props.className - Classes CSS adicionais
- * @param {string} props.size - Tamanho: 'sm', 'md', 'lg'
- * @param {string} props.variant - Variante: 'default', 'outline'
+ * Themed native <select>. Keyboard and screen-reader friendly, works on mobile.
+ * Keeps the old API: onChange receives an event-like object with target.value.
  */
 export function Select({
   value,
   onChange,
   options = [],
-  placeholder = "Selecione...",
+  placeholder = "",
   disabled = false,
   className = "",
   size = "md",
-  variant = "default",
+  label,
+  id,
   ...props
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const sizeClasses = {
-    sm: "px-2 py-1 text-xs",
-    md: "px-3 py-2 text-sm",
-    lg: "px-4 py-3 text-base"
-  };
-
-  const variantClasses = {
-    default: "bg-white border-slate-200 focus:ring-2 focus:ring-slate-400 focus:border-slate-400",
-    outline: "bg-transparent border-slate-300 focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-  };
-
-  const baseClasses = "w-full rounded-lg border outline-none transition-colors duration-200 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed";
-
-  const classes = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
-
-  // Encontrar o label da opção selecionada
-  const selectedOption = options.find(option => option.value === value);
-  const displayValue = selectedOption ? selectedOption.label : (placeholder || "");
-
-  // Fechar dropdown quando clicar fora
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
-
-  // Handler para seleção de opção
-  const handleOptionSelect = (optionValue) => {
-    if (onChange) {
-      const syntheticEvent = {
-        target: { value: optionValue }
-      };
-      onChange(syntheticEvent);
-    }
-    setIsOpen(false);
-  };
-
-  if (disabled) {
-    return (
-      <select
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        className={classes}
-        {...props}
-      >
-        {placeholder && (
-          <option value="" disabled>
-            {placeholder}
-          </option>
-        )}
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    );
-  }
+  const autoId = useId();
+  const selectId = id || autoId;
+  const sizeClass = size === "sm" ? "py-1 pl-2 pr-7 text-xs" : size === "lg" ? "py-3 pl-4 pr-9 text-base" : "py-2 pl-3 pr-8 text-sm";
+  const current = value === null || value === undefined ? "" : String(value);
+  const hasCurrent = options.some((o) => String(o.value) === current);
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <div
-        className={`${classes} cursor-pointer flex items-center justify-between`}
-        onClick={() => setIsOpen(!isOpen)}
-        {...props}
-      >
-        <span className={!value ? "text-slate-500" : ""}>
-          {displayValue}
-        </span>
+    <div className={`relative ${className}`}>
+      {label && (
+        <label htmlFor={selectId} className="label">
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        <select
+          id={selectId}
+          value={hasCurrent ? current : ""}
+          disabled={disabled}
+          onChange={(event) => {
+            const raw = event.target.value;
+            const match = options.find((o) => String(o.value) === raw);
+            onChange?.({ target: { value: match ? match.value : raw }, nativeEvent: event });
+          }}
+          className={`input appearance-none ${sizeClass} cursor-pointer`}
+          {...props}
+        >
+          {(placeholder || !hasCurrent) && (
+            <option value="" disabled={!placeholder}>
+              {placeholder || "Selecione..."}
+            </option>
+          )}
+          {options.map((option) => (
+            <option key={String(option.value)} value={String(option.value)} disabled={option.disabled}>
+              {option.label}
+            </option>
+          ))}
+        </select>
         <svg
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-faint"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>
-
-      {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-          {placeholder && (
-            <div
-              className={`${sizeClasses[size]} px-3 py-2 text-slate-500 cursor-pointer`}
-              onClick={() => handleOptionSelect("")}
-            >
-              {placeholder}
-            </div>
-          )}
-          {options.map((option) => (
-            <div
-              key={option.value}
-              className={`${sizeClasses[size]} px-3 py-2 cursor-pointer text-slate-700`}
-              onClick={() => handleOptionSelect(option.value)}
-            >
-              {option.label}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

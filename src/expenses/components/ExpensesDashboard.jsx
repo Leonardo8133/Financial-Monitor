@@ -1,360 +1,312 @@
-import { useState, useMemo } from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
-import { fmtBRL } from "../../utils/formatters.js";
+import { useMemo, useState } from "react";
+import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { fmtBRL, toNumber } from "../../utils/formatters.js";
+import { fmtCompact } from "../../utils/money.js";
+import { resolveCategoryVisual } from "../config/categories.js";
+import { resolveSourceVisual } from "../config/sources.js";
+import { EmptyState } from "../../components/AppShell.jsx";
+import { normalizeDescriptionKey } from "../utils/expenses.js";
 
-export function ExpensesDashboard({ monthly, totals, categories = [], sources = [] }) {
-  // Inicializar com todas as categorias selecionadas exceto investimentos
-  const [selectedCategories, setSelectedCategories] = useState(() => {
-    const allCategories = categories.map(cat => cat.name || cat).filter(Boolean);
-    return allCategories.filter(cat => 
-      !cat.toLowerCase().includes('investimento') && 
-      !cat.toLowerCase().includes('investment')
-    );
+const WINDOWS = [1, 3, 6, 12, 24];
+
+function ChartCard({ title, subtitle, right, children, className = "" }) {
+  return (
+    <div className={`card p-4 ${className}`}>
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-semibold text-ink">{title}</h3>
+          {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
+        </div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function MoneyTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-line bg-surface px-3 py-2 text-xs shadow-pop">
+      <div className="mb-1 font-semibold capitalize text-ink">{label}</div>
+      {payload
+        .filter((p) => p.value)
+        .map((p) => (
+          <div key={p.dataKey || p.name} className="flex items-center justify-between gap-4">
+            <span className="flex items-center gap-1.5 text-muted">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color || p.fill || p.payload?.color }} />
+              {p.name}
+            </span>
+            <span className="num font-semibold text-ink">{fmtBRL(p.value)}</span>
+          </div>
+        ))}
+    </div>
+  );
+}
+
+function Stat({ label, value, tone = "text-ink", sub }) {
+  return (
+    <div className="card p-3">
+      <div className="text-[0.65rem] font-semibold uppercase tracking-wide text-muted">{label}</div>
+      <div className={`num mt-0.5 text-lg font-semibold ${tone}`}>{value}</div>
+      {sub && <div className="text-[0.7rem] text-muted">{sub}</div>}
+    </div>
+  );
+}
+
+export function ExpensesDashboard({ monthly, categories = [], sources = [], budget = 0 }) {
+  const [monthsToShow, setMonthsToShow] = useState(6);
+  const [groupBy, setGroupBy] = useState("category");
+  const [showTotals, setShowTotals] = useState(false);
+  const [excluded, setExcluded] = useState(() => new Set(categories.map((c) => c.name).filter((n) => /investimento/i.test(n))));
+
+  const categoryNames = useMemo(() => categories.map((c) => c.name).filter(Boolean), [categories]);
+  const colorOf = (name) => (groupBy === "category" ? resolveCategoryVisual(name, categories).color : resolveSourceVisual(name, sources).color);
+  const catColor = (name) => resolveCategoryVisual(name, categories).color;
+
+  const visible = useMemo(() => {
+    const slice = monthsToShow ? monthly.slice(-monthsToShow) : monthly;
+    return slice.map((m) => ({
+      ...m,
+      items: (m.items || []).filter((item) => !(item.categories || []).some((c) => excluded.has(c))),
+    }));
+  }, [monthly, monthsToShow, excluded]);
+
+  const monthlyChart = visible.map((m) => {
+    const spent = m.items.filter((i) => toNumber(i.value) < 0).reduce((a, i) => a + Math.abs(toNumber(i.value)), 0);
+    const earned = m.items.filter((i) => toNumber(i.value) > 0).reduce((a, i) => a + toNumber(i.value), 0);
+    return { month: m.label, Despesas: spent, Receitas: earned, Saldo: earned - spent };
   });
-  const [monthsToShow, setMonthsToShow] = useState(6); // Últimos 6 meses por padrão
-  const [groupBy, setGroupBy] = useState("category"); // "category" ou "source"
-  const [showTotalFor, setShowTotalFor] = useState(new Set()); // Categorias mostrando total ao invés de média
-  
-  // Filtrar itens por categoria
-  const filterItemsByCategory = (items) => {
-    if (selectedCategories.length === 0) return items;
-    return items.filter(item => {
-      const itemCategories = Array.isArray(item.categories) ? item.categories : [];
-      return selectedCategories.some(cat => itemCategories.includes(cat));
-    });
-  };
-  
-  // Dados filtrados e limitados por período
-  const filteredMonthly = useMemo(() => {
-    return monthly
-      .slice(-monthsToShow) // Últimos N meses
-      .map(m => ({
-        ...m,
-        items: filterItemsByCategory(m.items || [])
-      }));
-  }, [monthly, monthsToShow, selectedCategories]);
-  
-  const monthlyChart = filteredMonthly.map((m) => {
-    const expenses = m.items?.filter(item => (item.value || 0) < 0).reduce((acc, item) => acc + Math.abs(item.value || 0), 0) || 0;
-    const income = m.items?.filter(item => (item.value || 0) > 0).reduce((acc, item) => acc + (item.value || 0), 0) || 0;
-    return {
-      month: m.label, 
-      Despesas: expenses, 
-      Receitas: income
-    };
-  });
-  
-  // Agregar despesas por categoria ou fonte de todos os meses filtrados
-  const groupedData = useMemo(() => {
+
+  const grouped = useMemo(() => {
     const totals = {};
-    
-    filteredMonthly.forEach(month => {
-      // Pegar apenas despesas (valores negativos)
-      const expenses = month.items?.filter(item => (item.value || 0) < 0) || [];
-      
-      expenses.forEach(item => {
-        const absValue = Math.abs(item.value || 0);
-        
-        if (groupBy === "category") {
-          const itemCategories = Array.isArray(item.categories) ? item.categories : [];
-          
-          // Se não tem categoria, adicionar como "Sem categoria"
-          if (itemCategories.length === 0) {
-            totals["Sem categoria"] = (totals["Sem categoria"] || 0) + absValue;
-          } else {
-            // Dividir o valor entre as categorias (se houver múltiplas)
-            const valuePerItem = absValue / itemCategories.length;
-            itemCategories.forEach(cat => {
-              totals[cat] = (totals[cat] || 0) + valuePerItem;
-            });
-          }
-        } else {
-          // Agrupar por fonte
-          const itemSources = Array.isArray(item.sources) ? item.sources : [];
-          
-          // Se não tem fonte, adicionar como "Sem fonte"
-          if (itemSources.length === 0) {
-            totals["Sem fonte"] = (totals["Sem fonte"] || 0) + absValue;
-          } else {
-            // Dividir o valor entre as fontes (se houver múltiplas)
-            const valuePerItem = absValue / itemSources.length;
-            itemSources.forEach(src => {
-              totals[src] = (totals[src] || 0) + valuePerItem;
-            });
-          }
-        }
-      });
+    visible.forEach((month) => {
+      month.items
+        .filter((i) => toNumber(i.value) < 0)
+        .forEach((item) => {
+          const abs = Math.abs(toNumber(item.value));
+          const keys = groupBy === "category" ? item.categories : item.sources;
+          const list = Array.isArray(keys) && keys.length ? keys : [groupBy === "category" ? "Sem categoria" : "Sem fonte"];
+          const share = abs / list.length;
+          list.forEach((k) => (totals[k] = (totals[k] || 0) + share));
+        });
     });
-    
-    // Calcular média mensal baseada no período do filtro
-    const actualMonthCount = filteredMonthly.length || 1;
-    
+    const count = visible.length || 1;
     return Object.entries(totals)
-      .map(([name, value]) => ({ 
-        name, 
-        value,
-        averagePerMonth: value / actualMonthCount
-      }))
-      .filter(item => item.value > 0)
-      .filter(item => groupBy === "category" ? (item.name.toLowerCase() !== "investimento" && item.name.toLowerCase() !== "investimentos") : true)
-      .sort((a, b) => b.value - a.value); // Ordenar por valor decrescente
-  }, [filteredMonthly, groupBy]);
-  
-  // Agrupar itens menores que 1% em "Outros"
-  const processedData = useMemo(() => {
-    if (groupedData.length === 0) return [];
-    
-    const total = groupedData.reduce((sum, item) => sum + item.value, 0);
-    const threshold = total * 0.01; // 1%
-    
-    const mainItems = [];
-    let othersTotal = 0;
-    
-    groupedData.forEach(item => {
-      if (item.value >= threshold) {
-        mainItems.push(item);
-      } else {
-        othersTotal += item.value;
-      }
-    });
-    
-    if (othersTotal > 0) {
-      mainItems.push({ name: "Outros", value: othersTotal });
-    }
-    
-    return mainItems;
-  }, [groupedData]);
+      .map(([name, value]) => ({ name, value, averagePerMonth: value / count, color: colorOf(name) }))
+      .filter((i) => i.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [visible, groupBy, categories, sources]);
 
-  const COLORS = ["#10B981", "#2563EB", "#EF4444", "#8B5CF6", "#F59E0B", "#6B7280", "#1F2937"]; 
-  
-  const categoryOptions = Array.isArray(categories) 
-    ? categories.map(c => c.name).filter(Boolean) 
-    : [];
-  
-  const toggleCategory = (category) => {
-    setSelectedCategories(prev => 
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+  const pieData = useMemo(() => {
+    const total = grouped.reduce((s, i) => s + i.value, 0);
+    const threshold = total * 0.02;
+    const main = [];
+    let others = 0;
+    grouped.forEach((i) => (i.value >= threshold ? main.push(i) : (others += i.value)));
+    if (others > 0) main.push({ name: "Outros (<2%)", value: others, averagePerMonth: others / (visible.length || 1), color: "rgb(var(--c-faint))" });
+    return main;
+  }, [grouped, visible.length]);
+
+  const stackedData = useMemo(() => {
+    const top = grouped.slice(0, 6).map((g) => g.name);
+    return visible.map((m) => {
+      const row = { month: m.label, Outros: 0 };
+      m.items
+        .filter((i) => toNumber(i.value) < 0)
+        .forEach((item) => {
+          const abs = Math.abs(toNumber(item.value));
+          const keys = groupBy === "category" ? item.categories : item.sources;
+          const list = Array.isArray(keys) && keys.length ? keys : [groupBy === "category" ? "Sem categoria" : "Sem fonte"];
+          const share = abs / list.length;
+          list.forEach((k) => {
+            const key = top.includes(k) ? k : "Outros";
+            row[key] = (row[key] || 0) + share;
+          });
+        });
+      return row;
+    });
+  }, [visible, grouped, groupBy]);
+  const stackedKeys = grouped.slice(0, 6).map((g) => g.name).concat(stackedData.some((r) => r.Outros) ? ["Outros"] : []);
+
+  const topDescriptions = useMemo(() => {
+    const map = new Map();
+    visible.forEach((m) =>
+      m.items
+        .filter((i) => toNumber(i.value) < 0)
+        .forEach((i) => {
+          const key = normalizeDescriptionKey(i.description);
+          if (!key) return;
+          const cur = map.get(key) || { name: i.description, total: 0, count: 0, categories: i.categories || [] };
+          cur.total += Math.abs(toNumber(i.value));
+          cur.count += 1;
+          map.set(key, cur);
+        })
     );
-  };
+    return Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 8);
+  }, [visible]);
+
+  const totalSpent = monthlyChart.reduce((a, m) => a + m.Despesas, 0);
+  const totalEarned = monthlyChart.reduce((a, m) => a + m.Receitas, 0);
+  const avgSpent = totalSpent / (visible.length || 1);
+  const current = monthlyChart.at(-1);
+  const previous = monthlyChart.at(-2);
+  const mom = current && previous && previous.Despesas ? (current.Despesas - previous.Despesas) / previous.Despesas : null;
+
+  if (!monthly.length) {
+    return <EmptyState title="Sem transações para analisar.">Importe uma fatura ou adicione transações na aba Nova Transação.</EmptyState>;
+  }
 
   return (
     <div className="space-y-4">
-      {/* Controles de Filtro */}
-      <div className="rounded-xl bg-white p-3 shadow-sm">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Filtro de Período */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-slate-600">Período:</label>
-            <div className="flex gap-1">
-              {[1, 2, 3, 6, 12, 24].map(months => (
-                <button
-                  key={months}
-                  type="button"
-                  onClick={() => setMonthsToShow(months)}
-                  className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    monthsToShow === months
-                      ? "bg-blue-500 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {months}m
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setMonthsToShow(monthly.length)}
-                className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
-                  monthsToShow === monthly.length
-                    ? "bg-blue-500 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                Tudo
-              </button>
-            </div>
-          </div>
-          
-          {/* Filtro de Categorias */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <label className="text-xs font-medium text-slate-600 flex-shrink-0">Categorias:</label>
-            <div className="flex flex-wrap gap-1 overflow-x-auto max-w-full">
-              {categoryOptions.map(category => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => toggleCategory(category)}
-                  className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
-                    selectedCategories.includes(category)
-                      ? "bg-green-50 text-green-800 border border-green-200"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-              {selectedCategories.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategories([])}
-                  className="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200 whitespace-nowrap flex-shrink-0"
-                >
-                  Limpar
-                </button>
-              )}
-            </div>
-          </div>
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="pill-toggle" role="group" aria-label="Período">
+          {WINDOWS.map((n) => (
+            <button key={n} type="button" aria-pressed={monthsToShow === n} onClick={() => setMonthsToShow(n)}>{n}m</button>
+          ))}
+          <button type="button" aria-pressed={monthsToShow === 0} onClick={() => setMonthsToShow(0)}>Tudo</button>
         </div>
-      </div>
-      
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="rounded-2xl bg-white p-4 shadow lg:col-span-1">
-        <h3 className="relative z-50 mb-4 text-sm font-semibold bg-white pb-2 border-b border-slate-100">Despesas e Receitas por mês</h3>
-        <div className="relative h-80 z-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyChart}>
-              <XAxis dataKey="month" />
-              <YAxis tickFormatter={(v) => fmtBRL(v)} />
-              <Tooltip formatter={(v) => fmtBRL(v)} />
-              <Legend />
-              <Bar dataKey="Despesas" fill="#EF4444" />
-              <Bar dataKey="Receitas" fill="#10B981" />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="pill-toggle" role="group" aria-label="Agrupar por">
+          <button type="button" aria-pressed={groupBy === "category"} onClick={() => setGroupBy("category")}>Categorias</button>
+          <button type="button" aria-pressed={groupBy === "source"} onClick={() => setGroupBy("source")}>Fontes</button>
         </div>
+        <div className="pill-toggle" role="group" aria-label="Valores">
+          <button type="button" aria-pressed={!showTotals} onClick={() => setShowTotals(false)}>Média/mês</button>
+          <button type="button" aria-pressed={showTotals} onClick={() => setShowTotals(true)}>Total</button>
+        </div>
+        <details className="relative">
+          <summary className="btn btn-xs cursor-pointer list-none">
+            Ocultar categorias{excluded.size ? ` (${excluded.size})` : ""}
+          </summary>
+          <div className="absolute left-0 z-30 mt-1 flex max-h-64 w-64 flex-col gap-1 overflow-auto rounded-xl border border-line bg-surface p-2 shadow-pop">
+            {categoryNames.map((name) => (
+              <label key={name} className="flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 text-xs hover:bg-surface-2">
+                <input
+                  type="checkbox"
+                  checked={excluded.has(name)}
+                  onChange={(e) =>
+                    setExcluded((prev) => {
+                      const next = new Set(prev);
+                      if (e.target.checked) next.add(name);
+                      else next.delete(name);
+                      return next;
+                    })
+                  }
+                />
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: catColor(name) }} />
+                {name}
+              </label>
+            ))}
+          </div>
+        </details>
       </div>
 
-      <div className="rounded-2xl bg-white p-4 shadow lg:col-span-2">
-        <div className="relative z-50 mb-4 flex items-center justify-between bg-white pb-2 border-b border-slate-100">
-          <h3 className="text-sm font-semibold">
-            Despesas por {groupBy === "category" ? "categoria" : "fonte"} ({monthsToShow === monthly.length ? "Todo período" : monthsToShow === 1 ? "Último mês" : `Últimos ${monthsToShow} meses`})
-          </h3>
-          <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setGroupBy("category")}
-              className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
-                groupBy === "category"
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-600 hover:text-slate-800"
-              }`}
-            >
-              Categorias
-            </button>
-            <button
-              type="button"
-              onClick={() => setGroupBy("source")}
-              className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
-                groupBy === "source"
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-600 hover:text-slate-800"
-              }`}
-            >
-              Fontes
-            </button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {/* Gráfico */}
-          <div className="relative h-80 z-0 md:col-span-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <Stat label="Despesas no período" value={fmtBRL(totalSpent)} tone="text-neg" sub={`${visible.length} mês(es)`} />
+        <Stat label="Receitas no período" value={fmtBRL(totalEarned)} tone="text-pos" />
+        <Stat label="Saldo" value={fmtBRL(totalEarned - totalSpent)} tone={totalEarned - totalSpent >= 0 ? "text-pos" : "text-neg"} />
+        <Stat label="Média mensal de despesas" value={fmtBRL(avgSpent)} sub={mom !== null ? `${mom >= 0 ? "▲" : "▼"} ${Math.abs(mom * 100).toFixed(0)}% vs. mês anterior` : undefined} />
+        <Stat
+          label={budget > 0 ? "Meta mensal" : "Maior categoria"}
+          value={budget > 0 ? fmtBRL(budget) : grouped[0]?.name || "–"}
+          tone={budget > 0 && current && current.Despesas > budget ? "text-neg" : "text-ink"}
+          sub={budget > 0 && current ? `${current.month}: ${Math.round((current.Despesas / budget) * 100)}% usado` : grouped[0] ? fmtBRL(grouped[0].averagePerMonth) + "/mês" : "Defina em Configurações"}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <ChartCard title="Despesas e receitas por mês" subtitle={budget > 0 ? `Linha tracejada = meta de ${fmtBRL(budget)}` : undefined} className="lg:col-span-3">
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie 
-                  data={processedData} 
-                  dataKey="value" 
-                  nameKey="name" 
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label={({ percent }) => {
-                    // Mostrar label apenas se for maior que 5%
-                    if (percent < 0.05) return "";
-                    return `${(percent * 100).toFixed(0)}%`;
-                  }}
-                  labelLine={false}
-                >
-                  {processedData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v) => fmtBRL(v)} />
-              </PieChart>
+              <ComposedChart data={monthlyChart} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                <YAxis tickFormatter={fmtCompact} tickLine={false} axisLine={false} width={56} />
+                <Tooltip content={<MoneyTooltip />} />
+                <Legend />
+                <Bar dataKey="Despesas" fill="rgb(var(--c-neg))" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Receitas" fill="rgb(var(--c-pos))" radius={[3, 3, 0, 0]} />
+                <Line type="monotone" dataKey="Saldo" stroke="rgb(var(--c-ink))" strokeWidth={2} dot={{ r: 2 }} />
+                {budget > 0 && <ReferenceLine y={budget} stroke="rgb(var(--c-accent))" strokeDasharray="5 5" />}
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
-          
-          {/* Lista */}
-          <div className="md:col-span-2 space-y-2 overflow-y-auto max-h-80">
-            {processedData.map((item, index) => {
-              const total = processedData.reduce((sum, i) => sum + i.value, 0);
-              const percent = total > 0 ? (item.value / total) * 100 : 0;
-              const showTotal = showTotalFor.has(item.name);
-              
-              const handleClick = () => {
-                setShowTotalFor(prev => {
-                  const newSet = new Set(prev);
-                  if (newSet.has(item.name)) {
-                    newSet.delete(item.name);
-                  } else {
-                    newSet.add(item.name);
-                  }
-                  return newSet;
-                });
-              };
-              
-              return (
-                <div 
-                  key={item.name} 
-                  className="flex items-center p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                  onClick={handleClick}
-                >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div 
-                      className="h-3 w-3 rounded-full flex-shrink-0" 
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span className="text-xs font-medium text-slate-700 truncate min-w-0">{item.name}</span>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                    <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">{percent.toFixed(1)}%</span>
-                    <span className="text-xs font-bold text-slate-800 whitespace-nowrap min-w-[95px] text-right">
-                      {showTotal ? fmtBRL(item.value) : `${fmtBRL(item.averagePerMonth)}/mês`}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+        </ChartCard>
 
-      <div className="rounded-2xl bg-white p-4 shadow lg:col-span-2">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="text-center">
-            <h4 className="mb-1 text-sm font-medium text-slate-600">Total de Despesas</h4>
-            <div className="text-2xl font-bold text-red-600">
-              {fmtBRL(monthlyChart.reduce((acc, m) => acc + (m.Despesas || 0), 0))}
+        <ChartCard title={`Despesas por ${groupBy === "category" ? "categoria" : "fonte"}`} subtitle={showTotals ? "Totais do período" : "Média mensal"} className="lg:col-span-2">
+          {pieData.length ? (
+            <div className="flex flex-col gap-3">
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={48} outerRadius={80} paddingAngle={2} stroke="rgb(var(--c-surface))">
+                      {pieData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<MoneyTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="max-h-56 space-y-1 overflow-auto text-xs">
+                {grouped.map((item) => {
+                  const total = grouped.reduce((s, i) => s + i.value, 0);
+                  const pct = total ? (item.value / total) * 100 : 0;
+                  return (
+                    <li key={item.name} className="flex items-center gap-2 rounded px-1 py-0.5 hover:bg-surface-2">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="flex-1 truncate font-medium text-ink">{item.name}</span>
+                      <span className="num w-10 text-right text-muted">{pct.toFixed(0)}%</span>
+                      <span className="num w-24 text-right font-semibold text-ink">{fmtBRL(showTotals ? item.value : item.averagePerMonth)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
+          ) : (
+            <EmptyState title="Sem despesas no período." />
+          )}
+        </ChartCard>
+
+        <ChartCard title={`Para onde foi o dinheiro, mês a mês`} subtitle={`Top 6 ${groupBy === "category" ? "categorias" : "fontes"} empilhadas`} className="lg:col-span-3">
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stackedData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                <YAxis tickFormatter={fmtCompact} tickLine={false} axisLine={false} width={56} />
+                <Tooltip content={<MoneyTooltip />} />
+                <Legend />
+                {stackedKeys.map((key) => (
+                  <Bar key={key} dataKey={key} stackId="s" fill={key === "Outros" ? "rgb(var(--c-faint))" : colorOf(key)} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-          <div className="text-center">
-            <h4 className="mb-1 text-sm font-medium text-slate-600">Total de Receitas</h4>
-            <div className="text-2xl font-bold text-emerald-600">
-              {fmtBRL(monthlyChart.reduce((acc, m) => acc + (m.Receitas || 0), 0))}
-            </div>
-          </div>
-          <div className="text-center">
-            <h4 className="mb-1 text-sm font-medium text-slate-600">Saldo Líquido</h4>
-            <div className={`text-2xl font-bold ${
-              monthlyChart.reduce((acc, m) => acc + (m.Receitas || 0) - (m.Despesas || 0), 0) >= 0
-                ? "text-emerald-600" 
-                : "text-red-600"
-            }`}>
-              {fmtBRL(monthlyChart.reduce((acc, m) => acc + (m.Receitas || 0) - (m.Despesas || 0), 0))}
-            </div>
-          </div>
-        </div>
-      </div>
+        </ChartCard>
+
+        <ChartCard title="Maiores gastos recorrentes" subtitle="Por descrição, no período" className="lg:col-span-2">
+          {topDescriptions.length ? (
+            <ul className="space-y-1.5 text-xs">
+              {topDescriptions.map((d) => {
+                const max = topDescriptions[0].total || 1;
+                return (
+                  <li key={d.name}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate font-medium text-ink" title={d.name}>{d.name}</span>
+                      <span className="num shrink-0 text-muted">{d.count}x · <strong className="text-ink">{fmtBRL(d.total)}</strong></span>
+                    </div>
+                    <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-surface-3">
+                      <div className="h-full rounded-full" style={{ width: `${(d.total / max) * 100}%`, backgroundColor: d.categories[0] ? catColor(d.categories[0]) : "rgb(var(--c-faint))" }} />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <EmptyState title="Sem despesas no período." />
+          )}
+        </ChartCard>
       </div>
     </div>
   );

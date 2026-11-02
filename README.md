@@ -1,78 +1,60 @@
-# Financial Monitor
+# Monitor Financeiro
 
-Uma aplicação React para acompanhar investimentos com armazenamento local (localStorage), exportação/importação em JSON e gráficos com Recharts.
+Aplicação React (Vite + Tailwind) para acompanhar **investimentos** e **gastos** com armazenamento 100% local (localStorage), importação de extratos/faturas, relatórios em PDF e temas claro/escuro.
 
-## Pré-requisitos
-
-- [Node.js](https://nodejs.org/) (versão 18 ou superior recomendada)
-- npm (instalado junto com o Node.js)
-
-## Desenvolvimento local
+## Rodando
 
 ```bash
 npm install
 npm run dev
 ```
 
-O comando `npm run dev` inicia o Vite na porta padrão (geralmente `http://localhost:5173`).
-
-## Testes
-
-Testes unitários e de componentes são executados com [Vitest](https://vitest.dev/) e [Testing Library](https://testing-library.com/).
+O Vite sobe em `http://localhost:5173/Financial-Monitor/` (o `base` é fixo para o GitHub Pages).
 
 ```bash
-npm run test
+npm test          # testes unitários (Vitest)
+npm run build     # build de produção em dist/
+npm run test:e2e  # Playwright (precisa do dev server rodando)
 ```
 
-## Build para produção
+## Principais telas
 
-```bash
-npm run build
+| Rota | O que faz |
+| --- | --- |
+| `/` | Resumo rápido: patrimônio atual, rendimento, despesas/receitas do mês, meta mensal. |
+| `/investimentos` (`/historico`, `/entrada`, `/projecoes`) | Saldo por banco e data; rendimento calculado automaticamente; gráficos por banco ou fonte; projeções. |
+| `/gastos` (`/historico`, `/entrada`, `/financiamentos`) | Transações com múltiplas categorias/fontes, importação CSV/XLSX/PDF, mapeamentos automáticos, simulador Price/SAC. |
+| `/investimentos/relatorio`, `/gastos/relatorio` | Relatório em tela, impressão e PDF. |
+| `/configuracoes` | Perfil, preferências, tema/cor/modo de digitação, bibliotecas (bancos, fontes, categorias), mapeamentos, backup. |
+
+## Como os dados funcionam
+
+- **Investimentos**: cada lançamento é uma foto do saldo de um banco em uma data (`invested`, `inAccount`) mais o aporte/retirada desde o último saldo (`cashFlow`). Rendimento = total atual − (total anterior + aporte).
+- **Patrimônio atual** = soma do último saldo de cada banco. No dashboard dá para escolher entre "Último saldo" (bancos sem lançamento no mês mantêm o valor) e "Só o mês".
+- **Gastos**: valor negativo = despesa, positivo = receita. Categorias e fontes são listas. Ao categorizar uma descrição, um mapeamento (descrição → categorias) é aprendido e reaplicado em importações futuras.
+- Tudo fica em `localStorage` na chave `financial-monitor-unified-v1`. Preferências de interface (tema, cor, modo de digitação) ficam em `fm-ui-prefs` e sobrevivem a resets/importações.
+
+## Backup, importação e exportação
+
+- **Exportar** gera `financial-monitor_<data>.json` com `{ version: 3, type: "unified", data: {...} }`.
+- **Importar** aceita esse backup, o store unificado puro, e os formatos antigos (`{ inputs: [{ entries }] }`, `{ inputs: [{ expenses }] }`, arrays). Antes de aplicar mostra um resumo e permite **Mesclar** (só o que é novo) ou **Substituir**.
+- CSV: exportação das tabelas filtradas em Histórico e em Configurações → Dados.
+
+## Estrutura
+
+```
+src/
+  store/unifiedStore.js      # fonte única de verdade (useSyncExternalStore) + persistência
+  utils/unifiedStorage.js    # normalização/migração do store
+  utils/importExport.js      # detecção de formato, mesclagem, CSV
+  utils/investmentAnalytics.js
+  utils/money.js             # parse/format de dinheiro
+  theme/                     # preferências de UI e temas (CSS variables em index.css)
+  components/                # AppShell, Select, CurrencyInput, KPICard, Modal, ImportModal...
+  investments/, expenses/    # apps e componentes de cada área
+  pages/                     # SettingsPage, ReportPage
 ```
 
-Os arquivos prontos ficam disponíveis em `dist/`.
+## Publicação no GitHub Pages
 
-## Formato do arquivo JSON
-
-As exportações agora utilizam uma estrutura única que guarda os lançamentos, os bancos cadastrados e um resumo agregado:
-
-```json
-{
-  "version": 2,
-  "created_at": "2025-01-01T00:00:00.000Z",
-  "exported_at": "2025-01-31T12:00:00.000Z",
-  "banks": [
-    { "name": "Nubank Caixinhas", "color": "#8A05BE", "icon": "🟣" }
-  ],
-  "inputs": [
-    {
-      "summary": {
-        "total_invested": 1000,
-        "total_in_account": 0,
-        "total_input": 1000,
-        "total_yield_value": 0
-      },
-      "entries": [
-        { "bank": "Nubank Caixinhas", "date": "2025-01-15", "inAccount": 0, "invested": 1000, "cashFlow": 1000 }
-      ]
-    }
-  ]
-}
-```
-
-- **banks**: lista de bancos com cor e ícone que alimenta os cadastros e sugestões.
-- **inputs**: coleções de lançamentos; o app lê todos os itens desse array e recalcula rendimentos automaticamente.
-
-O botão **Template** baixa um arquivo com essa estrutura para facilitar a criação de planilhas próprias.
-
-## Publicando no GitHub Pages
-
-Este repositório já contém um workflow de CI/CD (`.github/workflows/deploy.yml`) que executa testes, gera o build de produção e publica automaticamente no GitHub Pages sempre que há push na branch `master`.
-
-1. Configure o Pages em **Settings > Pages** para usar a opção **GitHub Actions**.
-2. Realize um push para a branch `master` com suas alterações.
-3. O workflow irá gerar e publicar o site em `https://<seu-usuario>.github.io/financial-monitor/` (ou no domínio customizado configurado no Pages).
-
-Caso prefira realizar o processo manualmente, rode `npm run build` e publique o conteúdo de `dist/` no branch escolhido.
-
-> **Dica:** o `vite.config.js` está configurado com `base: "./"`, o que permite hospedar o build em subdiretórios, como acontece no GitHub Pages (`https://usuario.github.io/repositorio/`).
+O workflow `.github/workflows/deploy.yml` roda os testes, gera o build e publica no Pages a cada push em `master`.

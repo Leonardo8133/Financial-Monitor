@@ -1,3 +1,4 @@
+import { colorForName, isValidColor } from "../../utils/palette.js";
 export const DEFAULT_SOURCES = [
   { name: "Salário", color: "#0EA5E9", icon: "💼" },
   { name: "Freelance", color: "#6366F1", icon: "🧑‍💻" },
@@ -6,19 +7,13 @@ export const DEFAULT_SOURCES = [
 ];
 
 export function stringToSourceColor(input = "") {
-  let hash = 0;
-  for (let i = 0; i < input.length; i += 1) {
-    hash = input.charCodeAt(i) + ((hash << 5) - hash);
-    hash |= 0;
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue} 65% 55%)`;
+  return colorForName(input);
 }
 
 export function resolveSourceVisual(sourceName = "", library = DEFAULT_SOURCES) {
   const lower = sourceName.toLowerCase();
   const preset = library.find((source) => source.name.toLowerCase() === lower);
-  if (preset) return preset;
+  if (preset) return isValidColor(preset.color) ? preset : { ...preset, color: colorForName(sourceName) };
   return { name: sourceName, color: stringToSourceColor(sourceName), icon: "📊" };
 }
 

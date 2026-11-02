@@ -2,10 +2,164 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-slate-50 text-slate-800;
+/* ---------------------------------------------------------------------------
+   Theme tokens. Values are space separated RGB so Tailwind can add opacity.
+   Themes are switched with <html data-theme="light|dark"> (see theme/prefs.js)
+   and the accent with <html data-accent="...">.
+--------------------------------------------------------------------------- */
+:root {
+  --c-canvas: 244 246 250;
+  --c-surface: 255 255 255;
+  --c-surface-2: 247 249 252;
+  --c-surface-3: 236 240 246;
+  --c-line: 226 232 240;
+  --c-ink: 15 23 42;
+  --c-muted: 100 116 139;
+  --c-faint: 148 163 184;
+  --c-accent: 37 99 235;
+  --c-accent-fg: 255 255 255;
+  --c-pos: 5 150 105;
+  --c-neg: 220 38 38;
+  --chart-grid: 226 232 240;
+  --chart-text: 100 116 139;
+  color-scheme: light;
 }
 
-button:focus {
-  @apply outline-none ring-2 ring-slate-400 ring-offset-2;
+:root[data-theme="dark"] {
+  --c-canvas: 9 14 26;
+  --c-surface: 17 24 41;
+  --c-surface-2: 23 32 52;
+  --c-surface-3: 32 43 68;
+  --c-line: 42 54 82;
+  --c-ink: 230 236 246;
+  --c-muted: 150 163 186;
+  --c-faint: 100 114 140;
+  --c-accent: 96 165 250;
+  --c-accent-fg: 9 14 26;
+  --c-pos: 52 211 153;
+  --c-neg: 248 113 113;
+  --chart-grid: 42 54 82;
+  --chart-text: 150 163 186;
+  color-scheme: dark;
 }
+
+:root[data-accent="emerald"] { --c-accent: 5 150 105; }
+:root[data-accent="violet"] { --c-accent: 124 58 237; }
+:root[data-accent="amber"] { --c-accent: 217 119 6; --c-accent-fg: 255 255 255; }
+:root[data-accent="rose"] { --c-accent: 225 29 72; }
+:root[data-theme="dark"][data-accent="emerald"] { --c-accent: 52 211 153; }
+:root[data-theme="dark"][data-accent="violet"] { --c-accent: 167 139 250; }
+:root[data-theme="dark"][data-accent="amber"] { --c-accent: 251 191 36; --c-accent-fg: 9 14 26; }
+:root[data-theme="dark"][data-accent="rose"] { --c-accent: 251 113 133; }
+
+html, body { height: 100%; }
+body {
+  @apply bg-canvas text-ink antialiased;
+  transition: background-color .2s ease, color .2s ease;
+}
+* { scrollbar-width: thin; scrollbar-color: rgb(var(--c-faint) / .5) transparent; }
+
+/* --------------------------------------------------------------------------
+   Reusable component classes
+--------------------------------------------------------------------------- */
+@layer components {
+  .card { @apply rounded-2xl border border-line bg-surface shadow-card; }
+  .card-pad { @apply card p-4 md:p-5; }
+  .panel { @apply rounded-xl border border-line bg-surface-2; }
+
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-medium text-ink shadow-sm transition hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+  .btn-xs { @apply px-2 py-1 text-[0.7rem]; }
+  .btn-primary { @apply btn border-transparent bg-accent text-accent-fg hover:bg-accent/90; }
+  .btn-ghost { @apply btn border-transparent bg-transparent shadow-none hover:bg-surface-3; }
+  .btn-danger { @apply btn border-neg/30 text-neg hover:bg-neg/10; }
+  .btn-pos { @apply btn border-pos/30 text-pos hover:bg-pos/10; }
+
+  .input { @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-faint outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted; }
+  .input-sm { @apply px-2 py-1.5 text-xs; }
+  .label { @apply mb-1 block text-xs font-medium text-muted; }
+
+  .chip { @apply inline-flex items-center gap-1 rounded-full border border-line bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink; }
+  .chip-on { @apply chip border-accent/40 bg-accent/10 text-accent; }
+  .pill-toggle { @apply inline-flex items-center gap-1 rounded-lg bg-surface-3 p-1; }
+  .pill-toggle > button { @apply rounded-md px-2.5 py-1 text-xs font-medium text-muted transition; }
+  .pill-toggle > button[aria-pressed="true"] { @apply bg-surface text-ink shadow-sm; }
+
+  .table-base { @apply min-w-full divide-y divide-line text-sm; }
+  .table-base thead { @apply bg-surface-2; }
+  .table-base th { @apply px-3 py-2 text-left text-[0.7rem] font-semibold uppercase tracking-wide text-muted; }
+  .table-base td { @apply px-3 py-2 align-middle; }
+  .table-base tbody tr { @apply border-t border-line; }
+  .table-base tbody tr:hover { @apply bg-surface-2; }
+
+  .kbd { @apply rounded border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[0.65rem] text-muted; }
+  .modal-backdrop { @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm; }
+  .modal-box { @apply w-full rounded-2xl border border-line bg-surface p-5 shadow-pop; }
+  .modal-box { max-height: 90vh; overflow: auto; }
+  .num { font-variant-numeric: tabular-nums; }
+}
+
+/* Native form controls follow the theme */
+input[type="date"]::-webkit-calendar-picker-indicator { opacity: .6; cursor: pointer; }
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+input[type="color"] { @apply h-8 w-10 cursor-pointer rounded-md border border-line bg-surface p-0.5; }
+
+/* --------------------------------------------------------------------------
+   Dark-theme overrides for hue tints still used in places (red/emerald/...)
+--------------------------------------------------------------------------- */
+:root[data-theme="dark"] .bg-emerald-50 { background-color: rgb(16 185 129 / .14); }
+:root[data-theme="dark"] .bg-red-50 { background-color: rgb(239 68 68 / .14); }
+:root[data-theme="dark"] .bg-blue-50 { background-color: rgb(59 130 246 / .16); }
+:root[data-theme="dark"] .bg-amber-50 { background-color: rgb(245 158 11 / .16); }
+:root[data-theme="dark"] .bg-purple-50 { background-color: rgb(168 85 247 / .16); }
+:root[data-theme="dark"] .bg-orange-50 { background-color: rgb(249 115 22 / .16); }
+:root[data-theme="dark"] .bg-green-50 { background-color: rgb(34 197 94 / .14); }
+:root[data-theme="dark"] .bg-emerald-100 { background-color: rgb(16 185 129 / .22); }
+:root[data-theme="dark"] .bg-red-100 { background-color: rgb(239 68 68 / .22); }
+:root[data-theme="dark"] .bg-blue-100 { background-color: rgb(59 130 246 / .22); }
+:root[data-theme="dark"] .bg-amber-100 { background-color: rgb(245 158 11 / .22); }
+:root[data-theme="dark"] .bg-purple-100 { background-color: rgb(168 85 247 / .22); }
+:root[data-theme="dark"] .text-emerald-700, :root[data-theme="dark"] .text-emerald-800, :root[data-theme="dark"] .text-emerald-600 { color: rgb(52 211 153); }
+:root[data-theme="dark"] .text-red-700, :root[data-theme="dark"] .text-red-800, :root[data-theme="dark"] .text-red-600 { color: rgb(248 113 113); }
+:root[data-theme="dark"] .text-blue-700, :root[data-theme="dark"] .text-blue-800, :root[data-theme="dark"] .text-blue-600 { color: rgb(147 197 253); }
+:root[data-theme="dark"] .text-amber-700, :root[data-theme="dark"] .text-amber-800, :root[data-theme="dark"] .text-amber-600 { color: rgb(252 211 77); }
+:root[data-theme="dark"] .text-purple-700, :root[data-theme="dark"] .text-purple-800, :root[data-theme="dark"] .text-purple-600 { color: rgb(196 181 253); }
+:root[data-theme="dark"] .border-emerald-200 { border-color: rgb(16 185 129 / .4); }
+:root[data-theme="dark"] .border-red-200 { border-color: rgb(239 68 68 / .4); }
+:root[data-theme="dark"] .border-blue-200 { border-color: rgb(59 130 246 / .4); }
+:root[data-theme="dark"] .border-amber-200 { border-color: rgb(245 158 11 / .4); }
+:root[data-theme="dark"] .border-purple-200 { border-color: rgb(168 85 247 / .4); }
+
+/* --------------------------------------------------------------------------
+   Recharts theming
+--------------------------------------------------------------------------- */
+.recharts-cartesian-grid line { stroke: rgb(var(--chart-grid)); }
+.recharts-cartesian-axis-line, .recharts-cartesian-axis-tick-line { stroke: rgb(var(--chart-grid)); }
+.recharts-cartesian-axis-tick-value, .recharts-legend-item-text, .recharts-text { fill: rgb(var(--chart-text)); font-size: 11px; }
+.recharts-legend-item-text { color: rgb(var(--chart-text)) !important; }
+.recharts-default-tooltip {
+  background: rgb(var(--c-surface)) !important;
+  border: 1px solid rgb(var(--c-line)) !important;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgb(2 6 23 / .25);
+  color: rgb(var(--c-ink));
+}
+.recharts-tooltip-label { color: rgb(var(--c-ink)) !important; font-weight: 600; }
+.recharts-tooltip-item { color: rgb(var(--c-ink)) !important; }
+.recharts-surface:focus { outline: none; }
+
+/* react-select (MultiPillSelect) theming */
+.select__control { background: rgb(var(--c-surface)) !important; border-color: rgb(var(--c-line)) !important; }
+.select__control--is-focused { border-color: rgb(var(--c-accent)) !important; box-shadow: 0 0 0 2px rgb(var(--c-accent) / .3) !important; }
+.select__menu { background: rgb(var(--c-surface)) !important; border: 1px solid rgb(var(--c-line)); box-shadow: 0 10px 30px rgb(2 6 23 / .25) !important; }
+.select__option { color: rgb(var(--c-ink)) !important; }
+.select__option--is-focused { background: rgb(var(--c-surface-3)) !important; }
+.select__option--is-selected { background: rgb(var(--c-accent) / .18) !important; }
+.select__input-container, .select__single-value { color: rgb(var(--c-ink)) !important; }
+.select__placeholder { color: rgb(var(--c-faint)) !important; }
+.select__indicator { color: rgb(var(--c-faint)) !important; }
+.select__indicator-separator { background: rgb(var(--c-line)) !important; }
+
+@keyframes fm-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fm-fade-in .18s ease-out; }
+@media print { .no-print { display: none !important; } }

@@ -1,9 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   UNIFIED_LS_KEY,
   ensureUnifiedDefaults,
   importUnifiedData,
   migrateToUnifiedStorage,
+  normalizeExpense,
+  normalizeInvestmentEntry,
 } from './unifiedStorage.js';
 
 class MockFileReader {
@@ -13,7 +15,6 @@ class MockFileReader {
         this.onerror?.(new Error('read failed'));
         return;
       }
-
       this.onload?.({ target: { result: file.content } });
     });
   }
@@ -52,6 +53,7 @@ describe('unifiedStorage', () => {
         ignoredDescriptions: ['foo', '', 9],
       },
       version: 2,
+      junk: true,
     });
 
     expect(normalized.investimentos.entries).toEqual([]);
@@ -59,7 +61,8 @@ describe('unifiedStorage', () => {
     expect(normalized.investimentos.sources).toEqual([{ name: 'Pessoal', color: '', icon: '' }]);
     expect(normalized.investimentos.personalInfo.fullName).toBe('');
     expect(normalized.investimentos.settings.defaultFocusArea).toBe('investimentos');
-    expect(normalized.gastos.expenses).toEqual([{ id: '1', value: -20 }]);
+    expect(normalized.gastos.expenses).toHaveLength(1);
+    expect(normalized.gastos.expenses[0]).toMatchObject({ id: '1', value: -20, isExpense: true, categories: [], sources: [] });
     expect(normalized.gastos.personalInfo.householdSize).toBe(3);
     expect(normalized.gastos.settings.monthlyBudget).toBe(1500);
     expect(normalized.gastos.settings.currency).toBe('BRL');
@@ -68,6 +71,18 @@ describe('unifiedStorage', () => {
     ]);
     expect(normalized.gastos.ignoredDescriptions).toEqual(['foo']);
     expect(normalized.version).toBe('1.0.0');
+    expect(normalized.junk).toBeUndefined();
+  });
+
+  it('normalizes entries and expenses (ids, numbers, derived fields stripped)', () => {
+    const entry = normalizeInvestmentEntry({ bank: ' XP ', date: '2025-01-15T00:00:00.000Z', invested: '1.234,50', inAccount: null, cashFlow: 'abc', yieldValue: 99 });
+    expect(entry.id).toBeTruthy();
+    expect(entry).toMatchObject({ bank: 'XP', date: '2025-01-15', invested: 1234.5, inAccount: 0, cashFlow: 0 });
+    expect(entry.yieldValue).toBeUndefined();
+
+    const expense = normalizeExpense({ description: ' Uber ', date: '2025-02-01', value: '-12,30', category: 'Transporte', source: 'Pessoal', locked: true });
+    expect(expense).toMatchObject({ description: 'Uber', value: -12.3, isExpense: true, categories: ['Transporte'], sources: ['Pessoal'], category: 'Transporte', source: 'Pessoal' });
+    expect(expense.locked).toBeUndefined();
   });
 
   it('sanitizes an existing unified payload during migration', async () => {
@@ -75,7 +90,7 @@ describe('unifiedStorage', () => {
       UNIFIED_LS_KEY,
       JSON.stringify({
         investimentos: {
-          entries: [{ id: 'i1' }],
+          entries: [{ id: 'i1', bank: 'XP', date: '2025-01-01' }],
           banks: [{ name: 'XP', color: '#000', icon: 'x' }, { icon: '?' }],
           sources: [{ name: 'Pessoal' }],
         },
@@ -118,8 +133,8 @@ describe('unifiedStorage', () => {
 
     const migrated = await migrateToUnifiedStorage();
 
-    expect(migrated.investimentos.entries).toEqual([{ id: 'legacy-investment', invested: 100 }]);
-    expect(migrated.gastos.expenses).toEqual([{ id: 'legacy-expense', value: -35 }]);
+    expect(migrated.investimentos.entries[0]).toMatchObject({ id: 'legacy-investment', invested: 100 });
+    expect(migrated.gastos.expenses[0]).toMatchObject({ id: 'legacy-expense', value: -35 });
     expect(migrated.investimentos.banks).toEqual([{ name: 'Banco Antigo', color: '', icon: '' }]);
     expect(migrated.gastos.sources).toEqual([{ name: 'Casa', color: '', icon: '' }]);
   });
@@ -149,5 +164,20 @@ describe('unifiedStorage', () => {
     expect(imported.investimentos.banks).toEqual([{ name: 'Nu', color: '', icon: '' }]);
     expect(imported.gastos.settings.currency).toBe('BRL');
     expect(JSON.parse(localStorage.getItem(UNIFIED_LS_KEY))).toEqual(imported);
+  });
+});
+
+describe('reference exchange rates', () => {
+  it('seeds EUR/USD defaults and keeps user values', () => {
+    expect(ensureUnifiedDefaults({ gastos: {} }).gastos.settings.fxRates).toEqual({ EUR: 5.615, USD: 5.02 });
+    expect(ensureUnifiedDefaults({ gastos: { settings: { fxRates: { EUR: '6,1', usd: 5, GBP: 0 } } } }).gastos.settings.fxRates).toEqual({ EUR: 6.1 });
+  });
+});
+
+describe('investment source mode', () => {
+  it('defaults to a single source and keeps valid values', () => {
+    expect(ensureUnifiedDefaults({}).investimentos.settings).toMatchObject({ sourceMode: 'single', defaultSource: '' });
+    expect(ensureUnifiedDefaults({ investimentos: { settings: { sourceMode: 'multiple', defaultSource: ' Leo ' } } }).investimentos.settings).toMatchObject({ sourceMode: 'multiple', defaultSource: 'Leo' });
+    expect(ensureUnifiedDefaults({ investimentos: { settings: { sourceMode: 'x' } } }).investimentos.settings.sourceMode).toBe('single');
   });
 });

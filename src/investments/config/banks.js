@@ -1,3 +1,4 @@
+import { colorForName, isValidColor } from "../../utils/palette.js";
 export const DEFAULT_BANKS = [
   { name: "Nubank - Caixinhas", color: "#8A05BE", icon: "🟣" },
   { name: "Nubank - Investimentos", color: "#7A04B5", icon: "💜" },
@@ -19,19 +20,13 @@ export const DEFAULT_BANKS = [
 ];
 
 export function stringToColor(input = "") {
-  let hash = 0;
-  for (let i = 0; i < input.length; i += 1) {
-    hash = input.charCodeAt(i) + ((hash << 5) - hash);
-    hash |= 0;
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue} 70% 50%)`;
+  return colorForName(input);
 }
 
 export function resolveBankVisual(bankName = "", library = DEFAULT_BANKS) {
   const lower = bankName.toLowerCase();
   const preset = library.find((bank) => bank.name.toLowerCase() === lower);
-  if (preset) return preset;
+  if (preset) return isValidColor(preset.color) ? preset : { ...preset, color: colorForName(bankName) };
   return { name: bankName, color: stringToColor(bankName), icon: "🏦" };
 }
 

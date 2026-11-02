@@ -1,66 +1,79 @@
-import { fmtBRL } from "../utils/formatters.js";
+import { useState } from "react";
+import { fmtBRL, fmtPct } from "../utils/formatters.js";
 
 const tones = {
-  neutral: "text-slate-900",
-  positive: "text-emerald-600",
-  negative: "text-red-600",
+  neutral: "text-ink",
+  positive: "text-pos",
+  negative: "text-neg",
+  accent: "text-accent",
 };
 
-export function KPICard({ title, value, secondaryValue, subtitle, tone = "neutral", hoverDetails = [], tooltip }) {
+export function resolveTone(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "neutral";
+  if (Number(value) < 0) return "negative";
+  if (Number(value) > 0) return "positive";
+  return "neutral";
+}
+
+/**
+ * KPI tile. `delta` shows month-over-month change; `details` opens a small list on click.
+ */
+export function KPICard({
+  title,
+  value,
+  secondaryValue,
+  subtitle,
+  tone = "neutral",
+  delta,
+  deltaLabel = "vs. mês anterior",
+  hoverDetails = [],
+  tooltip,
+  icon,
+  compact = false,
+}) {
+  const [open, setOpen] = useState(false);
   const toneClass = tones[tone] ?? tones.neutral;
-  const details = Array.isArray(hoverDetails) ? hoverDetails : [];
-  const hasHoverDetails = details.length > 0;
-  const tooltipMessage = tooltip || (hasHoverDetails ? "Passe o mouse para ver detalhes da composição" : undefined);
-  const shouldScroll = details.length > 6;
-  const scrollDuration = Math.max(details.length * 1.2, 8);
+  const details = Array.isArray(hoverDetails) ? hoverDetails.filter((d) => d && d.name) : [];
+  const hasDetails = details.length > 0;
+  const deltaTone = delta === null || delta === undefined ? null : delta >= 0 ? "text-pos" : "text-neg";
 
   return (
-    <div className="group rounded-xl bg-white p-3 shadow-sm" title={tooltipMessage}>
-      <div className="text-[0.65rem] uppercase tracking-wide text-slate-500">{title}</div>
-      <div className={`mt-1 text-lg font-semibold ${toneClass} ${hasHoverDetails ? "group-hover:hidden" : ""}`}>{value}</div>
-      {secondaryValue && (
-        <div className={`text-xs font-semibold ${toneClass} ${hasHoverDetails ? "group-hover:hidden" : ""}`}>{secondaryValue}</div>
+    <div
+      className={`card relative ${compact ? "p-3" : "p-4"} ${hasDetails ? "cursor-pointer" : ""}`}
+      title={tooltip || (hasDetails ? "Clique para ver a composição" : undefined)}
+      onClick={hasDetails ? () => setOpen((v) => !v) : undefined}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-[0.68rem] font-semibold uppercase tracking-wide text-muted">{title}</div>
+        {icon && <span className="text-faint">{icon}</span>}
+      </div>
+      <div className={`num mt-1 ${compact ? "text-lg" : "text-xl"} font-semibold ${toneClass}`}>{value}</div>
+      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
+        {secondaryValue && <span className={`num font-semibold ${toneClass}`}>{secondaryValue}</span>}
+        {deltaTone && (
+          <span className={`num font-medium ${deltaTone}`}>
+            {delta >= 0 ? "▲" : "▼"} {fmtPct(Math.abs(delta), 1)} <span className="text-faint">{deltaLabel}</span>
+          </span>
+        )}
+      </div>
+      {subtitle && <div className="mt-1 text-[0.72rem] text-muted">{subtitle}</div>}
+      {hasDetails && open && (
+        <ul className="mt-3 space-y-1 border-t border-line pt-2 text-xs fade-in">
+          {details.map((detail) => (
+            <li key={detail.name} className="flex items-center justify-between gap-2 text-muted">
+              <span className="flex items-center gap-1.5 truncate">
+                {detail.color && <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: detail.color }} />}
+                {detail.icon && <span aria-hidden="true">{detail.icon}</span>}
+                <span className="truncate">{detail.name}</span>
+              </span>
+              <span className="num shrink-0 font-semibold text-ink">
+                {fmtBRL(detail.value ?? detail.invested ?? detail.total ?? 0)}
+                {detail.percentage != null ? <span className="ml-1 text-faint">({detail.percentage}%)</span> : ""}
+              </span>
+            </li>
+          ))}
+        </ul>
       )}
-      {hasHoverDetails && (
-        <div className="hidden group-hover:block">
-          {shouldScroll ? (
-            <div className="relative mt-2 h-28 overflow-hidden text-xs">
-              <style>{`
-@keyframes vertical-marquee { from { transform: translateY(0); } to { transform: translateY(-50%); } }
-`}</style>
-              <div
-                className="absolute left-0 top-0 w-full"
-                style={{ animation: `vertical-marquee ${scrollDuration}s linear infinite` }}
-              >
-                <ul className="space-y-1">
-                  {details.concat(details).map((detail, idx) => (
-                    <li key={`${detail.name}-${idx}`} className="flex items-center justify-between text-slate-600">
-                      <span className="font-medium text-slate-700">{detail.name}</span>
-                      <span className="font-semibold text-slate-900">
-                        {fmtBRL(detail.invested ?? detail.total ?? 0)}
-                        {detail.percentage != null ? ` (${detail.percentage}%)` : ""}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ) : (
-            <ul className="mt-2 space-y-1 text-xs">
-              {details.map((detail) => (
-                <li key={detail.name} className="flex items-center justify-between text-slate-600">
-                  <span className="font-medium text-slate-700">{detail.name}</span>
-                  <span className="font-semibold text-slate-900">
-                    {fmtBRL(detail.invested ?? detail.total ?? 0)}
-                    {detail.percentage != null ? ` (${detail.percentage}%)` : ""}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-      {subtitle && <div className="mt-1 text-[0.7rem] text-slate-500">{subtitle}</div>}
     </div>
   );
 }

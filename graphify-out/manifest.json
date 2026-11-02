@@ -1,0 +1,764 @@
+{
+  ".claude/launch.json": {
+    "mtime": 1791371430.795135,
+    "seen": 1791371860.347518,
+    "ast_hash": "13d552e9d6e18a8c558c5ad407e91708",
+    "semantic_hash": ""
+  },
+  ".claude/settings.json": {
+    "mtime": 1791369161.9381008,
+    "seen": 1791371860.34752,
+    "ast_hash": "5c511cbdc7fcda005c8112e781c563bd",
+    "semantic_hash": ""
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1791369161.938176,
+    "seen": 1791371860.347521,
+    "ast_hash": "49ab62af862b5f5f39a03bc2fa0585a9",
+    "semantic_hash": ""
+  },
+  ".vscode/commands/commands-timer-backup.json": {
+    "mtime": 1791369161.9389153,
+    "seen": 1791371860.347521,
+    "ast_hash": "d70c80d7bf844baa538caf669f3e4cd8",
+    "semantic_hash": ""
+  },
+  ".vscode/commands/commands-timer.json": {
+    "mtime": 1791369161.9389877,
+    "seen": 1791371860.347522,
+    "ast_hash": "d70c80d7bf844baa538caf669f3e4cd8",
+    "semantic_hash": ""
+  },
+  ".vscode/commands/commands.json": {
+    "mtime": 1791369161.9390671,
+    "seen": 1791371860.347522,
+    "ast_hash": "88194da5af85f24ea3626da85af45135",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1791369161.9545283,
+    "seen": 1791371860.347523,
+    "ast_hash": "9e76b40065e00dec31886f950fc6fa29",
+    "semantic_hash": ""
+  },
+  "playwright.config.js": {
+    "mtime": 1791369161.955595,
+    "seen": 1791371860.347523,
+    "ast_hash": "0d2671f5d86986e6c50156b346fc3db3",
+    "semantic_hash": ""
+  },
+  "postcss.config.js": {
+    "mtime": 1791369161.9556713,
+    "seen": 1791371860.347523,
+    "ast_hash": "c735540bb63936a123bc867d950c9f69",
+    "semantic_hash": ""
+  },
+  "public/configuracoes-padrao.json": {
+    "mtime": 1791460635.5011473,
+    "seen": 1793652892.641472,
+    "ast_hash": "f77023c581d925c5ed544547e7e7443d",
+    "semantic_hash": ""
+  },
+  "scripts/console-merge.js": {
+    "mtime": 1791369161.9561121,
+    "seen": 1791371860.3475242,
+    "ast_hash": "b2c8870830b325aafd5ba3e94bf2d282",
+    "semantic_hash": ""
+  },
+  "scripts/merge-data.js": {
+    "mtime": 1791369161.9561822,
+    "seen": 1791371860.3475251,
+    "ast_hash": "97dded9747f8908e13ae4c71750368fb",
+    "semantic_hash": ""
+  },
+  "scripts/merged-data-example.json": {
+    "mtime": 1791369161.9562547,
+    "seen": 1791371860.3475251,
+    "ast_hash": "1d3cf1a625c05225eb5777bcc5a1347a",
+    "semantic_hash": ""
+  },
+  "scripts/test-unified-export-both-apps.js": {
+    "mtime": 1791369161.956328,
+    "seen": 1791371860.3475251,
+    "ast_hash": "1cc1853922953d65d579141b59c2aee1",
+    "semantic_hash": ""
+  },
+  "scripts/test-unified-export.js": {
+    "mtime": 1791369161.9564028,
+    "seen": 1791371860.3475258,
+    "ast_hash": "d8dfbe64edfb82a21311e098ac88f5dd",
+    "semantic_hash": ""
+  },
+  "src/components/ActionButton.jsx": {
+    "mtime": 1791370286.1958299,
+    "seen": 1791371860.3475258,
+    "ast_hash": "7d088478431b4535d07c7eb4c268ee70",
+    "semantic_hash": ""
+  },
+  "src/components/AppShell.jsx": {
+    "mtime": 1791370286.2960944,
+    "seen": 1791371860.3475258,
+    "ast_hash": "e78adb51f91f8d9015340f09f7a2c269",
+    "semantic_hash": ""
+  },
+  "src/components/BackToHomeButton.jsx": {
+    "mtime": 1791370286.197538,
+    "seen": 1791371860.347527,
+    "ast_hash": "7626a627bc38d7a095eb724f7069a0f6",
+    "semantic_hash": ""
+  },
+  "src/components/CurrencyInput.jsx": {
+    "mtime": 1791370156.096328,
+    "seen": 1791371860.347527,
+    "ast_hash": "e8fa1ee3787bc706d52373d867940809",
+    "semantic_hash": ""
+  },
+  "src/components/ErrorPage.jsx": {
+    "mtime": 1791370286.2976792,
+    "seen": 1791371860.347527,
+    "ast_hash": "c6d250d31c4b0fbfb1e632185026c761",
+    "semantic_hash": ""
+  },
+  "src/components/HomePage.jsx": {
+    "mtime": 1791370286.2993436,
+    "seen": 1791371860.347528,
+    "ast_hash": "71ef43b6f51c99bfea79b7ee78d4a4e6",
+    "semantic_hash": ""
+  },
+  "src/components/ImportModal.jsx": {
+    "mtime": 1791370286.190063,
+    "seen": 1791371860.347528,
+    "ast_hash": "021a740a954c07c76c4939f92f871bb1",
+    "semantic_hash": ""
+  },
+  "src/components/KPICard.jsx": {
+    "mtime": 1791370286.192161,
+    "seen": 1791371860.347529,
+    "ast_hash": "c3d7d5050950f693d4fc6ed83ab88093",
+    "semantic_hash": ""
+  },
+  "src/components/KPICard.test.jsx": {
+    "mtime": 1791369161.9571824,
+    "seen": 1791371860.347529,
+    "ast_hash": "bfd0c79eec63a790d23f3adf86e2bda8",
+    "semantic_hash": ""
+  },
+  "src/components/Modal.jsx": {
+    "mtime": 1793638200.874121,
+    "seen": 1793652892.641494,
+    "ast_hash": "509dffac84b03d086ad9b89d3693978b",
+    "semantic_hash": ""
+  },
+  "src/components/Select.jsx": {
+    "mtime": 1791370156.0943196,
+    "seen": 1791371860.34753,
+    "ast_hash": "206859114625dd0334336596601a8851",
+    "semantic_hash": ""
+  },
+  "src/components/Tab.jsx": {
+    "mtime": 1791370286.1941683,
+    "seen": 1791371860.34753,
+    "ast_hash": "ac549eeb62fff5d72b0e1d652f69ef14",
+    "semantic_hash": ""
+  },
+  "src/components/Toast.jsx": {
+    "mtime": 1791370618.579933,
+    "seen": 1791371860.34753,
+    "ast_hash": "04923c731de5450a9e94154e42983267",
+    "semantic_hash": ""
+  },
+  "src/components/icons.jsx": {
+    "mtime": 1791462833.7888253,
+    "seen": 1793652892.6414988,
+    "ast_hash": "cb1010093d3d5d52f33d4478a53eed42",
+    "semantic_hash": ""
+  },
+  "src/expenses/ExpensesApp.jsx": {
+    "mtime": 1791464931.4378595,
+    "seen": 1793652892.6415,
+    "ast_hash": "38a2050113a5ce7882412f0d4861c8e4",
+    "semantic_hash": ""
+  },
+  "src/expenses/ExpensesApp.test.jsx": {
+    "mtime": 1791371415.7536907,
+    "seen": 1791371860.347531,
+    "ast_hash": "5c16ef9e3e21b56083b2826b06fafc89",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/ExpensesDashboard.jsx": {
+    "mtime": 1791371062.7310233,
+    "seen": 1791371860.347532,
+    "ast_hash": "fd581951afd3f3e5b2abfdb58a28fcd4",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/ExpensesEntrada.jsx": {
+    "mtime": 1791464931.4376528,
+    "seen": 1793652892.6415029,
+    "ast_hash": "3c84a52b183620c0f71d7bb8d18f836f",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/ExpensesHistorico.jsx": {
+    "mtime": 1791465824.9571588,
+    "seen": 1793652892.641505,
+    "ast_hash": "ed6f7035f02f9970d93716986115c806",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/FinancingCalculator.jsx": {
+    "mtime": 1791371062.8160157,
+    "seen": 1791371860.347533,
+    "ast_hash": "20e3f032d164817e121726d1652ab6db",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/MappingModal.jsx": {
+    "mtime": 1791370803.297991,
+    "seen": 1791371860.347533,
+    "ast_hash": "f70d0ba4ec3ccc3a06ce65949eb68d4a",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/MultiPillSelect.jsx": {
+    "mtime": 1791459940.265523,
+    "seen": 1793652892.6415098,
+    "ast_hash": "ff586c6918edbb3d17934fb7bdc445f1",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/Uploader.jsx": {
+    "mtime": 1791464931.4374166,
+    "seen": 1793652892.641511,
+    "ast_hash": "e39cb60af226e15519ca0b7008ea7458",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/Uploader.test.jsx": {
+    "mtime": 1791369161.9586577,
+    "seen": 1791371860.3475342,
+    "ast_hash": "48eb0fceb3910519cd6270f99617f1d3",
+    "semantic_hash": ""
+  },
+  "src/expenses/config/categories.js": {
+    "mtime": 1791459971.3711371,
+    "seen": 1793652892.641514,
+    "ast_hash": "719b862ce3813d399cd408ca03d7ec80",
+    "semantic_hash": ""
+  },
+  "src/expenses/config/descriptionMappings.js": {
+    "mtime": 1791369161.9588501,
+    "seen": 1791371860.3475351,
+    "ast_hash": "d0b08614cd44470e5ae7c360800e35b1",
+    "semantic_hash": ""
+  },
+  "src/expenses/config/sources.js": {
+    "mtime": 1791459971.3712478,
+    "seen": 1793652892.641516,
+    "ast_hash": "ccf648d0095dfa562e72caea11c608fe",
+    "semantic_hash": ""
+  },
+  "src/expenses/config/storage.js": {
+    "mtime": 1791369161.9590008,
+    "seen": 1791371860.3475358,
+    "ast_hash": "2967ce1d2405aa8a663fadfd593af11e",
+    "semantic_hash": ""
+  },
+  "src/expenses/pages/ExpensesReport.jsx": {
+    "mtime": 1791371276.2935388,
+    "seen": 1791371860.3475358,
+    "ast_hash": "d88bb4b23d870269574716b35e754ef3",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/expenses.js": {
+    "mtime": 1791370803.2053747,
+    "seen": 1791371860.3475368,
+    "ast_hash": "0b43051e7f1400539289788b670adb96",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/importTemplates.js": {
+    "mtime": 1791464640.4079263,
+    "seen": 1793652892.641523,
+    "ast_hash": "881fd72398555e73fdf36d4872a9e983",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/pdfTemplates.js": {
+    "mtime": 1791369161.9597306,
+    "seen": 1791371860.3475368,
+    "ast_hash": "d0f545be2fc63e5257d6666de8231465",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/pdfTemplates.test.js": {
+    "mtime": 1791369161.9598408,
+    "seen": 1791371860.347538,
+    "ast_hash": "8f1e18b6c5c8a5eeb194969d7c9bd137",
+    "semantic_hash": ""
+  },
+  "src/hooks/useLocalStorageState.js": {
+    "mtime": 1791370066.0256908,
+    "seen": 1791371860.347538,
+    "ast_hash": "4b9cb1edcd80e7b2d35fa561f6d7ecf9",
+    "semantic_hash": ""
+  },
+  "src/hooks/useOfflineMode.js": {
+    "mtime": 1791371276.0695314,
+    "seen": 1791371860.347538,
+    "ast_hash": "79203438e9b6019fa664c24bf7f483e8",
+    "semantic_hash": ""
+  },
+  "src/hooks/useOpenDatePickerProps.js": {
+    "mtime": 1791369161.9602027,
+    "seen": 1791371860.347539,
+    "ast_hash": "cb7aa852f75ce50843deab1416dc29b4",
+    "semantic_hash": ""
+  },
+  "src/hooks/useUnifiedAppBootstrap.js": {
+    "mtime": 1791371415.74256,
+    "seen": 1791371860.347539,
+    "ast_hash": "da44d56f910aa22d96f9f219d5450ea3",
+    "semantic_hash": ""
+  },
+  "src/hooks/useUnifiedAppBootstrap.test.jsx": {
+    "mtime": 1791371415.7466748,
+    "seen": 1791371860.34754,
+    "ast_hash": "d1be2f9e5caa54333fa407057e270958",
+    "semantic_hash": ""
+  },
+  "src/investments/InvestmentsApp.jsx": {
+    "mtime": 1793638313.9959264,
+    "seen": 1793652892.641535,
+    "ast_hash": "e09c5d92b809e172b311614fe72a3aec",
+    "semantic_hash": ""
+  },
+  "src/investments/InvestmentsApp.test.jsx": {
+    "mtime": 1791371415.7520244,
+    "seen": 1791371860.34754,
+    "ast_hash": "3eec36b82bc8c84b7190e2231134ae71",
+    "semantic_hash": ""
+  },
+  "src/investments/components/Dashboard.jsx": {
+    "mtime": 1793638130.4539344,
+    "seen": 1793652892.6415381,
+    "ast_hash": "eb7ba44862ce04c0c8d0b6fa11f9974f",
+    "semantic_hash": ""
+  },
+  "src/investments/components/Entrada.jsx": {
+    "mtime": 1793638313.9962113,
+    "seen": 1793652892.64154,
+    "ast_hash": "3683b6dc8274fdadeea659bbb43e957d",
+    "semantic_hash": ""
+  },
+  "src/investments/components/Field.jsx": {
+    "mtime": 1791370286.1992364,
+    "seen": 1791371860.347541,
+    "ast_hash": "9f33883ed08bf8e3affdcf9d8721a099",
+    "semantic_hash": ""
+  },
+  "src/investments/components/Historico.jsx": {
+    "mtime": 1793638350.685084,
+    "seen": 1793652892.641541,
+    "ast_hash": "1671ba9427a685033e5c52fca4ca8e7b",
+    "semantic_hash": ""
+  },
+  "src/investments/components/Projecoes.jsx": {
+    "mtime": 1791371415.7426744,
+    "seen": 1791371860.347542,
+    "ast_hash": "c901f1f13fbdccdf72a40d5f31a98a3e",
+    "semantic_hash": ""
+  },
+  "src/investments/components/Projecoes.test.jsx": {
+    "mtime": 1791371415.7502832,
+    "seen": 1791371860.347542,
+    "ast_hash": "f1dedfacfc343686892c528788ff5b06",
+    "semantic_hash": ""
+  },
+  "src/investments/components/TableCells.jsx": {
+    "mtime": 1791370286.200996,
+    "seen": 1791371860.347543,
+    "ast_hash": "c7fc72f86b4f47253130bd306565ba63",
+    "semantic_hash": ""
+  },
+  "src/investments/config/banks.js": {
+    "mtime": 1791459971.3713388,
+    "seen": 1793652892.641545,
+    "ast_hash": "b421d5e252f376cf10d87014c669cb55",
+    "semantic_hash": ""
+  },
+  "src/investments/config/investmentStorage.js": {
+    "mtime": 1791369161.962004,
+    "seen": 1791371860.347543,
+    "ast_hash": "3b0d5e484f72eb7a7077274d6cc8b7b3",
+    "semantic_hash": ""
+  },
+  "src/investments/config/sources.js": {
+    "mtime": 1791459971.3714066,
+    "seen": 1793652892.641547,
+    "ast_hash": "60efda10fe85072480e4f303bd80b6a3",
+    "semantic_hash": ""
+  },
+  "src/investments/data/demoEntries.js": {
+    "mtime": 1791369161.962229,
+    "seen": 1791371860.347544,
+    "ast_hash": "1052fb88b53f6d04dd675002341f48e9",
+    "semantic_hash": ""
+  },
+  "src/investments/pages/InvestmentReport.jsx": {
+    "mtime": 1791371276.2919416,
+    "seen": 1791371860.347544,
+    "ast_hash": "f4981b65c98b0d502f5afda52e5dd803",
+    "semantic_hash": ""
+  },
+  "src/main.jsx": {
+    "mtime": 1791371276.296894,
+    "seen": 1791371860.3475451,
+    "ast_hash": "95f6a82eac2b16e2623ca113f7a1e8f8",
+    "semantic_hash": ""
+  },
+  "src/pages/ReportPage.jsx": {
+    "mtime": 1791371276.2901857,
+    "seen": 1791371860.3475451,
+    "ast_hash": "28c2a540e63f36a9b0dfb5a343e5a2b6",
+    "semantic_hash": ""
+  },
+  "src/pages/SettingsPage.jsx": {
+    "mtime": 1793638145.3376741,
+    "seen": 1793652892.641552,
+    "ast_hash": "9a4fd2c2ee2d836db87cd76dff7fce60",
+    "semantic_hash": ""
+  },
+  "src/setupTests.js": {
+    "mtime": 1791370066.0168006,
+    "seen": 1791371860.347546,
+    "ast_hash": "d65daae8a7c407f2ca2e7949c0a56771",
+    "semantic_hash": ""
+  },
+  "src/store/unifiedStore.js": {
+    "mtime": 1791371415.7423687,
+    "seen": 1791371860.347546,
+    "ast_hash": "2dac19ae6873b50b6df3824c32ecafaa",
+    "semantic_hash": ""
+  },
+  "src/theme/PrefsProvider.jsx": {
+    "mtime": 1791369940.3822536,
+    "seen": 1791371860.347546,
+    "ast_hash": "34b5ca71ee9700284a649d435da2e566",
+    "semantic_hash": ""
+  },
+  "src/theme/prefs.js": {
+    "mtime": 1791369940.3807485,
+    "seen": 1791371860.3475468,
+    "ast_hash": "4a2a4940ac52536cc88316a141cf0073",
+    "semantic_hash": ""
+  },
+  "src/utils/defaultConfigLoader.js": {
+    "mtime": 1791369161.962831,
+    "seen": 1791371860.3475468,
+    "ast_hash": "772ebb15539545d47c849cd9c5e23a29",
+    "semantic_hash": ""
+  },
+  "src/utils/entries.js": {
+    "mtime": 1793638313.9951704,
+    "seen": 1793652892.6415591,
+    "ast_hash": "9a7493381ffbdaa57a7052cf3502a989",
+    "semantic_hash": ""
+  },
+  "src/utils/entries.test.js": {
+    "mtime": 1793638314.0002673,
+    "seen": 1793652892.64156,
+    "ast_hash": "2c023553237fd976a8ff854a6d210b82",
+    "semantic_hash": ""
+  },
+  "src/utils/formatters.js": {
+    "mtime": 1791369940.385606,
+    "seen": 1791371860.347548,
+    "ast_hash": "893b900c0af9898d28519c9b7376d37f",
+    "semantic_hash": ""
+  },
+  "src/utils/formatters.test.js": {
+    "mtime": 1791369161.9631877,
+    "seen": 1791371860.347549,
+    "ast_hash": "55945d12a8a4eb164ce950d9f374af8b",
+    "semantic_hash": ""
+  },
+  "src/utils/importExport.js": {
+    "mtime": 1791459587.9344099,
+    "seen": 1793652892.641563,
+    "ast_hash": "42fc0c608238d756769d780ca2c9391e",
+    "semantic_hash": ""
+  },
+  "src/utils/importExport.test.js": {
+    "mtime": 1791371415.7570026,
+    "seen": 1791371860.347549,
+    "ast_hash": "e62ec1437b1202af2e50e588b0225a32",
+    "semantic_hash": ""
+  },
+  "src/utils/investmentAnalytics.js": {
+    "mtime": 1793638313.9957392,
+    "seen": 1793652892.6415648,
+    "ast_hash": "32df1ce33dee9412170b6460171b8ce1",
+    "semantic_hash": ""
+  },
+  "src/utils/investmentAnalytics.test.js": {
+    "mtime": 1791371429.315096,
+    "seen": 1791371860.34755,
+    "ast_hash": "994059b12b3e3f1d92021bb6fbc7ea6e",
+    "semantic_hash": ""
+  },
+  "src/utils/money.js": {
+    "mtime": 1791369940.3839767,
+    "seen": 1791371860.3475509,
+    "ast_hash": "059c32a19eb1db1ad5ce48f507f42256",
+    "semantic_hash": ""
+  },
+  "src/utils/money.test.js": {
+    "mtime": 1791371415.755373,
+    "seen": 1791371860.3475509,
+    "ast_hash": "23f41b4fd2316f7137518372ad12669f",
+    "semantic_hash": ""
+  },
+  "src/utils/pdf.jsx": {
+    "mtime": 1791371276.2953176,
+    "seen": 1791371860.3475509,
+    "ast_hash": "146024a1609d8bb1e430632f5ab8810e",
+    "semantic_hash": ""
+  },
+  "src/utils/reporting.js": {
+    "mtime": 1791369161.9634182,
+    "seen": 1791371860.347552,
+    "ast_hash": "5299ac14921ada26ec46d9f4ba8c550b",
+    "semantic_hash": ""
+  },
+  "src/utils/unifiedStorage.js": {
+    "mtime": 1793638130.4529238,
+    "seen": 1793652892.641572,
+    "ast_hash": "0602fc4cf4283ac13637e39858e19edc",
+    "semantic_hash": ""
+  },
+  "src/utils/unifiedStorage.test.js": {
+    "mtime": 1793638145.342027,
+    "seen": 1793652892.6415732,
+    "ast_hash": "96ab4bcef97811a9356a42b38a7506e2",
+    "semantic_hash": ""
+  },
+  "tailwind.config.js": {
+    "mtime": 1791369940.278816,
+    "seen": 1791371860.347553,
+    "ast_hash": "578a4e874369e52922de43ff7dc0d73d",
+    "semantic_hash": ""
+  },
+  "test-results/.last-run.json": {
+    "mtime": 1791369161.9640522,
+    "seen": 1791371860.347554,
+    "ast_hash": "ccd74079a8df162b960bf74ce983fcac",
+    "semantic_hash": ""
+  },
+  "tests/e2e/basic-test.spec.js": {
+    "mtime": 1791371752.321473,
+    "seen": 1791371860.347554,
+    "ast_hash": "a1b108a40830b27f015a2dac00d8833b",
+    "semantic_hash": ""
+  },
+  "tests/e2e/default-config.spec.js": {
+    "mtime": 1791371752.3217838,
+    "seen": 1791371860.347554,
+    "ast_hash": "f182dfff50c040652cb1b4d41cb319fa",
+    "semantic_hash": ""
+  },
+  "tests/e2e/expenses.spec.js": {
+    "mtime": 1791371752.322403,
+    "seen": 1791371860.3475552,
+    "ast_hash": "d0805ada0143d4d9db0e9b22d94703e8",
+    "semantic_hash": ""
+  },
+  "tests/e2e/investments.spec.js": {
+    "mtime": 1791371752.3229725,
+    "seen": 1791371860.3475552,
+    "ast_hash": "0139979acd4ca8df244214a879e65ce7",
+    "semantic_hash": ""
+  },
+  "tests/fixtures/test-import.json": {
+    "mtime": 1791369161.9649415,
+    "seen": 1791371860.3475552,
+    "ast_hash": "c17a8dd02e7f4f36d935f88d0726f71a",
+    "semantic_hash": ""
+  },
+  "vite.config.js": {
+    "mtime": 1791369940.2848094,
+    "seen": 1791371860.347556,
+    "ast_hash": "b623878a0751eff3ccc36d8960412153",
+    "semantic_hash": ""
+  },
+  "vitest.config.js": {
+    "mtime": 1791369161.9651139,
+    "seen": 1791371860.347556,
+    "ast_hash": "4a2f3232c1e912da1775a65b5a0c9adb",
+    "semantic_hash": ""
+  },
+  ".github/workflows/deploy.yml": {
+    "mtime": 1791369161.9386537,
+    "seen": 1791371860.347556,
+    "ast_hash": "caeaadeb6b056c3a2bbda41f26e382ac",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1791369161.9391375,
+    "seen": 1791371860.347557,
+    "ast_hash": "31e0358c19f45d8f8354305cd71a126a",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1791371813.7044377,
+    "seen": 1791371860.347557,
+    "ast_hash": "dc1097f757d0cff2d6f21b160649d172",
+    "semantic_hash": ""
+  },
+  "docs/ARCHITECTURE_OVERVIEW.md": {
+    "mtime": 1791369161.9394314,
+    "seen": 1791371860.347557,
+    "ast_hash": "84f8f2e1fd851aabc510390c17b1c9ea",
+    "semantic_hash": ""
+  },
+  "docs/CONFIGURACOES.md": {
+    "mtime": 1791369161.939514,
+    "seen": 1791371860.3475578,
+    "ast_hash": "87d5db4464085e901e659ea7f0231520",
+    "semantic_hash": ""
+  },
+  "docs/README_EXPENSES.md": {
+    "mtime": 1791369161.939593,
+    "seen": 1791371860.3475578,
+    "ast_hash": "d2579dd3977076a24f4152f4c8d766ef",
+    "semantic_hash": ""
+  },
+  "docs/UNIFIED_SYSTEM.md": {
+    "mtime": 1791369161.9396799,
+    "seen": 1791371860.347559,
+    "ast_hash": "808f4570c6128075faf3eb7944da839c",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1791369940.2827504,
+    "seen": 1791371860.347559,
+    "ast_hash": "0edfeb9e044b6a2a3f2c398b99ae1290",
+    "semantic_hash": ""
+  },
+  "playwright-report/index.html": {
+    "mtime": 1791369161.9555001,
+    "seen": 1791371860.347559,
+    "ast_hash": "c525d8383f94d3d7422a05a9b0942967",
+    "semantic_hash": ""
+  },
+  "public/404.html": {
+    "mtime": 1791369161.9557893,
+    "seen": 1791371860.34756,
+    "ast_hash": "a36051d090fff2917377ec4fc2a4cfe3",
+    "semantic_hash": ""
+  },
+  "tasks/todo.md": {
+    "mtime": 1791371903.0170257,
+    "seen": 1793652892.641593,
+    "ast_hash": "24640640dfb1cfa4c55c709a9ca29836",
+    "semantic_hash": ""
+  },
+  "tests/e2e/README.md": {
+    "mtime": 1791369161.9642575,
+    "seen": 1791371860.34756,
+    "ast_hash": "ab3ef30ebf2d28088850d21fb307e376",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/Screenshot 2025-10-04 at 15.14.12.png": {
+    "mtime": 1791369161.9407892,
+    "seen": 1791371860.347561,
+    "ast_hash": "9c264e50e671abec82dfe4b674eed485",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/debug-expenses.png": {
+    "mtime": 1791369161.9410107,
+    "seen": 1791371860.347561,
+    "ast_hash": "d3a0fa8b988513441baa074f58379cc7",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/debug-initial-load.png": {
+    "mtime": 1791369161.9413183,
+    "seen": 1791371860.347562,
+    "ast_hash": "651dedc32dc5936b3179206fb7004d3f",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/debug-investments.png": {
+    "mtime": 1791369161.9415586,
+    "seen": 1791371860.347562,
+    "ast_hash": "a78990137f4cdb050d2b2f607012d632",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/expenses-history-after-add.png": {
+    "mtime": 1791369161.94178,
+    "seen": 1791371860.347562,
+    "ast_hash": "c0e301dd436d370ff6422bc978a8ed0c",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/history-after-add.png": {
+    "mtime": 1791369161.942049,
+    "seen": 1791371860.347563,
+    "ast_hash": "7c8aecccaab8ec5a9b923f590d9539b5",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/nova-despesa-form.png": {
+    "mtime": 1791369161.9423163,
+    "seen": 1791371860.347563,
+    "ast_hash": "1f5898eaccfcdca9c64222d4b81f0af1",
+    "semantic_hash": ""
+  },
+  "docs/screenshots/nova-entrada-form.png": {
+    "mtime": 1791369161.9425817,
+    "seen": 1791371860.347563,
+    "ast_hash": "722a1f8d5d4b3e16d37268671795eddb",
+    "semantic_hash": ""
+  },
+  "src/expenses/components/ExpensesViews.jsx": {
+    "mtime": 1791465708.3115351,
+    "seen": 1793652892.641506,
+    "ast_hash": "f20d607ccc1d36430578f467f538052e",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/duplicates.js": {
+    "mtime": 1791463897.423463,
+    "seen": 1793652892.641519,
+    "ast_hash": "d722d5ba604e6403fac00023c546ce38",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/duplicates.test.js": {
+    "mtime": 1791463897.4254107,
+    "seen": 1793652892.64152,
+    "ast_hash": "e113be62585358a5943de288145aab73",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/importTemplates.test.js": {
+    "mtime": 1791460617.357705,
+    "seen": 1793652892.641524,
+    "ast_hash": "d0a63598edf31532d0cdafbfdbb98b26",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/views.js": {
+    "mtime": 1791462833.7884076,
+    "seen": 1793652892.641527,
+    "ast_hash": "623e7034018aae23671795dc14630916",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/wise.js": {
+    "mtime": 1791464931.43724,
+    "seen": 1793652892.6415281,
+    "ast_hash": "81d9f98f3e9e22a62db31d734252a5d1",
+    "semantic_hash": ""
+  },
+  "src/expenses/utils/wise.test.js": {
+    "mtime": 1791464931.4380655,
+    "seen": 1793652892.641529,
+    "ast_hash": "278daebc6e3473fbb2edd73a5ab87254",
+    "semantic_hash": ""
+  },
+  "src/investments/components/BankSelect.jsx": {
+    "mtime": 1793638200.8742688,
+    "seen": 1793652892.641537,
+    "ast_hash": "b37ecbe846def01bbb361576be2536cf",
+    "semantic_hash": ""
+  },
+  "src/utils/palette.js": {
+    "mtime": 1791459940.2475822,
+    "seen": 1793652892.6415691,
+    "ast_hash": "2c8c97eb0f4306583a451b41eb99788a",
+    "semantic_hash": ""
+  }
+}

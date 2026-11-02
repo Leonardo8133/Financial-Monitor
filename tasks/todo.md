@@ -1,22 +1,18 @@
-# Financial Monitor Improvement Plan
+# Financial Monitor — plano e histórico
 
-## Objectives
-- Reduce duplication in app bootstrap and persistence flows.
-- Make unified storage safer to evolve and test.
-- Improve workflow reliability in tests and CI.
+## Feito (out/2026)
+- [x] Store unificado em memória (`src/store/unifiedStore.js`) compartilhado por todas as telas; persistência única.
+- [x] Correção dos botões Exportar/Importar (import de `UNIFIED_LS_KEY` faltando) e da página de configurações de gastos (`ensureExpensesDefaults` inexistente).
+- [x] Importação com pré-visualização e modos mesclar/substituir; aceita backup v3, store puro e formatos antigos.
+- [x] Tema claro/escuro/automático + cor de destaque; tokens CSS em `index.css`.
+- [x] Campo de dinheiro com dois modos (livre / centavos) e parser robusto (`utils/money.js`).
+- [x] Formulários com autopreenchimento: último saldo por banco, memória de descrições (categoria/fonte/valor), duplicados.
+- [x] Dashboards reformulados (por banco/fonte, último saldo vs. só o mês, meta mensal, top gastos).
+- [x] Relatórios em tela + PDF por download (sem pop-ups).
+- [x] Configurações unificadas e compactas (`/configuracoes`).
+- [x] Testes unitários atualizados e novos (money, importExport, investmentAnalytics).
 
-## Plan
-- [done] Extract shared unified-storage bootstrap hook used by Investments and Expenses apps.
-- [done] Add focused tests for bootstrap behavior and persistence edge cases.
-- [done] Add runtime validation helpers for unified storage hydration and imports.
-- [pending] Stabilize Playwright selectors and replace fixed waits with state-based waits.
-- [pending] Expand CI to run at least a smoke E2E path before deploy.
-- [pending] Reduce production bundle size with route-level code splitting.
-- [pending] Update architecture docs to reflect the unified-storage system.
-
-## Review
-- Initial implementation slice extracted the duplicate bootstrap logic into a shared hook and removed per-app initialization effects.
-- Added direct tests for migration and fresh-install bootstrap paths.
-- Added unified-storage normalization and validation for hydration, legacy migration, export, import, and reset flows.
-- Validation status: `npm test` and `npm run build` passed after the storage changes.
-- Graphify package was installed in the workspace Python environment and the repository graph was rebuilt successfully.
+## Pendente
+- [ ] Revisar a suíte Playwright (`tests/e2e`) para os novos componentes (react-select, novos textos).
+- [ ] Rodar um smoke E2E no CI antes do deploy.
+- [x] Grafo do graphify reconstruído (use `.venv/bin/python`; pacote `graphifyy`).

@@ -25,3 +25,12 @@ test-results/*
 playwright-report/*
 *.error-context.md
 test-results/*/error-context.md
+
+# Python venv for graphify
+.venv/
+
+.playwright-mcp/
+
+# graphify local cache and dated snapshots
+graphify-out/cache/
+graphify-out/20*/

@@ -1,141 +1,174 @@
 import { useMemo } from "react";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
+import { colorForName, isValidColor, pillBackground, pillBorder, pillTextColor } from "../../utils/palette.js";
 
 function normalizeValues(values) {
   if (!Array.isArray(values)) return [];
-  return values.map((v) => String(v)).filter((v) => v.trim() !== "");
+  return values.map((v) => (typeof v === "string" ? v : v?.name ?? String(v))).filter((v) => v && v.trim() !== "");
 }
 
+/**
+ * Multi-select with colored pills. Options can be strings or {name, color, icon}.
+ * Pass onCreateOption to allow creating a new option by typing.
+ */
 export function MultiPillSelect({
   values = [],
   options = [],
   onChange,
+  onCreateOption,
   placeholder = "Selecionar...",
   disabled = false,
   className = "",
+  size = "sm",
+  isMulti = true,
+  compact = false,
+  variant = "solid", // "solid" (filled pills) | "outline" (neutral pill with a color dot)
 }) {
   const normalizedValues = useMemo(() => normalizeValues(values), [values]);
 
   const reactOptions = useMemo(() => {
     const base = (Array.isArray(options) ? options : [])
       .map((o) => {
-        if (typeof o === "string") return { name: o, icon: "", color: "#1F2937" };
-        return { name: o?.name || "", icon: o?.icon || "", color: o?.color || "#1F2937" };
+        if (typeof o === "string") return { name: o, icon: "", color: "" };
+        return { name: o?.name || "", icon: o?.icon || "", color: o?.color || "" };
       })
       .filter((o) => o.name);
-    // Garante que valores selecionados também existam na lista
-    const merged = Array.from(new Set([...base, ...normalizedValues.map(v => ({ name: v, icon: "", color: "#1F2937" }))]));
-    return merged.map((item) => ({ 
-      value: item.name, 
+    const known = new Set(base.map((o) => o.name));
+    const extras = normalizedValues.filter((v) => !known.has(v)).map((v) => ({ name: v, icon: "", color: "" }));
+    return [...base, ...extras].map((item) => ({
+      value: item.name,
       label: item.name,
       icon: item.icon,
-      color: item.color
+      color: isValidColor(item.color) ? item.color : colorForName(item.name),
     }));
   }, [options, normalizedValues]);
 
   const reactValue = useMemo(
-    () => normalizedValues.map((label) => {
-      const option = reactOptions.find(opt => opt.value === label);
-      return { 
-        value: label, 
-        label: label,
-        icon: option?.icon || "",
-        color: option?.color || "#1F2937"
-      };
-    }),
+    () => normalizedValues.map((label) => reactOptions.find((opt) => opt.value === label) || { value: label, label }),
     [normalizedValues, reactOptions]
   );
 
+  const fontSize = size === "md" ? 13 : 12;
   const styles = {
     control: (base, state) => ({
       ...base,
-      minHeight: 34,
-      borderColor: state.isFocused ? "#94a3b8" : "#e2e8f0",
-      boxShadow: state.isFocused ? "0 0 0 2px rgba(100,116,139,.2)" : "none",
-      ":hover": { borderColor: "#94a3b8" },
+      minHeight: compact ? 30 : size === "md" ? 38 : 32,
       borderRadius: 8,
-      fontSize: 12,
+      fontSize,
+      backgroundColor: "rgb(var(--c-surface))",
+      borderColor: state.isFocused ? "rgb(var(--c-accent))" : "rgb(var(--c-line))",
+      boxShadow: state.isFocused ? "0 0 0 2px rgb(var(--c-accent) / .3)" : "none",
+      ":hover": { borderColor: "rgb(var(--c-faint))" },
+      opacity: state.isDisabled ? 0.6 : 1,
     }),
-    multiValue: (base, state) => {
-      const option = reactOptions.find(opt => opt.value === state.data.value);
-      const color = option?.color || "#1F2937";
-      return {
-        ...base,
-        backgroundColor: `${color}15`,
-        border: `1px solid ${color}40`,
-        color: color,
-        borderRadius: 6,
-      };
-    },
-    multiValueLabel: (base, state) => {
-      const option = reactOptions.find(opt => opt.value === state.data.value);
-      const color = option?.color || "#1F2937";
-      return {
-        ...base,
-        color: color,
-        fontWeight: 600,
-        fontSize: 11,
-      };
-    },
-    multiValueRemove: (base, state) => {
-      const option = reactOptions.find(opt => opt.value === state.data.value);
-      const color = option?.color || "#1F2937";
-      return {
-        ...base,
-        color: color,
-        ":hover": { backgroundColor: "transparent", color: color },
-      };
-    },
+    valueContainer: (base) => ({
+      ...base,
+      padding: compact ? "0 4px" : "1px 6px",
+      gap: 2,
+      ...(compact ? { flexWrap: "nowrap", overflow: "hidden" } : {}),
+    }),
+    multiValue: (base, state) => ({
+      ...base,
+      backgroundColor: variant === "outline" ? "rgb(var(--c-surface-2))" : pillBackground(state.data.color, 18),
+      border: `1px solid ${variant === "outline" ? "rgb(var(--c-line))" : pillBorder(state.data.color, 50)}`,
+      borderRadius: 999,
+      margin: compact ? "1px 2px 1px 0" : base.margin,
+      flexShrink: compact ? 0 : base.flexShrink,
+      maxWidth: compact ? 150 : "none",
+    }),
+    multiValueLabel: (base, state) => ({
+      ...base,
+      color: variant === "outline" ? "rgb(var(--c-ink))" : pillTextColor(state.data.color),
+      title: state.data.label,
+      fontWeight: 600,
+      fontSize: fontSize - 1,
+      padding: compact ? "0 5px" : "1px 6px",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+    }),
+    multiValueRemove: (base, state) => ({
+      ...base,
+      color: variant === "outline" ? "rgb(var(--c-faint))" : pillTextColor(state.data.color),
+      borderRadius: 999,
+      ":hover": { backgroundColor: "transparent", color: "rgb(var(--c-neg))" },
+    }),
+    singleValue: (base) => ({ ...base, color: "rgb(var(--c-ink))" }),
+    input: (base) => ({ ...base, color: "rgb(var(--c-ink))", fontSize }),
+    placeholder: (base) => ({ ...base, fontSize: fontSize - 1, color: "rgb(var(--c-faint))" }),
+    indicatorsContainer: (base) => ({ ...base, paddingRight: compact ? 0 : 4 }),
+    dropdownIndicator: (base) => ({ ...base, padding: compact ? 2 : 4, color: "rgb(var(--c-faint))" }),
+    clearIndicator: (base) => ({ ...base, padding: 4, color: "rgb(var(--c-faint))" }),
+    indicatorSeparator: () => ({ display: "none" }),
+    menu: (base) => ({
+      ...base,
+      zIndex: 60,
+      backgroundColor: "rgb(var(--c-surface))",
+      border: "1px solid rgb(var(--c-line))",
+      borderRadius: 10,
+      boxShadow: "0 10px 30px rgb(2 6 23 / .25)",
+      overflow: "hidden",
+    }),
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
     option: (base, state) => ({
       ...base,
+      fontSize,
+      color: "rgb(var(--c-ink))",
       backgroundColor: state.isSelected
-        ? "#e2e8f0"
+        ? "rgb(var(--c-accent) / .18)"
         : state.isFocused
-        ? "#e5edff"
-        : "white",
-      color: "#111827",
-      fontSize: 12,
+        ? "rgb(var(--c-surface-3))"
+        : "transparent",
+      cursor: "pointer",
     }),
-    placeholder: (base) => ({ ...base, fontSize: 11, color: "#94a3b8" }),
-    valueContainer: (base) => ({ ...base, padding: "1px 6px" }),
-    indicatorsContainer: (base) => ({ ...base, paddingRight: 6 }),
-    dropdownIndicator: (base) => ({ ...base, color: "#64748b" }),
-    clearIndicator: (base) => ({ ...base, color: "#64748b" }),
-    menu: (base) => ({ ...base, zIndex: 30 }),
-    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-    input: (base) => ({ ...base, fontSize: 12 }),
+    noOptionsMessage: (base) => ({ ...base, color: "rgb(var(--c-muted))", fontSize }),
   };
 
-  const formatOptionLabel = (option) => (
-    <div className="flex items-center gap-2">
+  const formatOptionLabel = (option, meta) => (
+    <span className="inline-flex items-center gap-1.5">
+      {(meta?.context === "menu" || variant === "outline") && (
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: option.color }} aria-hidden="true" />
+      )}
+      {option.icon && variant !== "outline" ? <span aria-hidden="true">{option.icon}</span> : null}
       <span>{option.label}</span>
-    </div>
+    </span>
   );
 
-  const formatMultiValueLabel = (option) => (
-    <div className="flex items-center gap-1">
-      <span>{option.label}</span>
-    </div>
-  );
+  const Component = onCreateOption ? CreatableSelect : Select;
 
   return (
     <div className={className}>
-      <Select
-        isMulti
+      <Component
+        isMulti={isMulti}
         isDisabled={disabled}
         options={reactOptions}
-        value={reactValue}
-        onChange={(items) => onChange(Array.isArray(items) ? items.map((i) => i.value) : [])}
+        value={isMulti ? reactValue : reactValue[0] || null}
+        onChange={(items) => {
+          if (isMulti) onChange(Array.isArray(items) ? items.map((i) => i.value) : []);
+          else onChange(items ? [items.value] : []);
+        }}
+        onCreateOption={
+          onCreateOption
+            ? (input) => {
+                const name = String(input || "").trim();
+                if (!name) return;
+                onCreateOption(name);
+                onChange(isMulti ? [...normalizedValues, name] : [name]);
+              }
+            : undefined
+        }
+        formatCreateLabel={(input) => `Criar "${input}"`}
         placeholder={placeholder}
         classNamePrefix="select"
         styles={styles}
-        closeMenuOnSelect={false}
+        closeMenuOnSelect={!isMulti}
         hideSelectedOptions={false}
         menuPosition="fixed"
         menuPortalTarget={typeof window !== "undefined" ? document.body : undefined}
-        isClearable={false}
+        isClearable={!isMulti}
         formatOptionLabel={formatOptionLabel}
-        formatMultiValueLabel={formatMultiValueLabel}
+        noOptionsMessage={() => "Sem opções"}
       />
     </div>
   );

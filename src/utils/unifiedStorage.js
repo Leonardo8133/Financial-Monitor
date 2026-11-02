@@ -1,6 +1,8 @@
 import { LS_KEY } from './formatters.js';
 import { EXPENSES_LS_KEY } from '../expenses/config/storage.js';
 import { initializeNewUserConfig, loadDefaultConfigFromFile } from './defaultConfigLoader.js';
+import { setActiveCurrency } from './money.js';
+import { normalizeViews } from '../expenses/utils/views.js';
 
 export const UNIFIED_LS_KEY = 'financial-monitor-unified-v1';
 
@@ -19,6 +21,8 @@ export const UNIFIED_STORAGE_SEED = {
       defaultTab: 'dashboard',
       defaultFocusArea: 'investimentos',
       reportNotes: '',
+      sourceMode: 'single',
+      defaultSource: '',
     },
     createdAt: new Date().toISOString(),
   },
@@ -36,9 +40,12 @@ export const UNIFIED_STORAGE_SEED = {
       defaultFocusArea: 'gastos',
       monthlyBudget: 0,
       currency: 'BRL',
+      reportNotes: '',
+      fxRates: { EUR: 5.615, USD: 5.02 },
     },
     descriptionCategoryMappings: [],
     ignoredDescriptions: [],
+    views: [],
     createdAt: new Date().toISOString(),
   },
   unifiedAt: new Date().toISOString(),
@@ -54,6 +61,12 @@ function normalizeText(value, fallback = '') {
 }
 
 function normalizeNumber(value, fallback = 0) {
+  if (typeof value === 'string') {
+    const cleaned = value.trim();
+    if (!cleaned) return fallback;
+    const parsed = Number(cleaned.replace(/\./g, '').replace(',', '.'));
+    if (Number.isFinite(parsed)) return parsed;
+  }
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 }
@@ -67,10 +80,6 @@ function normalizeDateString(value, fallback) {
   return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString();
 }
 
-function normalizeRecordArray(value) {
-  return Array.isArray(value) ? value.filter(isRecord) : [];
-}
-
 function normalizeStringArray(value) {
   if (!Array.isArray(value)) {
     return [];
@@ -82,11 +91,23 @@ function normalizeStringArray(value) {
     .filter(Boolean);
 }
 
+function uniqueStrings(list) {
+  return Array.from(new Set(list));
+}
+
+export function generateId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `id-${Math.random().toString(36).slice(2, 10)}-${Date.now()}`;
+}
+
 function normalizeNamedCollection(value) {
   if (!Array.isArray(value)) {
     return [];
   }
 
+  const seen = new Set();
   return value
     .filter(isRecord)
     .map((item) => {
@@ -94,6 +115,9 @@ function normalizeNamedCollection(value) {
       if (!name) {
         return null;
       }
+      const key = name.toLowerCase();
+      if (seen.has(key)) return null;
+      seen.add(key);
 
       return {
         ...item,
@@ -129,6 +153,68 @@ function normalizeDescriptionMappings(value) {
     .filter(Boolean);
 }
 
+/** Investment entry = snapshot of one bank on one date. */
+export function normalizeInvestmentEntry(entry) {
+  if (!isRecord(entry)) return null;
+  const { yieldValue, yieldPct, computedTotal, previousTotal, locked, ...rest } = entry;
+  const bank = normalizeText(entry.bank).trim();
+  const date = normalizeText(entry.date).slice(0, 10);
+  return {
+    ...rest,
+    id: normalizeText(entry.id) || generateId(),
+    bank,
+    source: normalizeText(entry.source).trim(),
+    date,
+    invested: normalizeNumber(entry.invested),
+    inAccount: normalizeNumber(entry.inAccount),
+    cashFlow: normalizeNumber(entry.cashFlow),
+    note: normalizeText(entry.note),
+  };
+}
+
+export function normalizeExpense(expense) {
+  if (!isRecord(expense)) return null;
+  const { locked, absValue, ...rest } = expense;
+  const categories = uniqueStrings(
+    Array.isArray(expense.categories)
+      ? normalizeStringArray(expense.categories)
+      : normalizeText(expense.category).trim()
+      ? [normalizeText(expense.category).trim()]
+      : []
+  );
+  const sources = uniqueStrings(
+    Array.isArray(expense.sources)
+      ? normalizeStringArray(expense.sources)
+      : normalizeText(expense.source).trim()
+      ? [normalizeText(expense.source).trim()]
+      : []
+  );
+  const value = normalizeNumber(expense.value);
+  return {
+    ...rest,
+    id: normalizeText(expense.id) || generateId(),
+    date: normalizeText(expense.date).slice(0, 10),
+    description: normalizeText(expense.description).trim(),
+    categories,
+    sources,
+    category: categories[0] || '',
+    source: sources[0] || '',
+    value,
+    isExpense: value < 0 || (value === 0 && expense.isExpense !== false),
+    note: normalizeText(expense.note),
+  };
+}
+
+function normalizeEntries(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map(normalizeInvestmentEntry).filter(Boolean);
+}
+
+function normalizeExpenses(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map(normalizeExpense).filter(Boolean);
+}
+
 function normalizeInvestmentsPersonalInfo(value) {
   const personalInfo = isRecord(value) ? value : {};
   return {
@@ -148,6 +234,8 @@ function normalizeInvestmentsSettings(value) {
       UNIFIED_STORAGE_SEED.investimentos.settings.defaultFocusArea
     ),
     reportNotes: normalizeText(settings.reportNotes),
+    sourceMode: settings.sourceMode === 'multiple' ? 'multiple' : 'single',
+    defaultSource: normalizeText(settings.defaultSource).trim(),
   };
 }
 
@@ -163,6 +251,17 @@ function normalizeExpensesPersonalInfo(value) {
   };
 }
 
+/** Reference exchange rates (1 unit = X base currency), used when a file has no conversion. */
+function normalizeFxRates(value) {
+  if (!isRecord(value)) return { ...UNIFIED_STORAGE_SEED.gastos.settings.fxRates };
+  const out = {};
+  for (const [code, rate] of Object.entries(value)) {
+    const n = normalizeNumber(rate, 0);
+    if (/^[A-Z]{3}$/.test(code) && n > 0) out[code] = n;
+  }
+  return out;
+}
+
 function normalizeExpensesSettings(value) {
   const settings = isRecord(value) ? value : {};
   return {
@@ -175,11 +274,13 @@ function normalizeExpensesSettings(value) {
       settings.monthlyBudget,
       UNIFIED_STORAGE_SEED.gastos.settings.monthlyBudget
     ),
-    currency: normalizeText(settings.currency, UNIFIED_STORAGE_SEED.gastos.settings.currency),
+    currency: normalizeText(settings.currency, UNIFIED_STORAGE_SEED.gastos.settings.currency) || 'BRL',
+    reportNotes: normalizeText(settings.reportNotes),
+    fxRates: normalizeFxRates(settings.fxRates),
   };
 }
 
-function parseStoredJson(rawValue, fallback = null) {
+export function parseStoredJson(rawValue, fallback = null) {
   if (typeof rawValue !== 'string' || !rawValue.trim() || rawValue === 'null') {
     return fallback;
   }
@@ -248,13 +349,9 @@ export function normalizeUnifiedStorage(value) {
   const investimentos = isRecord(store.investimentos) ? store.investimentos : {};
   const gastos = isRecord(store.gastos) ? store.gastos : {};
 
-  return {
-    ...UNIFIED_STORAGE_SEED,
-    ...store,
+  const normalized = {
     investimentos: {
-      ...UNIFIED_STORAGE_SEED.investimentos,
-      ...investimentos,
-      entries: normalizeRecordArray(investimentos.entries),
+      entries: normalizeEntries(investimentos.entries),
       banks: normalizeNamedCollection(investimentos.banks),
       sources: normalizeNamedCollection(investimentos.sources),
       personalInfo: normalizeInvestmentsPersonalInfo(investimentos.personalInfo),
@@ -262,20 +359,22 @@ export function normalizeUnifiedStorage(value) {
       createdAt: normalizeDateString(investimentos.createdAt, UNIFIED_STORAGE_SEED.investimentos.createdAt),
     },
     gastos: {
-      ...UNIFIED_STORAGE_SEED.gastos,
-      ...gastos,
-      expenses: normalizeRecordArray(gastos.expenses),
+      expenses: normalizeExpenses(gastos.expenses),
       categories: normalizeNamedCollection(gastos.categories),
       sources: normalizeNamedCollection(gastos.sources),
       personalInfo: normalizeExpensesPersonalInfo(gastos.personalInfo),
       settings: normalizeExpensesSettings(gastos.settings),
       descriptionCategoryMappings: normalizeDescriptionMappings(gastos.descriptionCategoryMappings),
       ignoredDescriptions: normalizeStringArray(gastos.ignoredDescriptions),
+      views: normalizeViews(gastos.views),
       createdAt: normalizeDateString(gastos.createdAt, UNIFIED_STORAGE_SEED.gastos.createdAt),
     },
     unifiedAt: normalizeDateString(store.unifiedAt, UNIFIED_STORAGE_SEED.unifiedAt),
     version: normalizeText(store.version, UNIFIED_STORAGE_SEED.version),
   };
+
+  setActiveCurrency(normalized.gastos.settings.currency);
+  return normalized;
 }
 
 export async function migrateToUnifiedStorage() {
@@ -298,7 +397,6 @@ export async function migrateToUnifiedStorage() {
     if (hasMeaningfulLegacyData(investmentData, expensesData)) {
       const unifiedData = createUnifiedDataFromLegacy(investmentData, expensesData);
       localStorage.setItem(UNIFIED_LS_KEY, JSON.stringify(unifiedData));
-      console.log('✅ Dados migrados para estrutura unificada');
       return unifiedData;
     }
 
@@ -322,7 +420,6 @@ export function ensureUnifiedDefaults(store) {
 
 export async function ensureUnifiedDefaultsWithConfig(store) {
   if (!store) {
-    console.log('🔄 Store vazio, carregando configurações padrão...');
     const initialized = await initializeNewUserConfig(UNIFIED_LS_KEY);
     return normalizeUnifiedStorage(initialized || UNIFIED_STORAGE_SEED);
   }
@@ -346,7 +443,6 @@ export async function ensureUnifiedDefaultsWithConfig(store) {
     return normalizedStore;
   }
 
-  console.log('🔄 Dados incompletos detectados, carregando configurações padrão...');
   const normalizedDefaults = normalizeUnifiedStorage(await loadDefaultConfigFromFile());
 
   return normalizeUnifiedStorage({
@@ -357,14 +453,6 @@ export async function ensureUnifiedDefaultsWithConfig(store) {
       sources: needsDefaultSources
         ? normalizedDefaults.investimentos.sources
         : normalizedStore.investimentos.sources,
-      personalInfo: {
-        ...normalizedDefaults.investimentos.personalInfo,
-        ...normalizedStore.investimentos.personalInfo,
-      },
-      settings: {
-        ...normalizedDefaults.investimentos.settings,
-        ...normalizedStore.investimentos.settings,
-      },
     },
     gastos: {
       ...normalizedStore.gastos,
@@ -376,16 +464,20 @@ export async function ensureUnifiedDefaultsWithConfig(store) {
       ignoredDescriptions: needsDefaultIgnored
         ? normalizedDefaults.gastos.ignoredDescriptions
         : normalizedStore.gastos.ignoredDescriptions,
-      personalInfo: {
-        ...normalizedDefaults.gastos.personalInfo,
-        ...normalizedStore.gastos.personalInfo,
-      },
-      settings: {
-        ...normalizedDefaults.gastos.settings,
-        ...normalizedStore.gastos.settings,
-      },
     },
   });
+}
+
+export function readUnifiedStoreFromStorage() {
+  const raw = localStorage.getItem(UNIFIED_LS_KEY);
+  const parsed = parseStoredJson(raw);
+  return isUnifiedStorageCandidate(parsed) ? normalizeUnifiedStorage(parsed) : null;
+}
+
+export function writeUnifiedStoreToStorage(store) {
+  const normalized = normalizeUnifiedStorage(store);
+  localStorage.setItem(UNIFIED_LS_KEY, JSON.stringify(normalized));
+  return normalized;
 }
 
 export function exportUnifiedData() {
@@ -439,23 +531,18 @@ export function importUnifiedData(file) {
 
 export async function resetDataAndLoadDefaults() {
   try {
-    console.log('🔄 Resetando dados e carregando configurações padrão...');
-    
-    // Limpar localStorage
     localStorage.removeItem(UNIFIED_LS_KEY);
     localStorage.removeItem(LS_KEY);
     localStorage.removeItem(EXPENSES_LS_KEY);
-    
-    // Carregar configurações padrão
+
     const initializedData = await initializeNewUserConfig(UNIFIED_LS_KEY);
-    
+
     if (initializedData) {
       const normalizedData = normalizeUnifiedStorage(initializedData);
       localStorage.setItem(UNIFIED_LS_KEY, JSON.stringify(normalizedData));
-      console.log('✅ Dados resetados e configurações padrão carregadas');
       return normalizedData;
     }
-    
+
     throw new Error('Falha ao carregar configurações padrão');
   } catch (error) {
     console.error('Erro ao resetar dados:', error);

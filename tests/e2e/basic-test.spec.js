@@ -22,7 +22,7 @@ test.describe('Basic E2E Tests', () => {
     await currencyInputs.nth(2).fill('0');
     
     // Submit entry
-    await page.click('button:has-text("Adicionar lançamentos")');
+    await page.click('button:has-text("Salvar")');
     await page.waitForTimeout(1000);
     
     // Verify entry was added by checking history

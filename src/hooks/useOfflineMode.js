@@ -1,56 +1,58 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
+/**
+ * Privacy guard: blocks cross-origin network calls made by the page at runtime.
+ * Same-origin requests (the app itself, configuracoes-padrao.json) stay allowed.
+ * Disabled in development so Vite's HMR keeps working.
+ */
 export function useOfflineMode() {
   useEffect(() => {
-    // Bloquear todas as chamadas de rede
-    const originalFetch = window.fetch;
-    const originalXMLHttpRequest = window.XMLHttpRequest;
-    const originalWebSocket = window.WebSocket;
+    if (import.meta.env?.DEV) return undefined;
+    if (typeof window === "undefined" || window.__fmOfflineGuard) return undefined;
+    window.__fmOfflineGuard = true;
 
-    // Interceptar fetch (permitir arquivo de configurações padrão)
-    window.fetch = function(...args) {
+    const originalFetch = window.fetch;
+    const OriginalXHR = window.XMLHttpRequest;
+    const OriginalWebSocket = window.WebSocket;
+
+    const isAllowed = (urlLike) => {
       try {
-        const urlLike = args[0];
-        const resolved = new URL(typeof urlLike === 'string' ? urlLike : (urlLike?.url || ''), window.location.origin);
-        const allow = resolved.pathname.endsWith('/configuracoes-padrao.json');
-        if (allow) {
-          return originalFetch.apply(this, args);
-        }
-      } catch {}
-      console.warn('Chamada de rede bloqueada:', args[0]);
-      return Promise.reject(new Error('Chamadas de rede estão desabilitadas para manter os dados seguros'));
+        const url = typeof urlLike === "string" ? urlLike : urlLike?.url || String(urlLike || "");
+        const resolved = new URL(url, window.location.origin);
+        return resolved.origin === window.location.origin || resolved.protocol === "blob:" || resolved.protocol === "data:";
+      } catch {
+        return false;
+      }
     };
 
-    // Interceptar XMLHttpRequest
-    const OriginalXHR = window.XMLHttpRequest;
-    window.XMLHttpRequest = function() {
+    window.fetch = function (...args) {
+      if (isAllowed(args[0])) return originalFetch.apply(this, args);
+      console.warn("Chamada de rede bloqueada:", args[0]);
+      return Promise.reject(new Error("Chamadas de rede externas estão desabilitadas para manter os dados seguros"));
+    };
+
+    window.XMLHttpRequest = function () {
       const xhr = new OriginalXHR();
       const originalOpen = xhr.open;
-      xhr.open = function(method, url, ...args) {
-        try {
-          const resolved = new URL(url, window.location.origin);
-          const allow = resolved.pathname.endsWith('/configuracoes-padrao.json');
-          if (allow) {
-            return originalOpen.call(this, method, url, ...args);
-          }
-        } catch {}
-        console.warn('Chamada XMLHttpRequest bloqueada:', url);
-        throw new Error('Chamadas de rede estão desabilitadas para manter os dados seguros');
+      xhr.open = function (method, url, ...rest) {
+        if (isAllowed(url)) return originalOpen.call(this, method, url, ...rest);
+        console.warn("Chamada XMLHttpRequest bloqueada:", url);
+        throw new Error("Chamadas de rede externas estão desabilitadas para manter os dados seguros");
       };
       return xhr;
     };
 
-    // Interceptar WebSocket
-    window.WebSocket = function(url, ...args) {
-      console.warn('Conexão WebSocket bloqueada:', url);
-      throw new Error('Conexões WebSocket estão desabilitadas para manter os dados seguros');
+    window.WebSocket = function (url, ...rest) {
+      if (isAllowed(url)) return new OriginalWebSocket(url, ...rest);
+      console.warn("Conexão WebSocket bloqueada:", url);
+      throw new Error("Conexões WebSocket externas estão desabilitadas para manter os dados seguros");
     };
 
-    // Restaurar funções originais quando o componente for desmontado
     return () => {
       window.fetch = originalFetch;
-      window.XMLHttpRequest = originalXMLHttpRequest;
-      window.WebSocket = originalWebSocket;
+      window.XMLHttpRequest = OriginalXHR;
+      window.WebSocket = OriginalWebSocket;
+      window.__fmOfflineGuard = false;
     };
   }, []);
 }

@@ -48,7 +48,7 @@ test.describe('Investments App E2E', () => {
     await currencyInputs2.nth(5).fill('0');    // 6th currency input
     
     // Submit entries
-    await page.click('button:has-text("Adicionar lançamentos")');
+    await page.click('button:has-text("Salvar")');
     
     // Verify entries were added by checking history
     await page.click('button:has-text("Histórico")');
@@ -71,7 +71,7 @@ test.describe('Investments App E2E', () => {
     await currencyInputs.nth(0).fill('1000');
     await currencyInputs.nth(1).fill('500');
     await currencyInputs.nth(2).fill('0');
-    await page.click('button:has-text("Adicionar lançamentos")');
+    await page.click('button:has-text("Salvar")');
     
     // Test export
     const downloadPromise = page.waitForEvent('download');
@@ -159,7 +159,7 @@ test.describe('Investments App E2E', () => {
     await expect(page.locator('input[value="State Test Bank"]')).toBeVisible();
     
     // Submit the entry
-    await page.click('button:has-text("Adicionar lançamentos")');
+    await page.click('button:has-text("Salvar")');
     
     // Verify it appears in history
     await page.click('button:has-text("Histórico")');

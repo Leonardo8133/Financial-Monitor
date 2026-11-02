@@ -1,7 +1,8 @@
+import { useMemo, useState } from "react";
 import {
   Area,
-  AreaChart,
   Bar,
+  BarChart,
   CartesianGrid,
   Cell,
   ComposedChart,
@@ -9,321 +10,256 @@ import {
   Line,
   Pie,
   PieChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { fmtBRL } from "../../utils/formatters.js";
-import { resolveSourceVisual } from "../config/sources.js";
+import { fmtBRL, fmtPct } from "../../utils/formatters.js";
+import { fmtCompact } from "../../utils/money.js";
+import { EmptyState } from "../../components/AppShell.jsx";
 
-// Função para formatar valores em K
-const formatValueInK = (value) => {
-  if (value === 0) return "0";
-  const absValue = Math.abs(value);
-  if (absValue >= 1000) {
-    const kValue = (value / 1000).toFixed(1);
-    return kValue.endsWith('.0') ? kValue.slice(0, -2) + 'k' : kValue + 'k';
-  }
-  return value.toString();
-};
+const WINDOWS = [
+  { value: 6, label: "6m" },
+  { value: 12, label: "12m" },
+  { value: 24, label: "24m" },
+  { value: 0, label: "Tudo" },
+];
 
-export function Dashboard({ monthly, sourceSummary = [], sources = [], isPdfMode }) {
-  const safeMonthly = Array.isArray(monthly) ? monthly : [];
+function ChartCard({ title, subtitle, children, right, className = "" }) {
+  return (
+    <div className={`card p-4 ${className}`}>
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-semibold text-ink">{title}</h3>
+          {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
+        </div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
 
-  const formatTick = (value) =>
-    value ? new Date(value).toLocaleDateString("pt-BR", { month: "short", year: "numeric" }) : "";
+function MoneyTooltip({ active, payload, label, showPct }) {
+  if (!active || !payload?.length) return null;
+  const rows = payload.filter((p) => p.value !== undefined && p.value !== null && p.dataKey !== "pct");
+  const pct = payload.find((p) => p.dataKey === "pct");
+  return (
+    <div className="rounded-lg border border-line bg-surface px-3 py-2 text-xs shadow-pop">
+      <div className="mb-1 font-semibold capitalize text-ink">{label}</div>
+      {rows.map((p) => (
+        <div key={p.dataKey} className="flex items-center justify-between gap-4">
+          <span className="flex items-center gap-1.5 text-muted">
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color || p.fill }} />
+            {p.name}
+          </span>
+          <span className="num font-semibold text-ink">{fmtBRL(p.value)}</span>
+        </div>
+      ))}
+      {showPct && pct && pct.value !== null && (
+        <div className="mt-1 border-t border-line pt-1 text-muted">
+          Rentabilidade: <span className="num font-semibold text-ink">{fmtPct(pct.value)}</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
-  const formatLabel = (value, payload) =>
-    payload?.[0]?.payload?.label ||
-    (value ? new Date(value).toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) : "");
+export function Dashboard({ timeline, position, groupBy, onGroupByChange, aggregation, onAggregationChange, colorFor, banks = [], sources = [], singleSource = false }) {
+  const [windowMonths, setWindowMonths] = useState(12);
+  const safeTimeline = Array.isArray(timeline) ? timeline : [];
+  const visible = windowMonths ? safeTimeline.slice(-windowMonths) : safeTimeline;
 
-  const domain = safeMonthly.length ? ["dataMin", "dataMax"] : [0, 1];
+  const groupNames = useMemo(() => {
+    const names = new Set();
+    visible.forEach((m) => m.groups.forEach((g) => names.add(g.name)));
+    return Array.from(names);
+  }, [visible]);
 
-  const formatShortK = (value) => {
-    const numeric = Number(value) || 0;
-    const abs = Math.abs(numeric);
-    if (abs >= 1000) {
-      const short = abs / 1000;
-      const rounded = Math.round(short * 10) / 10;
-      return `${rounded}k`;
+  const colorOf = (name) => colorFor(name).color;
+
+  const evolutionData = visible.map((m) => {
+    const row = { label: m.label, Total: m.total };
+    groupNames.forEach((name) => {
+      row[name] = m.groups.find((g) => g.name === name)?.total ?? 0;
+    });
+    return row;
+  });
+
+  const yieldData = visible.map((m) => {
+    const row = { label: m.label, pct: m.yieldPct };
+    groupNames.forEach((name) => {
+      row[name] = m.groups.find((g) => g.name === name)?.yieldValue ?? 0;
+    });
+    return row;
+  });
+  const hasYield = yieldData.some((row) => groupNames.some((n) => row[n]));
+
+  const flowData = visible.map((m) => ({
+    label: m.label,
+    Aportes: m.cashFlow,
+    Rendimento: m.yieldValue ?? 0,
+  }));
+  const hasFlow = flowData.some((r) => r.Aportes || r.Rendimento);
+
+  const distribution = useMemo(() => {
+    if (groupBy === "bank") {
+      return position.banks.map((b) => ({ name: b.name, value: b.total, percentage: b.percentage, color: colorOf(b.name) }));
     }
-    return `${abs}`;
-  };
-
-  const sourceLibrary = Array.isArray(sources) ? sources : [];
-  const extraSourceNames = safeMonthly
-    .flatMap((m) => (Array.isArray(m.sources) ? m.sources.map((source) => source.name) : []))
-    .filter(Boolean);
-  const uniqueSourceNames = Array.from(
-    new Set([...sourceLibrary.map((source) => source.name), ...extraSourceNames])
-  );
-
-  const colorBySource = new Map(
-    uniqueSourceNames.map((name) => [name, resolveSourceVisual(name, sourceLibrary).color])
-  );
-
-  // Diferença líquida por fonte: uma linha por fonte com valor absoluto de (entradas - saídas)
-  const perSourceNet = safeMonthly.map((m) => {
-    const perSource = new Map();
-    (Array.isArray(m.sources) ? m.sources : []).forEach((s) => {
-      const name = s.name;
-      const cf = s.cashFlow ?? 0;
-      perSource.set(name, (perSource.get(name) ?? 0) + cf);
+    const map = new Map();
+    position.banks.forEach((b) => {
+      const key = b.source || "Sem fonte";
+      map.set(key, (map.get(key) || 0) + b.total);
     });
-    const row = { ts: m.midDateValue, label: m.label };
-    uniqueSourceNames.forEach((name) => {
-      row[name] = Math.abs(perSource.get(name) ?? 0);
-    });
-    return row;
-  });
-  const hasFlowData = perSourceNet.some((row) => uniqueSourceNames.some((name) => (row[name] ?? 0) !== 0));
+    const total = position.total || 1;
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value, percentage: Math.round((value / total) * 1000) / 10, color: colorOf(name) }))
+      .sort((a, b) => b.value - a.value);
+  }, [position, groupBy, banks, sources]);
 
-  // Apenas rendimento mensal por fonte
-  const yieldChart = safeMonthly.map((m) => {
-    const row = { ts: m.midDateValue, label: m.label };
-    (Array.isArray(m.sources) ? m.sources : []).forEach((s) => {
-      const name = s.name;
-      const yv = s.yieldValue ?? 0;
-      row[name] = yv;
-    });
-    return row;
-  });
-  const hasYieldData = yieldChart.some((row) => uniqueSourceNames.some((name) => (row[name] ?? 0) !== 0));
-
-  
-
-  const cumulativeBySource = new Map(uniqueSourceNames.map((name) => [name, 0]));
-  let cumulativeTotal = 0;
-  const investmentChart = safeMonthly.map((m) => {
-    const row = { ts: m.midDateValue, label: m.label };
-    const monthlySources = new Map(
-      (Array.isArray(m.sources) ? m.sources : []).map((source) => [source.name, source.invested])
+  if (!safeTimeline.length) {
+    return (
+      <EmptyState title="Sem dados para os gráficos.">Registre o saldo dos seus bancos na aba Nova Entrada para ver a evolução.</EmptyState>
     );
-    let monthInvestedSum = 0;
+  }
 
-    uniqueSourceNames.forEach((name) => {
-      const monthValue = monthlySources.get(name) ?? 0;
-      monthInvestedSum += monthValue;
-      row[name] = monthValue;
-    });
-
-    row.Total = monthInvestedSum;
-
-    return row;
-  });
-  const hasInvestmentData = investmentChart.some((row) => row.Total > 0);
-
-  const lastMonthSources = safeMonthly.length ? safeMonthly[safeMonthly.length - 1].sources || [] : [];
-  const sourceChart = Array.isArray(lastMonthSources)
-    ? lastMonthSources
-        .filter((item) => (item.invested ?? 0) > 0)
-        .map((item) => {
-          const visual = resolveSourceVisual(item.name, sourceLibrary);
-          return {
-            name: item.name,
-            value: item.invested ?? 0,
-            percentage: 0,
-            color: visual.color,
-          };
-        })
-    : [];
-  const hasSourceData = sourceChart.length > 0;
-
-  const totalGradientId = "total-invested-area";
+  const controls = (
+    <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+      <div className="pill-toggle" role="group" aria-label="Período">
+        {WINDOWS.map((w) => (
+          <button key={w.value} type="button" aria-pressed={windowMonths === w.value} onClick={() => setWindowMonths(w.value)}>
+            {w.label}
+          </button>
+        ))}
+      </div>
+      {!singleSource && (
+        <div className="pill-toggle" role="group" aria-label="Agrupar por">
+          <button type="button" aria-pressed={groupBy === "bank"} onClick={() => onGroupByChange("bank")}>Por banco</button>
+          <button type="button" aria-pressed={groupBy === "source"} onClick={() => onGroupByChange("source")}>Por fonte</button>
+        </div>
+      )}
+      <div className="pill-toggle" role="group" aria-label="Cálculo mensal" title="Como montar o total de cada mês">
+        <button type="button" aria-pressed={aggregation === "carry"} onClick={() => onAggregationChange("carry")} title="Bancos sem lançamento no mês mantêm o último saldo">
+          Último saldo
+        </button>
+        <button type="button" aria-pressed={aggregation === "month"} onClick={() => onAggregationChange("month")} title="Soma apenas os lançamentos do próprio mês">
+          Só o mês
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <div className="rounded-2xl bg-white p-4 shadow">
-        <h3 className="mb-2 text-sm font-semibold">Fluxo por fonte ao longo do tempo</h3>
-        <div className="h-72">
-          {hasFlowData ? (
+    <div>
+      {controls}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <ChartCard title="Evolução do patrimônio" subtitle={`Total por mês${groupBy === "bank" ? ", empilhado por banco" : ", empilhado por fonte"}`} className="xl:col-span-2">
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={perSourceNet} isAnimationActive={!isPdfMode}>
+              <ComposedChart data={evolutionData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
-                  {uniqueSourceNames.map((name, index) => {
-                    const gradientId = `flow-source-${index}`;
-                    const color = colorBySource.get(name);
-                    return (
-                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={color} stopOpacity={0.4} />
-                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
-                      </linearGradient>
-                    );
-                  })}
+                  {groupNames.map((name, index) => (
+                    <linearGradient key={name} id={`evo-${index}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={colorOf(name)} stopOpacity={0.55} />
+                      <stop offset="95%" stopColor={colorOf(name)} stopOpacity={0.08} />
+                    </linearGradient>
+                  ))}
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={(value) => formatValueInK(value)} />
-                <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} />
+                <YAxis tickFormatter={fmtCompact} tickLine={false} axisLine={false} width={56} />
+                <Tooltip content={<MoneyTooltip />} />
                 <Legend />
-                {uniqueSourceNames.map((name, index) => (
-                  <Area
-                    key={name}
-                    type="monotone"
-                    dataKey={name}
-                    name={name}
-                    stroke={colorBySource.get(name)}
-                    fill={`url(#flow-source-${index})`}
-                    strokeWidth={2}
-                  />
+                {groupNames.map((name, index) => (
+                  <Area key={name} type="monotone" dataKey={name} stackId="g" stroke={colorOf(name)} fill={`url(#evo-${index})`} strokeWidth={1.5} />
                 ))}
-              </AreaChart>
+                <Line type="monotone" dataKey="Total" stroke="rgb(var(--c-ink))" strokeWidth={2} dot={false} />
+              </ComposedChart>
             </ResponsiveContainer>
-          ) : (
-            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-              Adicione lançamentos com fontes para visualizar este gráfico.
-            </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </ChartCard>
 
-      <div className="rounded-2xl bg-white p-4 shadow">
-        <h3 className="mb-2 text-sm font-semibold">Rendimento mensal por fonte</h3>
-        <div className="h-72">
-          {hasYieldData ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={yieldChart} isAnimationActive={!isPdfMode}>
-                <defs>
-                  {uniqueSourceNames.map((name, index) => {
-                    const gradientId = `yield-source-${index}`;
-                    const color = colorBySource.get(name);
-                    return (
-                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={color} stopOpacity={0.4} />
-                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
-                      </linearGradient>
-                    );
-                  })}
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={(value) => formatValueInK(value)} />
-                <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
-                <Legend />
-                {uniqueSourceNames.map((name, index) => (
-                  <Area
-                    key={name}
-                    type="monotone"
-                    dataKey={name}
-                    name={name}
-                    stroke={colorBySource.get(name)}
-                    fill={`url(#yield-source-${index})`}
-                    strokeWidth={2}
-                  />
-                ))}
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-              Registre lançamentos consecutivos para calcular rendimentos mensais por fonte.
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-white p-4 shadow xl:col-span-2">
-        <h3 className="mb-2 text-sm font-semibold">Total investido por mês</h3>
-        <div className="h-80">
-          {hasInvestmentData ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={investmentChart} isAnimationActive={!isPdfMode}>
-                <defs>
-                  <linearGradient id={totalGradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0f172a" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#0f172a" stopOpacity={0.05} />
-                  </linearGradient>
-                  {uniqueSourceNames.map((name, index) => {
-                    const gradientId = `source-area-${index}`;
-                    const color = colorBySource.get(name);
-                    return (
-                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={color} stopOpacity={0.35} />
-                        <stop offset="95%" stopColor={color} stopOpacity={0.05} />
-                      </linearGradient>
-                    );
-                  })}
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="ts" type="number" domain={domain} tickFormatter={formatTick} />
-                <YAxis tickFormatter={(value) => formatValueInK(value)} />
-                <Tooltip formatter={(value) => fmtBRL(value)} labelFormatter={formatLabel} />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="Total"
-                  name="Total do mês"
-                  stroke="#0f172a"
-                  strokeWidth={2}
-                  fill={`url(#${totalGradientId})`}
-                />
-                {uniqueSourceNames.map((name, index) => (
-                  <Area
-                    key={name}
-                    type="monotone"
-                    dataKey={name}
-                    stroke={colorBySource.get(name)}
-                    strokeWidth={1.5}
-                    stackId="sources"
-                    fill={`url(#source-area-${index})`}
-                  />
-                ))}
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-              Inclua lançamentos com fontes de investimento para acompanhar a evolução acumulada.
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-white p-4 shadow xl:col-span-2">
-        <h3 className="mb-4 text-sm font-semibold">Distribuição por fonte de investimento</h3>
-        {hasSourceData ? (
-          <div className="flex flex-col gap-6 md:flex-row md:items-center">
-            <div className="h-64 w-full md:w-1/2">
+        <ChartCard title="Rendimento mensal" subtitle="Barras por grupo; linha = rentabilidade do mês">
+          <div className="h-72">
+            {hasYield ? (
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Tooltip formatter={(value) => fmtBRL(value)} />
-                  <Pie
-                    data={sourceChart}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={3}
-                    isAnimationActive={!isPdfMode}
-                  >
-                    {sourceChart.map((entry) => (
-                      <Cell key={entry.name} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
+                <ComposedChart data={yieldData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} />
+                  <YAxis yAxisId="money" tickFormatter={fmtCompact} tickLine={false} axisLine={false} width={56} />
+                  <YAxis yAxisId="pct" orientation="right" tickFormatter={(v) => fmtPct(v, 1)} tickLine={false} axisLine={false} width={48} />
+                  <ReferenceLine yAxisId="money" y={0} stroke="rgb(var(--c-faint))" />
+                  <Tooltip content={<MoneyTooltip showPct />} />
+                  <Legend />
+                  {groupNames.map((name) => (
+                    <Bar key={name} yAxisId="money" dataKey={name} stackId="y" fill={colorOf(name)} radius={[2, 2, 0, 0]} />
+                  ))}
+                  <Line yAxisId="pct" type="monotone" dataKey="pct" name="Rentabilidade" stroke="rgb(var(--c-ink))" strokeWidth={2} dot={{ r: 2 }} legendType="line" />
+                </ComposedChart>
               </ResponsiveContainer>
-            </div>
-            <div className="flex-1">
-              <ul className="space-y-2 text-sm">
-                {sourceChart.map((entry) => (
-                  <li key={entry.name} className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 px-3 py-2">
-                    <span className="flex items-center gap-2 font-medium text-slate-700">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} aria-hidden="true" />
+            ) : (
+              <EmptyState title="Ainda sem rendimento calculado.">Registre o mesmo banco em dois meses diferentes.</EmptyState>
+            )}
+          </div>
+        </ChartCard>
+
+        <ChartCard title="Aportes vs. rendimento" subtitle="Quanto veio do seu bolso e quanto veio dos juros">
+          <div className="h-72">
+            {hasFlow ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={flowData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} />
+                  <YAxis tickFormatter={fmtCompact} tickLine={false} axisLine={false} width={56} />
+                  <ReferenceLine y={0} stroke="rgb(var(--c-faint))" />
+                  <Tooltip content={<MoneyTooltip />} />
+                  <Legend />
+                  <Bar dataKey="Aportes" fill="rgb(var(--c-accent))" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Rendimento" fill="rgb(var(--c-pos))" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState title="Sem aportes ou rendimentos no período." />
+            )}
+          </div>
+        </ChartCard>
+
+        <ChartCard title={`Distribuição atual por ${groupBy === "bank" ? "banco" : "fonte"}`} subtitle={`Patrimônio: ${fmtBRL(position.total)}`} className="xl:col-span-2">
+          {distribution.length ? (
+            <div className="flex flex-col gap-4 md:flex-row md:items-center">
+              <div className="h-60 w-full md:w-1/2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip content={<MoneyTooltip />} />
+                    <Pie data={distribution} dataKey="value" nameKey="name" innerRadius={58} outerRadius={95} paddingAngle={2} stroke="rgb(var(--c-surface))">
+                      {distribution.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="flex-1 space-y-1.5 text-sm">
+                {distribution.map((entry) => (
+                  <li key={entry.name} className="flex items-center justify-between gap-3 rounded-lg bg-surface-2 px-3 py-1.5">
+                    <span className="flex items-center gap-2 font-medium text-ink">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
                       {entry.name}
                     </span>
                     <span className="text-right">
-                      <span className="block text-sm font-semibold text-slate-900">{fmtBRL(entry.value)}</span>
-                      <span className="block text-xs text-slate-500">{entry.percentage}% do total</span>
+                      <span className="num block font-semibold text-ink">{fmtBRL(entry.value)}</span>
+                      <span className="block text-xs text-muted">{entry.percentage}%</span>
                     </span>
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">
-            Adicione lançamentos com fonte para visualizar esta distribuição.
-          </div>
-        )}
+          ) : (
+            <EmptyState title="Sem posição atual." />
+          )}
+        </ChartCard>
       </div>
     </div>
   );

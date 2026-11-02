@@ -1,746 +1,359 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { AppShell, PageHeader } from "../components/AppShell.jsx";
 import { Dashboard } from "./components/Dashboard.jsx";
 import { Entrada } from "./components/Entrada.jsx";
 import { Historico } from "./components/Historico.jsx";
-import { KPICard } from "../components/KPICard.jsx";
+import { Projecoes } from "./components/Projecoes.jsx";
+import { KPICard, resolveTone } from "../components/KPICard.jsx";
 import { Tabs } from "../components/Tab.jsx";
 import { ActionButton } from "../components/ActionButton.jsx";
-import { BackToHomeButton } from "../components/BackToHomeButton.jsx";
 import { ImportModal } from "../components/ImportModal.jsx";
-import { Projecoes } from "./components/Projecoes.jsx";
+import { ConfirmDialog } from "../components/Modal.jsx";
+import { useToast } from "../components/Toast.jsx";
+import { useUnifiedStore } from "../store/unifiedStore.js";
+import { usePrefs } from "../theme/PrefsProvider.jsx";
 import { useOfflineMode } from "../hooks/useOfflineMode.js";
-import { useUnifiedAppBootstrap } from "../hooks/useUnifiedAppBootstrap.js";
-// import { demoBanks, demoCreatedAt, demoEntries, demoSources } from "./data/demoEntries.js";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
   ChartBarIcon,
-  TableCellsIcon,
-  PlusIcon,
   DocumentArrowDownIcon,
+  PlusIcon,
+  TableCellsIcon,
   TrendingUpIcon,
-  SettingsIcon,
 } from "../components/icons.jsx";
+import { fmtBRL, fmtDate, fmtPct, toNumber, todayISO } from "../utils/formatters.js";
+import { MAX_YIELD_GAP_MONTHS, computeDerivedEntries, createDraftEntry, makeId } from "../utils/entries.js";
 import {
-  download,
-  enumerateMonths,
-  fmtBRL,
-  fmtPct,
-  LS_KEY,
-  midOfMonth,
-  monthLabel,
-  toNumber,
-  yyyymm,
-} from "../utils/formatters.js";
-import {
-  computeDerivedEntries,
-  computeTotals,
-  createDraftEntry,
-  makeId,
-  withId,
-} from "../utils/entries.js";
-import { ensureBankInLibrary } from "./config/banks.js";
-import { ensureSourceInLibrary } from "./config/sources.js";
-import { Link } from "react-router-dom";
-import { UNIFIED_STORAGE_SEED, ensureUnifiedDefaults } from "../utils/unifiedStorage.js";
+  buildInvestmentTimeline,
+  computeCurrentPosition,
+  findDuplicateSnapshots,
+  lastSnapshotsList,
+  summarizeTimeline,
+} from "../utils/investmentAnalytics.js";
+import { applyImport, buildInvestmentsTemplate, exportStoreJson } from "../utils/importExport.js";
+import { download } from "../utils/formatters.js";
+import { ensureBankInLibrary, resolveBankVisual } from "./config/banks.js";
+import { ensureSourceInLibrary, resolveSourceVisual } from "./config/sources.js";
+
+const TABS = ["dashboard", "historico", "entrada", "projecoes"];
 
 export default function InvestmentsApp() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const [unifiedState, setUnifiedStore] = useUnifiedAppBootstrap([LS_KEY, "financial-monitor-expenses-v1"]);
-  
-  // Se não há dados unific ados, usar seed padrão
-  const storeState = unifiedState || UNIFIED_STORAGE_SEED;
-  const store = ensureUnifiedDefaults(storeState);
-  
-  // Extrair dados de investimentos
-  const investmentData = store.investimentos;
-  const entries = investmentData.entries;
-  const banks = investmentData.banks;
-  const sources = investmentData.sources;
-  const personalInfo = investmentData.personalInfo;
-  const settings = investmentData.settings;
-  const createdAt = investmentData.createdAt;
-
-  // Ativar modo offline
+  const { tab: tabParam } = useParams();
+  const { store, ready, setStore, updateInvestments } = useUnifiedStore();
+  const { prefs, setPref } = usePrefs();
+  const { toast, showToast } = useToast();
   useOfflineMode();
 
-  // Determinar a aba ativa baseada na URL
-  const getCurrentTab = () => {
-    const path = location.pathname;
-    if (path.includes('/investimentos/configuracoes')) return 'configuracoes';
-    if (path.includes('/investimentos')) return 'dashboard';
-    return 'dashboard';
-  };
+  const investmentData = store.investimentos;
+  const { entries, banks, sources, settings } = investmentData;
 
-  const [tab, setTab] = useState(getCurrentTab());
+  const tab = TABS.includes(tabParam)
+    ? tabParam
+    : TABS.includes(settings.defaultTab)
+    ? settings.defaultTab
+    : "dashboard";
+  const setTab = useCallback(
+    (next) => navigate(next === "dashboard" ? "/investimentos" : `/investimentos/${next}`),
+    [navigate]
+  );
+
   const [drafts, setDrafts] = useState(() => [createDraftEntry()]);
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [focusArea, setFocusArea] = useState(settings.defaultFocusArea || "investimentos");
-  const defaultsRef = useRef({
-    tab: settings.defaultTab,
-    focus: settings.defaultFocusArea,
-  });
-  const fileRef = useRef(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
-  useEffect(() => {
-    if (settings.defaultTab && defaultsRef.current.tab !== settings.defaultTab) {
-      defaultsRef.current.tab = settings.defaultTab;
-      setTab(settings.defaultTab);
-    }
-  }, [settings.defaultTab]);
+  const singleSource = settings.sourceMode !== "multiple";
+  const fixedSource = settings.defaultSource || sources[0]?.name || "";
+  const groupBy = singleSource ? "bank" : prefs.investmentsGroupBy || "bank";
+  const aggregation = prefs.investmentsAggregation || "carry";
 
-  useEffect(() => {
-    if (settings.defaultFocusArea && defaultsRef.current.focus !== settings.defaultFocusArea) {
-      defaultsRef.current.focus = settings.defaultFocusArea;
-      setFocusArea(settings.defaultFocusArea);
-    }
-  }, [settings.defaultFocusArea]);
+  const derivedEntries = useMemo(() => computeDerivedEntries(entries), [entries]);
+  const timeline = useMemo(
+    () => buildInvestmentTimeline(entries, { aggregation, groupBy }),
+    [entries, aggregation, groupBy]
+  );
+  const position = useMemo(() => computeCurrentPosition(entries), [entries]);
+  const summary = useMemo(() => summarizeTimeline(timeline), [timeline]);
+  const lastSnapshots = useMemo(() => lastSnapshotsList(entries), [entries]);
 
-  // Atualizar aba quando a URL mudar
-  useEffect(() => {
-    setTab(getCurrentTab());
-  }, [location.pathname]);
+  const colorFor = useCallback(
+    (name) => (groupBy === "source" ? resolveSourceVisual(name, sources) : resolveBankVisual(name, banks)),
+    [groupBy, banks, sources]
+  );
 
-  const setEntries = (updater) => {
-    setUnifiedStore((prev) => {
-      const safePrev = ensureUnifiedDefaults(prev);
-      const currentEntries = Array.isArray(safePrev.investimentos.entries) ? safePrev.investimentos.entries : [];
-      const candidateEntries = typeof updater === "function" ? updater(currentEntries) : updater;
-      const nextEntries = Array.isArray(candidateEntries) ? candidateEntries : [];
-      const currentBanks =
-        Array.isArray(safePrev.investimentos.banks) && safePrev.investimentos.banks.length ? safePrev.investimentos.banks : [];
-      const currentSources =
-        Array.isArray(safePrev.investimentos.sources) && safePrev.investimentos.sources.length
-          ? safePrev.investimentos.sources
-          : [];
-      const mergedBanks = mergeBanksFromEntries(nextEntries, currentBanks);
-      const mergedSources = mergeSourcesFromEntries(nextEntries, currentSources);
-      return {
-        ...safePrev,
-        investimentos: {
-          ...safePrev.investimentos,
-          entries: nextEntries,
-          banks: mergedBanks,
-          sources: mergedSources,
-        },
-      };
-    });
-  };
+  const addBank = useCallback(
+    (bank) =>
+      updateInvestments((prev) =>
+        prev.banks.some((b) => b.name.toLowerCase() === bank.name.toLowerCase()) ? prev : { ...prev, banks: [...prev.banks, bank] }
+      ),
+    [updateInvestments]
+  );
 
-  const setCreatedAt = (value) => {
-    setUnifiedStore((prev) => {
-      const safePrev = ensureUnifiedDefaults(prev);
-      return {
-        ...safePrev,
-        investimentos: {
-          ...safePrev.investimentos,
-          createdAt: value,
-        },
-      };
-    });
-  };
-
-  useEffect(() => {
-    if (Array.isArray(storeState)) {
-      const normalized = storeState.map(withId);
-      setUnifiedStore((prev) => {
-        const safePrev = ensureUnifiedDefaults(prev);
+  const setEntries = useCallback(
+    (updater) => {
+      updateInvestments((prev) => {
+        const current = Array.isArray(prev.entries) ? prev.entries : [];
+        const candidate = typeof updater === "function" ? updater(current) : updater;
+        const nextEntries = Array.isArray(candidate) ? candidate : [];
         return {
-          ...safePrev,
-          investimentos: {
-            ...safePrev.investimentos,
-            entries: normalized,
-            banks: mergeBanksFromEntries(normalized, safePrev.investimentos.banks || []),
-            sources: mergeSourcesFromEntries(normalized, safePrev.investimentos.sources || []),
-            personalInfo: safePrev.investimentos.personalInfo,
-            settings: safePrev.investimentos.settings,
-            createdAt: safePrev.investimentos.createdAt || new Date().toISOString(),
-          },
+          ...prev,
+          entries: nextEntries,
+          banks: mergeBanksFromEntries(nextEntries, prev.banks),
+          sources: mergeSourcesFromEntries(nextEntries, prev.sources),
         };
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const entriesWithIds = useMemo(
-    () => entries.map((entry) => (entry.id ? entry : withId(entry))),
-    [entries]
-  );
-
-  useEffect(() => {
-    const needsIds = entries.some((entry) => !entry.id);
-    if (needsIds) {
-      setEntries(entriesWithIds);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (!store.createdAt) {
-      setCreatedAt(new Date().toISOString());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.createdAt]);
-
-  useEffect(() => {
-    if (focusArea === "gastos") {
-      setTab("historico");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusArea]);
-
-  const derivedEntries = useMemo(
-    () => computeDerivedEntries(entriesWithIds),
-    [entriesWithIds]
-  );
-
-  const lastMonthEntries = useMemo(() => {
-    const today = new Date();
-    const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    const prevKey = yyyymm(prevMonth.toISOString().split('T')[0]);
-    return entries.filter(e => yyyymm(e.date) === prevKey);
-  }, [entries]);
-
-  const monthly = useMemo(() => {
-    const byMonth = new Map();
-    for (const entry of derivedEntries) {
-      const key = yyyymm(entry.date);
-      if (!key) continue;
-      const base =
-        byMonth.get(key) || {
-          ym: key,
-          invested: 0,
-          inAccount: 0,
-          cashFlow: 0,
-          yieldValue: 0,
-          previousTotal: 0,
-          sources: new Map(),
-        };
-      base.invested += toNumber(entry.invested);
-      base.inAccount += toNumber(entry.inAccount);
-      base.cashFlow += toNumber(entry.cashFlow);
-      if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
-        base.yieldValue += entry.yieldValue;
-        base.previousTotal += entry.previousTotal ?? 0;
-      }
-      const sourceKey = (entry.source || "Outros").trim() || "Outros";
-      const sourceBucket =
-        base.sources.get(sourceKey) || { name: sourceKey, invested: 0, total: 0, cashFlow: 0, yieldValue: 0 };
-      sourceBucket.invested += toNumber(entry.invested);
-      sourceBucket.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
-      sourceBucket.cashFlow += toNumber(entry.cashFlow);
-      if (entry.yieldValue !== null && entry.yieldValue !== undefined) {
-        sourceBucket.yieldValue += toNumber(entry.yieldValue);
-      }
-      base.sources.set(sourceKey, sourceBucket);
-      byMonth.set(key, base);
-    }
-
-    return Array.from(byMonth.values())
-      .map((month) => {
-        const { sources, ...rest } = month;
-        const sourceList = sources ? Array.from(sources.values()) : [];
-        return {
-          ...rest,
-          sources: sourceList,
-          yieldPct: rest.previousTotal ? rest.yieldValue / rest.previousTotal : null,
-        };
-      })
-      .sort((a, b) => (a.ym < b.ym ? -1 : 1));
-  }, [derivedEntries]);
-
-  const monthlyLookup = useMemo(
-    () => new Map(monthly.map((m) => [m.ym, m])),
-    [monthly]
-  );
-
-  const timeline = useMemo(() => {
-    if (monthly.length === 0) return [];
-    const months = enumerateMonths(monthly[0].ym, monthly[monthly.length - 1].ym);
-    return months.map((ym) => {
-      const data = monthlyLookup.get(ym) || {
-        ym,
-        invested: 0,
-        inAccount: 0,
-        cashFlow: 0,
-        yieldValue: 0,
-        yieldPct: null,
-        sources: [],
-      };
-      const midDate = midOfMonth(ym);
-      return {
-        ...data,
-        sources: Array.isArray(data.sources) ? data.sources : [],
-        label: monthLabel(ym),
-        midDate,
-        midDateValue: midDate.getTime(),
-      };
-    });
-  }, [monthly, monthlyLookup]);
-
-  const totals = useMemo(() => computeTotals(derivedEntries), [derivedEntries]);
-
-  const sourceSummary = useMemo(() => {
-    const map = new Map();
-    for (const entry of derivedEntries) {
-      const key = (entry.source || "Outros").trim() || "Outros";
-      const current = map.get(key) || { name: key, invested: 0, total: 0 };
-      current.invested += toNumber(entry.invested);
-      current.total += toNumber(entry.computedTotal ?? entry.invested ?? 0);
-      map.set(key, current);
-    }
-    const totalInvested = Array.from(map.values()).reduce((acc, item) => acc + item.invested, 0);
-    return Array.from(map.values())
-      .map((item) => ({
-        name: item.name,
-        invested: item.invested,
-        total: item.total,
-        percentage: totalInvested ? Math.round((item.invested / totalInvested) * 100) : 0,
-      }))
-      .sort((a, b) => b.invested - a.invested);
-  }, [derivedEntries]);
-
-  const lastMonth = timeline.at(-1);
-  const averageMonthlyInvested = useMemo(() => {
-    if (!timeline.length) return 0;
-    const positiveMonths = timeline
-      .map((month) => month.invested ?? 0)
-      .filter((value) => value > 0);
-    if (!positiveMonths.length) return 0;
-    const sum = positiveMonths.reduce((acc, value) => acc + value, 0);
-    return sum / positiveMonths.length;
-  }, [timeline]);
-
-  const averageMonthlyYield = useMemo(() => {
-    if (!timeline.length) return null;
-    const validYields = timeline
-      .map((month) =>
-        month.yieldPct !== null && month.yieldPct !== undefined ? month.yieldPct : null
-      )
-      .filter((value) => value !== null && Number.isFinite(value));
-    if (!validYields.length) return null;
-    const sum = validYields.reduce((acc, value) => acc + value, 0);
-    return sum / validYields.length;
-  }, [timeline]);
-
-  const projectionDefaults = useMemo(
-    () => ({
-      initialBalance: totals.total_invested ?? 0,
-      monthlyContribution: Math.max(lastMonth?.invested ?? (averageMonthlyInvested || 0), 0),
-      monthlyReturn: (lastMonth?.yieldPct !== null && lastMonth?.yieldPct !== undefined)
-        ? lastMonth.yieldPct
-        : (averageMonthlyYield ?? 0.005),
-      inflationRate: 0.04,
-      contributionGrowth: 0.02,
-      goalAmount:
-        totals.total_invested && totals.total_invested > 0
-          ? totals.total_invested * 2
-          : Math.max(lastMonth?.invested ?? 0, 25000),
-    }),
-    [
-      averageMonthlyInvested,
-      averageMonthlyYield,
-      lastMonth?.invested,
-      lastMonth?.yieldPct,
-      totals.total_invested,
-    ]
-  );
-
-  const focusOptions = [
-    {
-      key: "investimentos",
-      label: "Investimentos",
-      tooltip: "Visualize os indicadores e gráficos dos seus investimentos",
     },
-    {
-      key: "gastos",
-      label: "Gastos",
-      tooltip: "Atalho para o histórico para revisar entradas negativas",
-    },
-  ];
+    [updateInvestments]
+  );
 
-  const handleTabChange = (newTab) => {
-    setTab(newTab);
-    if (newTab === 'configuracoes') {
-      navigate('/investimentos/configuracoes');
-    } else {
-      navigate('/investimentos');
-    }
-  };
-
-  const handleFocusChange = (newFocus) => {
-    setFocusArea(newFocus);
-    if (newFocus === 'gastos') {
-      navigate('/gastos');
-    } else {
-      navigate('/investimentos');
-    }
-  };
-
-  function handleSubmitDrafts(rows) {
-    const prepared = rows
-      .filter((row) => row.bank && row.date)
+  function prepareRows(rows) {
+    return rows
+      .filter((row) => row.bank && row.bank.trim() && row.date)
       .map((row) => ({
         id: makeId(),
         bank: row.bank.trim(),
-        source: row.source?.trim() || "",
+        source: singleSource ? fixedSource : row.source?.trim() || "",
         date: row.date,
         invested: toNumber(row.invested),
         inAccount: toNumber(row.inAccount),
         cashFlow: toNumber(row.cashFlow),
+        note: row.note || "",
       }));
-    if (!prepared.length) return;
+  }
 
-    setEntries((prev) => [...prev, ...prepared]);
-    setDrafts([createDraftEntry()]);
+  function handleSubmitDrafts(rows, { replaceDuplicates = false } = {}) {
+    const prepared = prepareRows(rows);
+    if (!prepared.length) {
+      showToast("Preencha pelo menos Banco e Data em uma linha.", { tone: "error" });
+      return;
+    }
+    const duplicates = findDuplicateSnapshots(entries, prepared);
+    const removeIds = new Set(replaceDuplicates ? duplicates.map((d) => d.existing.id) : []);
+    const toAdd = replaceDuplicates ? prepared : prepared.filter((p) => !duplicates.some((d) => d.draft === p));
+    setEntries((prev) => [...prev.filter((e) => !removeIds.has(e.id)), ...toAdd]);
+    const lastDate = prepared.at(-1)?.date || todayISO();
+    setDrafts([createDraftEntry({ date: lastDate, source: prepared.at(-1)?.source || "" })]);
+    showToast(
+      `${toAdd.length} lançamento(s) salvo(s)${removeIds.size ? `, ${removeIds.size} substituído(s)` : ""}.`,
+      { tone: "success" }
+    );
     setTab("historico");
   }
 
+  function duplicateToToday(entry) {
+    const draft = createDraftEntry({
+      bank: entry.bank,
+      source: entry.source,
+      invested: entry.invested,
+      inAccount: entry.inAccount,
+      cashFlow: 0,
+      date: todayISO(),
+    });
+    setDrafts((prev) => {
+      const empty = prev.length === 1 && !prev[0].bank && !toNumber(prev[0].invested);
+      return empty ? [draft] : [...prev, draft];
+    });
+    setTab("entrada");
+    showToast(`${entry.bank} copiado para o formulário com a data de hoje.`);
+  }
+
   function exportJson() {
-    // Exportar dados unificados
-    const unifiedData = JSON.parse(localStorage.getItem(UNIFIED_LS_KEY) || '{}');
-    const payload = {
-      version: 3,
-      type: "unified",
-      exported_at: new Date().toISOString(),
-      data: unifiedData,
-    };
-    download(
-      `export-financial-monitor-unified-${new Date().toISOString().slice(0, 10)}.json`,
-      JSON.stringify(payload, null, 2)
-    );
+    exportStoreJson(store);
+    showToast("Backup JSON exportado.", { tone: "success" });
   }
 
   function downloadTemplate() {
-    const template = {
-      version: 2,
-      created_at: new Date().toISOString(),
-      banks: [
-        { name: "Banco Exemplo", color: "#2563EB", icon: "🏦" },
-      ],
-      sources: [
-        { name: "Salário", color: "#0EA5E9", icon: "💼" },
-      ],
-      personal_info: {
-        fullName: "Nome do Investidor",
-        email: "investidor@email.com",
-      },
-      settings: {
-        defaultTab: "dashboard",
-        defaultFocusArea: "investimentos",
-        reportNotes: "",
-      },
-      inputs: [
-        {
-          entries: [
-            {
-              bank: "Banco Exemplo",
-              source: "Salário",
-              date: "2025-01-15",
-              inAccount: 0,
-              invested: 1000,
-              cashFlow: 1000,
-            },
-          ],
-        },
-      ],
-    };
-    download("template_investimentos.json", JSON.stringify(template, null, 2));
+    download("template_investimentos.json", JSON.stringify(buildInvestmentsTemplate(), null, 2));
   }
 
-  function importJsonFile(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        
-        // Verificar se é um arquivo unificado
-        if (data.type === "unified" && data.data) {
-          // Importar dados unificados
-          setUnifiedStore(data.data);
-          setImportModalOpen(false);
-          return;
-        }
-        
-        if (Array.isArray(data)) {
-          const normalized = data.map(withId);
-          setUnifiedStore((prev) => {
-            const safePrev = ensureUnifiedDefaults(prev);
-            return {
-              ...safePrev,
-              investimentos: {
-                ...safePrev.investimentos,
-                entries: normalized,
-                banks: mergeBanksFromEntries(normalized, safePrev.investimentos.banks),
-                sources: mergeSourcesFromEntries(normalized, safePrev.investimentos.sources),
-              },
-            };
-          });
-          setImportModalOpen(false);
-        } else if (data && Array.isArray(data.inputs)) {
-          const inputEntries = data.inputs.flatMap((section) => section.entries || []);
-          const normalized = inputEntries.map(withId);
-          const incomingBanks = Array.isArray(data.banks) && data.banks.length ? data.banks : banks;
-          const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
-          const created = data.created_at || createdAt || new Date().toISOString();
-          setUnifiedStore((prev) => {
-            const safePrev = ensureUnifiedDefaults(prev);
-            const nextPersonal = {
-              ...safePrev.investimentos.personalInfo,
-              ...(data.personal_info || {}),
-            };
-            const nextSettings = {
-              ...safePrev.investimentos.settings,
-              ...(data.settings || {}),
-            };
-            return {
-              ...safePrev,
-              investimentos: {
-                ...safePrev.investimentos,
-                entries: normalized,
-                banks: mergeBanksFromEntries(normalized, incomingBanks),
-                sources: mergeSourcesFromEntries(normalized, incomingSources),
-                personalInfo: nextPersonal,
-                settings: nextSettings,
-                createdAt: created,
-              },
-            };
-          });
-          setImportModalOpen(false);
-        } else if (data && Array.isArray(data.entries)) {
-          const normalized = data.entries.map(withId);
-          setUnifiedStore((prev) => {
-            const safePrev = ensureUnifiedDefaults(prev);
-            return {
-              ...safePrev,
-              investimentos: {
-                ...safePrev.investimentos,
-                entries: normalized,
-                banks: mergeBanksFromEntries(normalized, safePrev.investimentos.banks),
-                sources: mergeSourcesFromEntries(normalized, safePrev.investimentos.sources),
-              },
-            };
-          });
-          setImportModalOpen(false);
-        } else {
-          window.alert(
-            "Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de lançamentos."
-          );
-        }
-      } catch (e) {
-        window.alert("Falha ao ler JSON: " + e.message);
-      }
-    };
-    reader.readAsText(file);
+  function handleImport(analysis, mode) {
+    const { store: nextStore, report } = applyImport(store, analysis, mode);
+    setStore(nextStore);
+    setImportModalOpen(false);
+    showToast(
+      mode === "replace"
+        ? "Dados importados (substituição)."
+        : `Importação concluída: ${report.entriesAdded} lançamento(s) e ${report.expensesAdded} transação(ões) novas.`,
+      { tone: "success" }
+    );
   }
 
-  // Botão/ação para carregar dados de exemplo removidos
-
-  async function handleClearEntries() {
-    if (window.confirm("Tem certeza que deseja resetar todos os dados e carregar configurações padrão?")) {
-      try {
-        const resetData = await resetDataAndLoadDefaults();
-        setUnifiedStore(resetData);
-        console.log('✅ Dados resetados com sucesso');
-      } catch (error) {
-        console.error('❌ Erro ao resetar dados:', error);
-        alert('Erro ao resetar dados. Tente novamente.');
-      }
-    }
+  function clearEntries() {
+    updateInvestments((prev) => ({ ...prev, entries: [] }));
+    showToast("Lançamentos de investimentos removidos.");
   }
 
+  const projectionDefaults = useMemo(
+    () => ({
+      initialBalance: position.total || 0,
+      monthlyContribution: Math.max(summary.cashFlowLast12 / Math.max(1, Math.min(12, timeline.length)) || 0, 0),
+      monthlyReturn: summary.avgMonthlyPct ?? summary.last?.yieldPct ?? 0.008,
+      inflationRate: 0.04,
+      contributionGrowth: 0.02,
+      goalAmount: position.total > 0 ? Math.ceil((position.total * 2) / 10000) * 10000 : 100000,
+    }),
+    [position.total, summary, timeline.length]
+  );
+
+  const last = summary.last;
+  const lastGroups = last?.groups || [];
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-6 space-y-4">
-          <BackToHomeButton />
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-bold text-slate-900">Monitor de Investimentos</h1>
-                <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-[0.7rem] font-semibold text-slate-600 shadow-sm">
-                  {focusOptions.map((option) => {
-                    const active = option.key === focusArea;
-                    return (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => handleFocusChange(option.key)}
-                        className={`rounded-full px-3 py-1 transition ${
-                          active ? "bg-slate-900 text-white shadow" : "hover:bg-slate-100"
-                        }`}
-                        title={option.tooltip}
-                        aria-pressed={active}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <p className="text-sm text-slate-600">
-                Adicione lançamentos, visualize o histórico por mês e gere gráficos. Seus dados ficam apenas no seu navegador
-                (localStorage).
-              </p>
-            </div>
-            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <div className="flex flex-wrap items-center gap-2">
-                <ActionButton
-                  icon={ArrowDownTrayIcon}
-                  onClick={exportJson}
-                  title="Baixe um arquivo JSON com todos os lançamentos e configurações"
-                >
-                  Exportar
-                </ActionButton>
-                <ActionButton
-                  icon={ArrowUpTrayIcon}
-                  onClick={() => setImportModalOpen(true)}
-                  title="Importe um arquivo JSON salvo anteriormente"
-                >
-                  Importar
-                </ActionButton>
-                <Link
-                  to="/investimentos/relatorio"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-                >
-                  <DocumentArrowDownIcon className="h-5 w-5" />
-                  Relatório PDF
-                </Link>
-                <Link
-                  to="/investimentos/configuracoes"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-                >
-                  <SettingsIcon className="h-5 w-5" />
-                  Configurações
-                </Link>
-              </div>
-            </div>
-          </div>
-          <Tabs
-            tabs={[
-              {
-                key: 'dashboard',
-                label: 'Dashboard',
-                icon: <ChartBarIcon className="h-5 w-5" />,
-                tooltip: 'Resumo visual com indicadores e gráficos',
-              },
-              {
-                key: 'historico',
-                label: 'Histórico',
-                icon: <TableCellsIcon className="h-5 w-5" />,
-                tooltip: 'Lista completa dos lançamentos realizados',
-              },
-              {
-                key: 'entrada',
-                label: 'Nova Entrada',
-                icon: <PlusIcon className="h-5 w-5" />,
-                tooltip: 'Adicionar um novo conjunto de valores',
-              },
-              {
-                key: 'projecoes',
-                label: 'Projeções',
-                icon: <TrendingUpIcon className="h-5 w-5" />,
-                tooltip: 'Simule cenários futuros considerando aportes e rentabilidade média',
-              },
-            ]}
-            activeTab={tab}
-            onChange={handleTabChange}
-          />
-        </header>
+    <AppShell>
+      {toast}
+      <PageHeader
+        title="Investimentos"
+        description="Registre o saldo de cada banco por data. O rendimento é calculado automaticamente a partir dos aportes e retiradas."
+      >
+        <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson} title="Baixa um backup JSON com todos os dados (investimentos e gastos)">
+          Exportar
+        </ActionButton>
+        <ActionButton icon={ArrowUpTrayIcon} onClick={() => setImportModalOpen(true)} title="Importa um backup JSON ou template">
+          Importar
+        </ActionButton>
+        <Link to="/investimentos/relatorio" className="btn" title="Resumo imprimível e PDF">
+          <DocumentArrowDownIcon className="h-4 w-4" />
+          Relatório
+        </Link>
+      </PageHeader>
 
-        <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <KPICard
-            title="Total de Investimentos"
-            value={fmtBRL(lastMonth?.invested ?? 0)}
-            subtitle={lastMonth ? `Referente a ${lastMonth.label}` : "Sem dados do mês"}
-            hoverDetails={lastMonth ? [
-              { name: "Investimentos", total: lastMonth.invested ?? 0 },
-              { name: "Investido + Conta", total: (lastMonth.invested ?? 0) + (lastMonth.inAccount ?? 0) },
-            ] : []}
-            tooltip="Passe o mouse para ver total investido e posição total (investido + conta)"
-          />
-          <KPICard
-            title="Rendimento último mês"
-            value={
-              lastMonth && lastMonth.yieldValue !== null && lastMonth.yieldValue !== undefined
-                ? fmtBRL(lastMonth.yieldValue)
-                : "–"
-            }
-            secondaryValue={
-              lastMonth && lastMonth.yieldPct !== null && lastMonth.yieldPct !== undefined
-                ? fmtPct(lastMonth.yieldPct)
-                : ""
-            }
-            tone={resolveTone(lastMonth?.yieldValue)}
-            subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
-            tooltip="Rendimento calculado subtraindo o fluxo de caixa do mês da variação entre totais"
-            hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.yieldValue })) || []}
-          />
-          <KPICard
-            title="Entrada/Saída último mês"
-            value={fmtBRL(lastMonth?.cashFlow ?? 0)}
-            tone={(lastMonth?.cashFlow ?? 0) >= 0 ? "positive" : "negative"}
-            subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
-            tooltip="Somatório das entradas (positivas) e saídas (negativas) informadas no mês"
-            hoverDetails={lastMonth?.sources?.map((s) => ({ name: s.name, total: s.cashFlow })) || []}
-          />
-          <KPICard
-            title="Total em Conta último mês"
-            value={fmtBRL(lastMonth?.inAccount ?? 0)}
-            subtitle={lastMonth ? `Período ${lastMonth.label}` : "Sem dados do mês"}
-            tooltip="Soma do campo 'Valor na Conta' para o mês selecionado"
-          />
-        </section>
+      <Tabs
+        className="mb-4"
+        tabs={[
+          { key: "dashboard", label: "Dashboard", icon: <ChartBarIcon className="h-4 w-4" />, tooltip: "Indicadores e gráficos" },
+          { key: "historico", label: "Histórico", icon: <TableCellsIcon className="h-4 w-4" />, tooltip: "Todos os lançamentos", badge: entries.length },
+          { key: "entrada", label: "Nova Entrada", icon: <PlusIcon className="h-4 w-4" />, tooltip: "Registrar saldos" },
+          { key: "projecoes", label: "Projeções", icon: <TrendingUpIcon className="h-4 w-4" />, tooltip: "Simule cenários futuros" },
+        ]}
+        activeTab={tab}
+        onChange={setTab}
+      />
 
-        {/* Seção de "Carregar dados de exemplo" removida */}
+      <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <KPICard
+          title="Patrimônio atual"
+          value={fmtBRL(position.total)}
+          subtitle={
+            position.asOf
+              ? `Último saldo de cada banco · ${fmtDate(position.asOf)} · investido ${fmtBRL(position.invested)}`
+              : "Sem lançamentos"
+          }
+          delta={summary.totalDelta}
+          hoverDetails={position.banks.map((b) => ({
+            name: b.name,
+            value: b.total,
+            percentage: b.percentage,
+            color: resolveBankVisual(b.name, banks).color,
+            icon: resolveBankVisual(b.name, banks).icon,
+          }))}
+          tooltip="Soma do último saldo registrado de cada banco. Clique para ver por banco."
+        />
+        <KPICard
+          title="Rendimento no mês"
+          value={last && last.yieldValue !== null ? fmtBRL(last.yieldValue) : "–"}
+          secondaryValue={last && last.yieldPct !== null ? fmtPct(last.yieldPct) : ""}
+          tone={resolveTone(last?.yieldValue)}
+          subtitle={
+            !last
+              ? "Registre dois meses para calcular"
+              : last.yieldValue === null && last.yieldGapBanks
+              ? `${last.label}: saldo anterior há mais de ${MAX_YIELD_GAP_MONTHS} meses, rendimento não calculado`
+              : last.yieldGapBanks
+              ? `Referente a ${last.label} · ${last.yieldGapBanks} banco(s) sem rendimento (intervalo > ${MAX_YIELD_GAP_MONTHS} meses)`
+              : `Referente a ${last.label}`
+          }
+          hoverDetails={lastGroups
+            .filter((g) => g.yieldValue)
+            .map((g) => ({ name: g.name, value: g.yieldValue, color: colorFor(g.name).color }))}
+          tooltip="Variação do total menos aportes e retiradas, comparado ao saldo anterior de cada banco."
+        />
+        <KPICard
+          title="Aportes / retiradas no mês"
+          value={fmtBRL(last?.cashFlow ?? 0)}
+          tone={resolveTone(last?.cashFlow)}
+          subtitle={last ? `Período ${last.label}` : "Sem dados do mês"}
+          hoverDetails={lastGroups.filter((g) => g.cashFlow).map((g) => ({ name: g.name, value: g.cashFlow, color: colorFor(g.name).color }))}
+          tooltip="Soma do campo Aporte/Retirada informado nos lançamentos do mês."
+        />
+        <KPICard
+          title="Rendimento 12 meses"
+          value={fmtBRL(summary.yieldLast12)}
+          tone={resolveTone(summary.yieldLast12)}
+          secondaryValue={summary.avgMonthlyPct !== null ? `média ${fmtPct(summary.avgMonthlyPct)}/mês` : ""}
+          subtitle={`Aportes líquidos no período: ${fmtBRL(summary.cashFlowLast12)}`}
+          tooltip="Soma dos rendimentos mensais dos últimos 12 meses registrados."
+        />
+      </section>
 
-        {tab === "dashboard" && <Dashboard monthly={timeline} sourceSummary={sourceSummary} sources={sources} />}
+      {tab === "dashboard" && (
+        <Dashboard
+          timeline={timeline}
+          position={position}
+          groupBy={groupBy}
+          onGroupByChange={(value) => setPref("investmentsGroupBy", value)}
+          aggregation={aggregation}
+          onAggregationChange={(value) => setPref("investmentsAggregation", value)}
+          colorFor={colorFor}
+          banks={banks}
+          sources={sources}
+          singleSource={singleSource}
+        />
+      )}
 
-        {tab === "historico" && (
-          <Historico
-            entries={entriesWithIds}
-            computedEntries={derivedEntries}
-            setEntries={setEntries}
-            banks={banks}
-            sources={sources}
-            onClearAll={handleClearEntries}
-          />
-        )}
+      {tab === "historico" && (
+        <Historico
+          entries={entries}
+          computedEntries={derivedEntries}
+          setEntries={setEntries}
+          banks={banks}
+          sources={sources}
+          onClearAll={() => setConfirmClear(true)}
+          onDuplicate={duplicateToToday}
+          onGoToEntry={() => setTab("entrada")}
+          singleSource={singleSource}
+          onCreateBank={addBank}
+        />
+      )}
 
-        {tab === "entrada" && (
-          <Entrada drafts={drafts} setDrafts={setDrafts} onSubmit={handleSubmitDrafts} banks={banks} sources={sources} lastMonthEntries={lastMonthEntries} />
-        )}
+      {tab === "entrada" && (
+        <Entrada
+          drafts={drafts}
+          setDrafts={setDrafts}
+          onSubmit={handleSubmitDrafts}
+          banks={banks}
+          sources={sources}
+          entries={entries}
+          lastSnapshots={lastSnapshots}
+          singleSource={singleSource}
+          fixedSource={fixedSource}
+          onCreateBank={addBank}
+        />
+      )}
 
-        {tab === "projecoes" && (
-          <Projecoes timeline={timeline} defaults={projectionDefaults} />
-        )}
+      {tab === "projecoes" && <Projecoes key={ready ? "ready" : "loading"} timeline={timeline} defaults={projectionDefaults} />}
 
-        <footer className="mt-10 text-center text-xs text-slate-500">
-          <p>
-            Dica: clique em <strong>Exportar</strong> para salvar um arquivo local. Você pode importar depois para continuar de
-            onde parou.
-          </p>
-        </footer>
-      </div>
+      {!ready && <p className="mt-6 text-center text-xs text-muted">Carregando dados...</p>}
+
       <ImportModal
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        onImport={importJsonFile}
+        onApply={handleImport}
         onDownloadTemplate={downloadTemplate}
+        templateLabel="Template de investimentos"
       />
-    </div>
+      <ConfirmDialog
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={clearEntries}
+        title="Apagar todos os lançamentos de investimentos?"
+        message="Bancos, fontes e os dados de gastos são mantidos. Esta ação não pode ser desfeita; exporte um backup antes."
+        confirmLabel="Apagar lançamentos"
+        danger
+      />
+    </AppShell>
   );
-}
-
-function resolveTone(value) {
-  if (value === null || value === undefined) return "neutral";
-  if (value < 0) return "negative";
-  if (value > 0) return "positive";
-  return "neutral";
 }
 
 function mergeBanksFromEntries(entries, baseBanks = []) {

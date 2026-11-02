@@ -60,7 +60,7 @@ test.describe('Expenses App E2E', () => {
     await page.waitForTimeout(1000);
     
     // Scroll to uploader section
-    await page.locator('text=Importar CSV/XLSX/PDF').scrollIntoViewIfNeeded();
+    await page.locator('text=Importar extrato ou fatura').scrollIntoViewIfNeeded();
     
     // Create test CSV file
     const csvContent = `date,description,category,source,value
@@ -100,7 +100,7 @@ test.describe('Expenses App E2E', () => {
     await page.waitForTimeout(1000);
     
     // Scroll to uploader section
-    await page.locator('text=Importar CSV/XLSX/PDF').scrollIntoViewIfNeeded();
+    await page.locator('text=Importar extrato ou fatura').scrollIntoViewIfNeeded();
     
     // Create test Nubank PDF content (simplified)
     const nubankPdfContent = `Nubank
@@ -209,11 +209,11 @@ Resumo da fatura
     
     // Navigate to dashboard
     await page.click('button:has-text("Dashboard")');
-    await expect(page.locator('text=Controle de Gastos')).toBeVisible();
+    await expect(page.locator('role=heading[name="Gastos"]')).toBeVisible();
     
     // Navigate to financing calculator
     await page.click('button:has-text("Financiamentos")');
-    await expect(page.locator('text=Calculadora de Financiamento')).toBeVisible();
+    await expect(page.locator('text=Simulador de financiamento')).toBeVisible();
     
     // Go back to new expense - data should still be there
     await page.click('button:has-text("Nova Despesa")');

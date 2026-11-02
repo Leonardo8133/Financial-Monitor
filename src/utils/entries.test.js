@@ -43,3 +43,22 @@ describe("computeTotals", () => {
     expect(totals.total_yield_value).toBeCloseTo(500);
   });
 });
+
+describe("yield gap rule", () => {
+  it("computes yield up to 2 months apart and skips larger gaps", () => {
+    const [, twoMonths] = computeDerivedEntries([
+      { id: "a", bank: "B", date: "2026-01-10", invested: 1000, inAccount: 0, cashFlow: 0 },
+      { id: "b", bank: "B", date: "2026-03-05", invested: 1100, inAccount: 0, cashFlow: 0 },
+    ]);
+    expect(twoMonths.yieldValue).toBeCloseTo(100);
+    expect(twoMonths.yieldGapMonths).toBeNull();
+
+    const [, threeMonths] = computeDerivedEntries([
+      { id: "a", bank: "B", date: "2026-01-31", invested: 1000, inAccount: 0, cashFlow: 0 },
+      { id: "b", bank: "B", date: "2026-04-01", invested: 1100, inAccount: 0, cashFlow: 0 },
+    ]);
+    expect(threeMonths.yieldValue).toBeNull();
+    expect(threeMonths.yieldPct).toBeNull();
+    expect(threeMonths.yieldGapMonths).toBe(3);
+  });
+});

@@ -1,5 +1,5 @@
 import { emptyEntry } from "../investments/data/demoEntries.js";
-import { toNumber } from "./formatters.js";
+import { toNumber, todayISO, yyyymm } from "./formatters.js";
 
 export function makeId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -15,33 +15,48 @@ export function withId(entry) {
 }
 
 export function createDraftEntry(overrides = {}) {
-  const today = new Date().toISOString().split('T')[0];
-  return { 
-    ...emptyEntry, 
-    date: today,
-    ...overrides, 
-    id: makeId(), 
-    locked: false 
+  return {
+    ...emptyEntry,
+    date: todayISO(),
+    ...overrides,
+    id: makeId(),
   };
 }
 
-export function computeDerivedEntries(entries = []) {
+/** Max distance (in calendar months) between two snapshots of a bank for a yield to be computed. */
+export const MAX_YIELD_GAP_MONTHS = 2;
+
+export function monthsBetween(dateA, dateB) {
+  const a = yyyymm(dateA);
+  const b = yyyymm(dateB);
+  if (!a || !b) return null;
+  const [ya, ma] = a.split("-").map(Number);
+  const [yb, mb] = b.split("-").map(Number);
+  return (yb - ya) * 12 + (mb - ma);
+}
+
+/**
+ * Adds yieldValue / yieldPct / previousTotal to each entry by comparing with the
+ * previous snapshot of the same bank: yield = total - (previousTotal + cashFlow).
+ * When the previous snapshot is more than MAX_YIELD_GAP_MONTHS months older, the
+ * yield is not computed (it would mix several months): `yieldGapMonths` tells why.
+ */
+export function computeDerivedEntries(entries = [], { maxGapMonths = MAX_YIELD_GAP_MONTHS } = {}) {
   const sorted = entries
-    .map((entry) => ({ ...entry }))
+    .map((entry, index) => ({ entry, index }))
     .sort((a, b) => {
-      const da = new Date(a.date ?? 0).getTime();
-      const db = new Date(b.date ?? 0).getTime();
-      if (da === db) {
-        return (a.bank ?? "").localeCompare(b.bank ?? "");
-      }
-      return da - db;
-    });
+      const da = a.entry.date || "";
+      const db = b.entry.date || "";
+      if (da === db) return a.index - b.index;
+      return da < db ? -1 : 1;
+    })
+    .map((x) => x.entry);
 
   const lastByBank = new Map();
   const computed = new Map();
 
   for (const entry of sorted) {
-    const key = (entry.bank ?? "").toLowerCase();
+    const key = (entry.bank ?? "").trim().toLowerCase();
     const previous = lastByBank.get(key);
     const invested = toNumber(entry.invested);
     const inAccount = toNumber(entry.inAccount);
@@ -51,24 +66,30 @@ export function computeDerivedEntries(entries = []) {
     let yieldValue = null;
     let yieldPct = null;
     let previousTotal = null;
+    let yieldGapMonths = null;
 
     if (previous) {
       previousTotal = toNumber(previous.invested) + toNumber(previous.inAccount);
-      yieldValue = currentTotal - (previousTotal + cashFlow);
-      if (previousTotal !== 0) {
-        yieldPct = yieldValue / previousTotal;
+      const gap = monthsBetween(previous.date, entry.date);
+      if (gap !== null && gap > maxGapMonths) {
+        yieldGapMonths = gap;
+      } else {
+        yieldValue = currentTotal - (previousTotal + cashFlow);
+        if (previousTotal !== 0) {
+          yieldPct = yieldValue / previousTotal;
+        }
       }
     }
 
-    const enriched = {
+    computed.set(entry.id, {
       ...entry,
       yieldValue,
       yieldPct,
       computedTotal: currentTotal,
       previousTotal,
-    };
-
-    computed.set(entry.id, enriched);
+      previousDate: previous?.date ?? null,
+      yieldGapMonths,
+    });
     lastByBank.set(key, entry);
   }
 
@@ -80,6 +101,8 @@ export function computeDerivedEntries(entries = []) {
         yieldPct: null,
         computedTotal: toNumber(entry.invested) + toNumber(entry.inAccount),
         previousTotal: null,
+        previousDate: null,
+        yieldGapMonths: null,
       }
   );
 }

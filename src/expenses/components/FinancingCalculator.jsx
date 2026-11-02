@@ -1,247 +1,220 @@
-import { useState, useMemo } from "react";
-import { CalculatorIcon, CurrencyDollarIcon, CalendarIcon, ChartBarIcon } from "@heroicons/react/24/outline";
-import { fmtBRL } from "../../utils/formatters.js";
+import { useMemo, useState } from "react";
+import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { fmtBRL, fmtPct } from "../../utils/formatters.js";
+import { fmtCompact } from "../../utils/money.js";
 import { CurrencyInput } from "../../components/CurrencyInput.jsx";
 
-export function FinancingCalculator() {
-  const [formData, setFormData] = useState({
-    principal: 0,
-    monthlyPayment: 0,
-    interestRate: 0,
-    termMonths: 0,
-  });
-  const [showTooltip, setShowTooltip] = useState(null);
+/**
+ * Price (fixed installment) and SAC (fixed amortization) simulators with optional
+ * down payment and extra monthly amortization.
+ */
+export function simulateFinancing({ principal, downPayment = 0, annualRatePct, monthlyRatePct, termMonths, system = "price", extraPayment = 0 }) {
+  const financed = Math.max(principal - downPayment, 0);
+  const n = Math.max(Math.floor(termMonths), 0);
+  const i = monthlyRatePct !== undefined && monthlyRatePct !== null ? monthlyRatePct / 100 : Math.pow(1 + annualRatePct / 100, 1 / 12) - 1;
+  if (!financed || !n) return null;
 
-  // Componente de botão de ajuda reutilizável
-  function HelpButton({ helpText, id }) {
-    return (
-      <div className="relative inline-block ml-2">
-        <button
-          type="button"
-          className="w-4 h-4 rounded-full bg-slate-400 text-white text-xs flex items-center justify-center hover:bg-slate-500 transition-colors duration-0 opacity-0 group-hover:opacity-100"
-          onMouseEnter={() => setShowTooltip(id)}
-          onMouseLeave={() => setShowTooltip(null)}
-          style={{ transitionDelay: '0ms' }}
-        >
-          ?
-        </button>
-        {showTooltip === id && (
-          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded shadow-lg whitespace-nowrap z-50">
-            {helpText}
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
-          </div>
-        )}
-      </div>
-    );
+  const baseInstallment = system === "price" ? (i > 0 ? (financed * i) / (1 - Math.pow(1 + i, -n)) : financed / n) : null;
+  const fixedAmortization = financed / n;
+
+  const rows = [];
+  let balance = financed;
+  let month = 0;
+  let totalPaid = 0;
+  let totalInterest = 0;
+  while (balance > 0.005 && month < 1200) {
+    month += 1;
+    const interest = balance * i;
+    let amortization = system === "price" ? baseInstallment - interest : fixedAmortization;
+    amortization += extraPayment;
+    if (amortization > balance) amortization = balance;
+    const payment = amortization + interest;
+    balance -= amortization;
+    totalPaid += payment;
+    totalInterest += interest;
+    rows.push({ month, payment, interest, amortization, balance: Math.max(balance, 0) });
   }
 
-  const [results, setResults] = useState(null);
+  // Baseline without extra payment, for the savings figure
+  let baseline = null;
+  if (extraPayment > 0) {
+    baseline = simulateFinancing({ principal, downPayment, annualRatePct, monthlyRatePct, termMonths, system, extraPayment: 0 });
+  }
 
-  const calculateFinancing = () => {
-    const { principal, monthlyPayment, interestRate, termMonths } = formData;
-    
-    if (!principal || !monthlyPayment || !interestRate || !termMonths) {
-      alert("Por favor, preencha todos os campos");
-      return;
-    }
+  return {
+    financed,
+    monthlyRate: i,
+    annualRate: Math.pow(1 + i, 12) - 1,
+    firstInstallment: rows[0]?.payment ?? 0,
+    lastInstallment: rows.at(-1)?.payment ?? 0,
+    months: rows.length,
+    totalPaid: totalPaid + downPayment,
+    totalInterest,
+    rows,
+    interestSaved: baseline ? baseline.totalInterest - totalInterest : 0,
+    monthsSaved: baseline ? baseline.months - rows.length : 0,
+  };
+}
 
-    const monthlyRate = interestRate / 100 / 12;
-    const totalPayments = termMonths;
-    
-    // Calcular o valor total pago
-    const totalPaid = monthlyPayment * totalPayments;
-    
-    // Calcular o total de juros
-    const totalInterest = totalPaid - principal;
-    
-    // Calcular o tempo restante baseado no valor principal e pagamento mensal
-    const remainingMonths = Math.ceil(principal / monthlyPayment);
-    
-    // Calcular projeções mensais
-    const monthlyProjections = [];
-    let remainingBalance = principal;
-    
-    for (let month = 1; month <= Math.min(totalPayments, 12); month++) {
-      const interestPayment = remainingBalance * monthlyRate;
-      const principalPayment = monthlyPayment - interestPayment;
-      remainingBalance = Math.max(0, remainingBalance - principalPayment);
-      
-      monthlyProjections.push({
-        month,
-        payment: monthlyPayment,
-        principalPayment,
-        interestPayment,
-        remainingBalance,
-      });
-    }
+export function FinancingCalculator() {
+  const [form, setForm] = useState({
+    principal: 0,
+    downPayment: 0,
+    rateMode: "annual",
+    rate: 12,
+    termMonths: 60,
+    system: "price",
+    extraPayment: 0,
+  });
+  const [showTable, setShowTable] = useState(false);
 
-    setResults({
-      totalPaid,
-      totalInterest,
-      remainingMonths,
-      monthlyProjections,
-      monthlyRate,
+  const result = useMemo(() => {
+    if (!form.principal || !form.termMonths) return null;
+    return simulateFinancing({
+      principal: form.principal,
+      downPayment: form.downPayment,
+      annualRatePct: form.rateMode === "annual" ? form.rate : undefined,
+      monthlyRatePct: form.rateMode === "monthly" ? form.rate : undefined,
+      termMonths: form.termMonths,
+      system: form.system,
+      extraPayment: form.extraPayment,
     });
-  };
+  }, [form]);
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: Number(value) || 0
-    }));
-  };
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const chartData = useMemo(() => {
+    if (!result) return [];
+    const step = Math.max(1, Math.ceil(result.rows.length / 60));
+    return result.rows.filter((r, idx) => idx % step === 0 || idx === result.rows.length - 1).map((r) => ({ month: `${r.month}º`, "Saldo devedor": r.balance, Juros: r.interest, Amortização: r.amortization }));
+  }, [result]);
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-xl bg-white p-6 shadow-lg">
-        <div className="mb-6 flex items-center gap-3">
-          <CalculatorIcon className="h-8 w-8 text-blue-600" />
-          <h2 className="text-2xl font-bold text-slate-900">Calculadora de Financiamentos</h2>
-        </div>
-        
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 group">
-                <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
-                Valor Principal (R$)
-                <HelpButton helpText="Valor total do financiamento" id="principal" />
-              </label>
-              <CurrencyInput
-                value={formData.principal}
-                onChange={(num) => handleInputChange('principal', num)}
-                className=""
-              />
-            </div>
+    <div className="space-y-4">
+      <div className="card-pad">
+        <h2 className="text-base font-semibold text-ink">Simulador de financiamento</h2>
+        <p className="text-sm text-muted">Compare Price (parcela fixa) e SAC (amortização fixa) e veja o efeito de amortizações extras.</p>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 group">
-                <CurrencyDollarIcon className="inline h-4 w-4 mr-1" />
-                Pagamento Mensal (R$)
-                <HelpButton helpText="Valor fixo pago mensalmente" id="monthlyPayment" />
-              </label>
-              <CurrencyInput
-                value={formData.monthlyPayment}
-                onChange={(num) => handleInputChange('monthlyPayment', num)}
-              />
+        <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <label className="block">
+            <span className="label">Valor do bem</span>
+            <CurrencyInput tone={false} value={form.principal} onChange={set("principal")} />
+          </label>
+          <label className="block">
+            <span className="label">Entrada</span>
+            <CurrencyInput tone={false} value={form.downPayment} onChange={set("downPayment")} />
+          </label>
+          <label className="block">
+            <span className="label">Taxa de juros</span>
+            <div className="flex">
+              <input type="number" step="0.01" min="0" value={form.rate} onChange={(e) => set("rate")(Number(e.target.value) || 0)} className="input num rounded-r-none" />
+              <select value={form.rateMode} onChange={(e) => set("rateMode")(e.target.value)} className="input w-auto rounded-l-none border-l-0 pr-7">
+                <option value="annual">% a.a.</option>
+                <option value="monthly">% a.m.</option>
+              </select>
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 group">
-                <ChartBarIcon className="inline h-4 w-4 mr-1" />
-                Taxa de Juros Anual (%)
-                <HelpButton helpText="Taxa de juros anual em percentual" id="interestRate" />
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.interestRate}
-                onChange={(e) => handleInputChange('interestRate', e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Ex: 12.5"
-              />
+          </label>
+          <label className="block">
+            <span className="label">Prazo (meses)</span>
+            <input type="number" min="1" max="600" value={form.termMonths} onChange={(e) => set("termMonths")(Math.max(0, Number(e.target.value) || 0))} className="input num" />
+          </label>
+          <label className="block">
+            <span className="label">Sistema</span>
+            <div className="pill-toggle w-full">
+              <button type="button" className="flex-1" aria-pressed={form.system === "price"} onClick={() => set("system")("price")}>Price</button>
+              <button type="button" className="flex-1" aria-pressed={form.system === "sac"} onClick={() => set("system")("sac")}>SAC</button>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 group">
-                <CalendarIcon className="inline h-4 w-4 mr-1" />
-                Prazo Total (meses)
-                <HelpButton helpText="Número total de meses para quitar o financiamento" id="termMonths" />
-              </label>
-              <input
-                type="number"
-                value={formData.termMonths}
-                onChange={(e) => handleInputChange('termMonths', e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="Ex: 60"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <button
-            onClick={calculateFinancing}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            Calcular Financiamento
-          </button>
+          </label>
+          <label className="block">
+            <span className="label">Amortização extra / mês</span>
+            <CurrencyInput tone={false} value={form.extraPayment} onChange={set("extraPayment")} />
+          </label>
         </div>
       </div>
 
-      {results && (
-        <div className="space-y-6">
-          {/* Resumo dos Resultados */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-lg bg-green-50 p-4 border border-green-200">
-              <div className="text-sm font-medium text-green-800">Total Pago</div>
-              <div className="text-2xl font-bold text-green-900">{fmtBRL(results.totalPaid)}</div>
-            </div>
-            <div className="rounded-lg bg-red-50 p-4 border border-red-200">
-              <div className="text-sm font-medium text-red-800">Total de Juros</div>
-              <div className="text-2xl font-bold text-red-900">{fmtBRL(results.totalInterest)}</div>
-            </div>
-            <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-              <div className="text-sm font-medium text-blue-800">Meses Restantes</div>
-              <div className="text-2xl font-bold text-blue-900">{results.remainingMonths}</div>
+      {result ? (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            <Card label={form.system === "price" ? "Parcela" : "Primeira parcela"} value={fmtBRL(result.firstInstallment)} sub={form.system === "sac" ? `última ${fmtBRL(result.lastInstallment)}` : `${result.months} meses`} tone="text-accent" />
+            <Card label="Valor financiado" value={fmtBRL(result.financed)} sub={`${fmtPct(result.monthlyRate)} a.m. · ${fmtPct(result.annualRate)} a.a.`} />
+            <Card label="Total de juros" value={fmtBRL(result.totalInterest)} tone="text-neg" sub={`${((result.totalInterest / result.financed) * 100).toFixed(0)}% do financiado`} />
+            <Card label="Total pago" value={fmtBRL(result.totalPaid)} sub="inclui a entrada" />
+            <Card
+              label="Com amortização extra"
+              value={form.extraPayment > 0 ? `${result.months} meses` : "–"}
+              tone="text-pos"
+              sub={form.extraPayment > 0 ? `economiza ${fmtBRL(result.interestSaved)} e ${result.monthsSaved} meses` : "Informe um valor extra"}
+            />
+          </div>
+
+          <div className="card p-4">
+            <h3 className="mb-2 text-sm font-semibold text-ink">Evolução do saldo devedor</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fin-balance" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="rgb(var(--c-accent))" stopOpacity={0.5} />
+                      <stop offset="95%" stopColor="rgb(var(--c-accent))" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                  <YAxis tickFormatter={fmtCompact} tickLine={false} axisLine={false} width={56} />
+                  <Tooltip formatter={(v) => fmtBRL(v)} />
+                  <Legend />
+                  <Area type="monotone" dataKey="Saldo devedor" stroke="rgb(var(--c-accent))" fill="url(#fin-balance)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="Juros" stroke="rgb(var(--c-neg))" fill="transparent" strokeWidth={1.5} />
+                  <Area type="monotone" dataKey="Amortização" stroke="rgb(var(--c-pos))" fill="transparent" strokeWidth={1.5} />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Projeções Mensais */}
-          <div className="rounded-xl bg-white p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Projeções dos Primeiros 12 Meses</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left py-2 font-medium text-slate-600">Mês</th>
-                    <th className="text-right py-2 font-medium text-slate-600">Pagamento</th>
-                    <th className="text-right py-2 font-medium text-slate-600">Principal</th>
-                    <th className="text-right py-2 font-medium text-slate-600">Juros</th>
-                    <th className="text-right py-2 font-medium text-slate-600">Saldo Devedor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.monthlyProjections.map((projection) => (
-                    <tr key={projection.month} className="border-b border-slate-100">
-                      <td className="py-2 text-slate-700">{projection.month}</td>
-                      <td className="py-2 text-right font-medium text-slate-900">{fmtBRL(projection.payment)}</td>
-                      <td className="py-2 text-right text-green-600">{fmtBRL(projection.principalPayment)}</td>
-                      <td className="py-2 text-right text-red-600">{fmtBRL(projection.interestPayment)}</td>
-                      <td className="py-2 text-right text-slate-700">{fmtBRL(projection.remainingBalance)}</td>
+          <div className="card p-4">
+            <button type="button" className="btn btn-sm" onClick={() => setShowTable((v) => !v)}>
+              {showTable ? "Ocultar tabela" : `Ver tabela completa (${result.rows.length} parcelas)`}
+            </button>
+            {showTable && (
+              <div className="mt-3 max-h-96 overflow-auto">
+                <table className="table-base">
+                  <thead className="sticky top-0">
+                    <tr>
+                      <th>Mês</th>
+                      <th className="text-right">Parcela</th>
+                      <th className="text-right">Amortização</th>
+                      <th className="text-right">Juros</th>
+                      <th className="text-right">Saldo devedor</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Análise de Cenários */}
-          <div className="rounded-xl bg-white p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Análise de Cenários</h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <h4 className="font-medium text-slate-900 mb-2">Cenário Atual</h4>
-                <div className="space-y-1 text-sm text-slate-600">
-                  <div>Pagamento mensal: {fmtBRL(formData.monthlyPayment)}</div>
-                  <div>Prazo total: {formData.termMonths} meses</div>
-                  <div>Total de juros: {fmtBRL(results.totalInterest)}</div>
-                </div>
+                  </thead>
+                  <tbody>
+                    {result.rows.map((r) => (
+                      <tr key={r.month}>
+                        <td className="num">{r.month}</td>
+                        <td className="num text-right font-medium">{fmtBRL(r.payment)}</td>
+                        <td className="num text-right text-pos">{fmtBRL(r.amortization)}</td>
+                        <td className="num text-right text-neg">{fmtBRL(r.interest)}</td>
+                        <td className="num text-right text-muted">{fmtBRL(r.balance)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-slate-900 mb-2">Dicas de Otimização</h4>
-                <div className="space-y-1 text-sm text-slate-600">
-                  <div>• Considere pagamentos extras para reduzir juros</div>
-                  <div>• Avalie refinanciamento se as taxas caírem</div>
-                  <div>• Mantenha um fundo de emergência</div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        </div>
+        </>
+      ) : (
+        <div className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">Informe o valor do bem e o prazo para simular.</div>
       )}
+    </div>
+  );
+}
+
+function Card({ label, value, sub, tone = "text-ink" }) {
+  return (
+    <div className="card p-3">
+      <div className="text-[0.65rem] font-semibold uppercase tracking-wide text-muted">{label}</div>
+      <div className={`num mt-0.5 text-lg font-semibold ${tone}`}>{value}</div>
+      {sub && <div className="text-[0.7rem] text-muted">{sub}</div>}
     </div>
   );
 }

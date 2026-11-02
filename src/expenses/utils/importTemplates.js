@@ -1,4 +1,6 @@
-import { toNumber } from "../../utils/formatters.js";
+import { toNumber, normalizeDateInput } from "../../utils/formatters.js";
+import { parseMoney } from "../../utils/money.js";
+import { PASSTHROUGH_FIELDS, wiseTemplate } from "./wise.js";
 
 function normalizeHeaders(headers = []) {
   return headers.map((header) => String(header || "").trim().toLowerCase());
@@ -12,14 +14,10 @@ function parseValue(value, { invert = false } = {}) {
   return numeric;
 }
 
+/** Nubank files mix "5.64", "-389.60", "45,00", "- 1,00" and "19.734,81". */
 function parseNubankValue(value) {
   if (value === "" || value === null || value === undefined) return 0;
-  
-  // Para valores do Nubank, tratar ponto como decimal
-  const str = String(value).trim();
-  const numeric = Number(str);
-  
-  return Number.isFinite(numeric) ? numeric : 0;
+  return parseMoney(String(value).trim());
 }
 
 class ImportTemplate {
@@ -73,6 +71,7 @@ class ImportTemplate {
 }
 
 const csvTemplates = [
+  wiseTemplate,
   new ImportTemplate({
     id: "nubank_basic_csv",
     displayName: "Nubank Cartão de Crédito- Extrato CSV (date,title,amount)",
@@ -87,13 +86,8 @@ const csvTemplates = [
       );
     },
     mapRow: (row) => {
-      // Função para parsear valores do Nubank CSV (usa ponto como decimal)
-      const parseNubankCSVValue = (value) => {
-        if (value === "" || value === null || value === undefined) return 0;
-        const str = String(value).trim();
-        const numeric = Number(str);
-        return Number.isFinite(numeric) ? -Math.abs(numeric) : 0; // Sempre negativo (despesas)
-      };
+      // Fatura: valor positivo = compra (despesa), negativo = pagamento/estorno (crédito)
+      const parseNubankCSVValue = (value) => -parseNubankValue(value);
       
       // row pode ser um array [date, title, amount] ou um objeto {date, title, amount}
       const date = Array.isArray(row) ? row[0] : (row.date || row.Date || "");
@@ -270,11 +264,13 @@ export function normalizeImportedItems(items = []) {
       ? [item.source]
       : [];
     return {
-      date: item.date || "",
-      description: item.description || "",
+      date: normalizeDateInput(item.date) || String(item.date || ""),
+      description: String(item.description || "").trim(),
       value: parseValue(item.value ?? 0, {}),
       categories,
       sources,
+      ...(item.time ? { time: String(item.time) } : {}),
+      ...Object.fromEntries(PASSTHROUGH_FIELDS.filter((k) => item[k] !== undefined && item[k] !== "" && item[k] !== null).map((k) => [k, item[k]])),
     };
   });
 }

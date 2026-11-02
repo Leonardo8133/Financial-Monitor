@@ -1,759 +1,411 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { AppShell, PageHeader } from "../components/AppShell.jsx";
 import { ExpensesDashboard } from "./components/ExpensesDashboard.jsx";
 import { ExpensesEntrada } from "./components/ExpensesEntrada.jsx";
 import { ExpensesHistorico } from "./components/ExpensesHistorico.jsx";
+import { ExpensesViews } from "./components/ExpensesViews.jsx";
 import { FinancingCalculator } from "./components/FinancingCalculator.jsx";
 import { ActionButton } from "../components/ActionButton.jsx";
-import { BackToHomeButton } from "../components/BackToHomeButton.jsx";
 import { Tabs } from "../components/Tab.jsx";
 import { ImportModal } from "../components/ImportModal.jsx";
+import { ConfirmDialog, Modal } from "../components/Modal.jsx";
+import { useToast } from "../components/Toast.jsx";
+import { useUnifiedStore } from "../store/unifiedStore.js";
 import { useOfflineMode } from "../hooks/useOfflineMode.js";
-import { useUnifiedAppBootstrap } from "../hooks/useUnifiedAppBootstrap.js";
-import { DEFAULT_CATEGORIES, ensureCategoryInLibrary } from "./config/categories.js";
-import { DEFAULT_SOURCES, ensureSourceInLibrary } from "./config/sources.js";
-import {
-  DEFAULT_DESCRIPTION_CATEGORY_MAPPINGS,
-  mergeDescriptionMappings,
-  normalizeMappingKeyword,
-} from "./config/descriptionMappings.js";
-import { computeDerivedExpenses, computeTotals, withId, makeId } from "./utils/expenses.js";
+import { ensureCategoryInLibrary } from "./config/categories.js";
+import { ensureSourceInLibrary } from "./config/sources.js";
+import { mergeDescriptionMappings, normalizeMappingKeyword } from "./config/descriptionMappings.js";
+import { buildDescriptionMemory, buildMonthlyExpenses, computeDerivedExpenses, computeTotals, makeId } from "./utils/expenses.js";
+import { normalizeExpense } from "../utils/unifiedStorage.js";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  PlusIcon,
-  TableCellsIcon,
+  CalculatorIcon,
   ChartBarIcon,
   DocumentArrowDownIcon,
-  SettingsIcon,
+  PlusIcon,
+  TableCellsIcon,
+  FilterIcon,
 } from "../components/icons.jsx";
-import { CalculatorIcon } from "@heroicons/react/24/outline";
-import { download, fmtBRL, monthLabel, enumerateMonths, midOfMonth, yyyymm, toNumber, LS_KEY } from "../utils/formatters.js";
-import {
-  EXPENSES_LS_KEY,
-} from "./config/storage.js";
-import { UNIFIED_STORAGE_SEED, ensureUnifiedDefaults } from "../utils/unifiedStorage.js";
+import { download, enumerateMonths, fmtBRL, fmtDate, midOfMonth, monthLabel, toNumber, todayISO } from "../utils/formatters.js";
+import { applyImport, buildExpensesTemplate, exportStoreJson } from "../utils/importExport.js";
 
-// merge artifact removed: duplicate icon import
-
-// removed duplicated local storage constants to use values from config/storage
+const TABS = ["dashboard", "historico", "visoes", "entrada", "financiamentos"];
 
 export default function ExpensesApp() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const [unifiedState, setUnifiedStore] = useUnifiedAppBootstrap([LS_KEY, EXPENSES_LS_KEY]);
-
-  // Se não há dados unificados ainda, usar seed padrão
-  const storeState = unifiedState || UNIFIED_STORAGE_SEED;
-  const store = ensureUnifiedDefaults(storeState);
-  
-  // Extrair dados de gastos
-  const expensesData = store.gastos;
-  const expenses = expensesData.expenses;
-  const categories = expensesData.categories;
-  const sources = expensesData.sources;
-  const createdAt = expensesData.createdAt;
-  const personalInfo = expensesData.personalInfo;
-  const settings = expensesData.settings;
-  const descriptionCategoryMappings = expensesData.descriptionCategoryMappings || [];
-
-  // Ativar modo offline
+  const { tab: tabParam } = useParams();
+  const { store, ready, setStore, updateExpenses } = useUnifiedStore();
+  const { toast, showToast } = useToast();
   useOfflineMode();
 
-  const focusOptions = [
-    {
-      key: "investimentos",
-      label: "Investimentos",
-      tooltip: "Ir para o painel de investimentos",
-    },
-    {
-      key: "gastos",
-      label: "Gastos",
-      tooltip: "Você está na área de gastos",
-    },
-  ];
-  const focusArea = "gastos";
+  const expensesData = store.gastos;
+  const { expenses, categories, sources, settings } = expensesData;
+  const descriptionCategoryMappings = expensesData.descriptionCategoryMappings || [];
+  const ignoredDescriptions = expensesData.ignoredDescriptions || [];
 
-  // Determinar a aba ativa baseada na URL
-  const getCurrentTab = () => {
-    const path = location.pathname;
-    if (path.includes('/gastos/configuracoes')) return 'configuracoes';
-    if (path.includes('/gastos/financiamentos')) return 'financiamentos';
-    if (path.includes('/gastos')) return 'dashboard';
-    return 'dashboard';
-  };
+  const tab = TABS.includes(tabParam) ? tabParam : TABS.includes(settings.defaultTab) ? settings.defaultTab : "dashboard";
+  const setTab = useCallback((next) => navigate(next === "dashboard" ? "/gastos" : `/gastos/${next}`), [navigate]);
 
-  const [tab, setTab] = useState(getCurrentTab());
-  const [drafts, setDrafts] = useState(() => [createDraftExpense()]);
-  const defaultsRef = useRef(settings.defaultTab);
-  const [importModalOpen, setImportModalOpen] = useState(false);
-  const [duplicateModal, setDuplicateModal] = useState(null);
-  
-  useEffect(() => {
-    if (settings.defaultTab && defaultsRef.current !== settings.defaultTab) {
-      defaultsRef.current = settings.defaultTab;
-      setTab(settings.defaultTab);
-    }
-  }, [settings.defaultTab]);
+  const lastUsedSource = useMemo(() => {
+    const sorted = expenses.slice().sort((a, b) => ((a.date || "") < (b.date || "") ? 1 : -1));
+    return sorted.find((e) => e.sources?.length)?.sources?.[0] || sources?.[0]?.name || "";
+  }, [expenses, sources]);
 
-  // Atualizar aba quando a URL mudar
-  useEffect(() => {
-    setTab(getCurrentTab());
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (Array.isArray(storeState)) {
-      const normalized = storeState.map(withId);
-      setUnifiedStore((prev) => {
-        const safePrev = ensureUnifiedDefaults(prev);
-        return {
-          ...safePrev,
-          gastos: {
-            ...safePrev.gastos,
-            expenses: normalized,
-            categories: mergeCategoriesFromExpenses(normalized, DEFAULT_CATEGORIES),
-            sources: mergeSourcesFromExpenses(normalized, DEFAULT_SOURCES),
-          },
-        };
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function normalizeExpense(expense) {
-    if (!expense) return expense;
-    const baseCategories = Array.isArray(expense.categories)
-      ? expense.categories.filter(Boolean)
-      : expense.category
-      ? [expense.category].filter(Boolean)
-      : [];
-    const baseSources = Array.isArray(expense.sources)
-      ? expense.sources.filter(Boolean)
-      : expense.source
-      ? [expense.source].filter(Boolean)
-      : [];
-    return {
-      ...expense,
-      categories: baseCategories,
-      sources: baseSources.length ? baseSources : [],
-      category: baseCategories[0] || "",
-      source: baseSources[0] || "",
-      locked: Boolean(expense.locked),
-    };
-  }
-
-  function setExpenses(updater) {
-    setUnifiedStore((prev) => {
-      const safePrev = ensureUnifiedDefaults(prev);
-      const currentExpenses = Array.isArray(safePrev.gastos.expenses) ? safePrev.gastos.expenses : [];
-      const candidateExpenses = typeof updater === "function" ? updater(currentExpenses) : updater;
-      const nextExpensesRaw = Array.isArray(candidateExpenses) ? candidateExpenses : [];
-      const nextExpenses = nextExpensesRaw.map(normalizeExpense);
-      const currentSources =
-        Array.isArray(safePrev.gastos.sources) && safePrev.gastos.sources.length ? safePrev.gastos.sources : DEFAULT_SOURCES;
-      const currentCategories =
-        Array.isArray(safePrev.gastos.categories) && safePrev.gastos.categories.length ? safePrev.gastos.categories : DEFAULT_CATEGORIES;
-      const mergedSources = mergeSourcesFromExpenses(nextExpenses, currentSources);
-      const mergedCategories = mergeCategoriesFromExpenses(nextExpenses, currentCategories);
-      return {
-        ...safePrev,
-        gastos: {
-          ...safePrev.gastos,
-          expenses: nextExpenses,
-          sources: mergedSources,
-          categories: mergedCategories,
-        },
-      };
-    });
-  }
-
-  function setCreatedAt(value) {
-    setUnifiedStore((prev) => {
-      const safePrev = ensureUnifiedDefaults(prev);
-      return {
-        ...safePrev,
-        gastos: {
-          ...safePrev.gastos,
-          createdAt: value,
-        },
-      };
-    });
-  }
-
-  function createDraftExpense(overrides = {}) {
-    const defaultSource = sources?.[0]?.name || "";
-    const base = {
-      id: makeId(),
-      date: "",
-      description: "",
-      categories: [],
-      sources: defaultSource ? [defaultSource] : [],
-      category: "",
-      source: defaultSource,
-      value: 0,
-      locked: false,
-    };
-    const next = { ...base, ...overrides };
-    return normalizeExpense(next);
-  }
-
-  function mergeSourcesFromExpenses(expensesArr, baseSources = DEFAULT_SOURCES) {
-    let next = Array.isArray(baseSources) ? [...baseSources] : [...DEFAULT_SOURCES];
-    for (const e of expensesArr) {
-      if (Array.isArray(e.sources)) {
-        for (const src of e.sources) {
-          next = ensureSourceInLibrary(src, next);
-        }
-      } else {
-        next = ensureSourceInLibrary(e.source, next);
-      }
-    }
-    return next;
-  }
-
-  function mergeCategoriesFromExpenses(expensesArr, baseCategories = DEFAULT_CATEGORIES) {
-    let next = Array.isArray(baseCategories) ? [...baseCategories] : [...DEFAULT_CATEGORIES];
-    for (const e of expensesArr) {
-      if (Array.isArray(e.categories)) {
-        for (const cat of e.categories) {
-          next = ensureCategoryInLibrary(cat, next);
-        }
-      } else {
-        next = ensureCategoryInLibrary(e.category, next);
-      }
-    }
-    return next;
-  }
-
-  function findCategoriesForDescription(description = "") {
-    const normalized = normalizeMappingKeyword(description);
-    if (!normalized) return [];
-    
-    const matches = descriptionCategoryMappings.filter((entry) => {
-      const keyword = normalizeMappingKeyword(entry.keyword);
-      const exactMatch = entry.exactMatch !== undefined ? entry.exactMatch : false;
-      
-      if (exactMatch) {
-        return normalized === keyword;
-      } else {
-        return normalized.includes(keyword);
-      }
-    });
-    
-    if (!matches.length) return [];
-    const categoriesSet = new Set();
-    for (const match of matches) {
-      if (!Array.isArray(match.categories)) continue;
-      for (const cat of match.categories) {
-        if (cat) categoriesSet.add(cat);
-      }
-    }
-    return Array.from(categoriesSet);
-  }
-
-  function upsertDescriptionMapping(keyword, categoriesList = []) {
-    const normalizedKeyword = normalizeMappingKeyword(keyword);
-    const filteredCategories = Array.isArray(categoriesList)
-      ? categoriesList.filter(Boolean)
-      : [];
-    if (!normalizedKeyword || !filteredCategories.length) return;
-    setUnifiedStore((prev) => {
-      const safePrev = ensureUnifiedDefaults(prev);
-      const merged = mergeDescriptionMappings(safePrev.gastos.descriptionCategoryMappings, [
-        { keyword: normalizedKeyword, categories: filteredCategories },
-      ]);
-      return {
-        ...safePrev,
-        gastos: {
-          ...safePrev.gastos,
-          descriptionCategoryMappings: merged,
-        },
-      };
-    });
-  }
-
-  const expensesWithIds = useMemo(
-    () => expenses.map((e) => {
-      const normalized = normalizeExpense(e);
-      return normalized.id ? normalized : withId(normalized);
-    }),
-    [expenses]
+  const createDraftExpense = useCallback(
+    (overrides = {}) =>
+      normalizeExpense({
+        id: makeId(),
+        date: todayISO(),
+        description: "",
+        categories: [],
+        sources: lastUsedSource ? [lastUsedSource] : [],
+        value: 0,
+        isExpense: true,
+        ...overrides,
+      }),
+    [lastUsedSource]
   );
 
-  const derived = useMemo(() => computeDerivedExpenses(expensesWithIds), [expensesWithIds]);
+  const [drafts, setDrafts] = useState(() => [createDraftExpense()]);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [duplicateModal, setDuplicateModal] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
-  const monthly = useMemo(() => {
-    const byMonth = new Map();
-    for (const e of derived) {
-      const key = yyyymm(e.date);
-      if (!key) continue;
-      const base = byMonth.get(key) || { ym: key, total: 0, byCategory: {}, bySource: {}, items: [] };
-      const value = Number(e.value) || 0;
-      const absValue = Math.abs(value);
-      base.total += absValue;
-      base.items.push(e);
-      
-      // Só adiciona às categorias se for despesa (valor negativo)
-      if (value < 0) {
-        const categoriesList = Array.isArray(e.categories) && e.categories.length
-          ? e.categories
-          : e.category
-          ? [e.category]
-          : ["(sem categoria)"];
-        for (const cat of categoriesList) {
-          const keyName = cat || "(sem categoria)";
-          base.byCategory[keyName] = (base.byCategory[keyName] || 0) + absValue;
-        }
-      }
-      
-      const sourcesList = Array.isArray(e.sources) && e.sources.length
-        ? e.sources
-        : e.source
-        ? [e.source]
-        : ["(sem fonte)"];
-      for (const src of sourcesList) {
-        const keyName = src || "(sem fonte)";
-        base.bySource[keyName] = (base.bySource[keyName] || 0) + absValue;
-      }
-      byMonth.set(key, base);
-    }
-    return Array.from(byMonth.values()).sort((a, b) => (a.ym < b.ym ? -1 : 1));
-  }, [derived]);
+  const setExpenses = useCallback(
+    (updater) => {
+      updateExpenses((prev) => {
+        const current = Array.isArray(prev.expenses) ? prev.expenses : [];
+        const candidate = typeof updater === "function" ? updater(current) : updater;
+        const next = (Array.isArray(candidate) ? candidate : []).map(normalizeExpense).filter(Boolean);
+        return {
+          ...prev,
+          expenses: next,
+          sources: mergeSourcesFromExpenses(next, prev.sources),
+          categories: mergeCategoriesFromExpenses(next, prev.categories),
+        };
+      });
+    },
+    [updateExpenses]
+  );
 
+  const addCategory = useCallback(
+    (name) => updateExpenses((prev) => ({ ...prev, categories: ensureCategoryInLibrary(name, prev.categories) })),
+    [updateExpenses]
+  );
+  const addSource = useCallback(
+    (name) => updateExpenses((prev) => ({ ...prev, sources: ensureSourceInLibrary(name, prev.sources) })),
+    [updateExpenses]
+  );
+
+  const findCategoriesForDescription = useCallback(
+    (description = "") => {
+      const normalized = normalizeMappingKeyword(description);
+      if (!normalized) return [];
+      const matches = descriptionCategoryMappings.filter((entry) => {
+        const keyword = normalizeMappingKeyword(entry.keyword);
+        if (!keyword) return false;
+        return entry.exactMatch ? normalized === keyword : normalized.includes(keyword);
+      });
+      const set = new Set();
+      for (const match of matches) for (const cat of match.categories || []) if (cat) set.add(cat);
+      return Array.from(set);
+    },
+    [descriptionCategoryMappings]
+  );
+
+  const upsertDescriptionMapping = useCallback(
+    (keyword, categoriesList = [], exactMatch) => {
+      const normalizedKeyword = normalizeMappingKeyword(keyword);
+      const filtered = Array.isArray(categoriesList) ? categoriesList.filter(Boolean) : [];
+      if (!normalizedKeyword || !filtered.length) return;
+      updateExpenses((prev) => ({
+        ...prev,
+        descriptionCategoryMappings: mergeDescriptionMappings(prev.descriptionCategoryMappings, [
+          { keyword: normalizedKeyword, categories: filtered, ...(exactMatch !== undefined ? { exactMatch } : {}) },
+        ]),
+      }));
+    },
+    [updateExpenses]
+  );
+
+  const mappingActions = useMemo(
+    () => ({
+      add: (keyword, cats, exactMatch) => upsertDescriptionMapping(keyword, cats, exactMatch),
+      update: (originalKeyword, next) =>
+        updateExpenses((prev) => ({
+          ...prev,
+          descriptionCategoryMappings: prev.descriptionCategoryMappings.map((m) =>
+            m.keyword === originalKeyword
+              ? { keyword: normalizeMappingKeyword(next.keyword), categories: next.categories.filter(Boolean), exactMatch: Boolean(next.exactMatch) }
+              : m
+          ),
+        })),
+      remove: (keyword) =>
+        updateExpenses((prev) => ({
+          ...prev,
+          descriptionCategoryMappings: prev.descriptionCategoryMappings.filter((m) => m.keyword !== keyword),
+        })),
+    }),
+    [updateExpenses, upsertDescriptionMapping]
+  );
+
+  const descriptionMemory = useMemo(() => buildDescriptionMemory(expenses), [expenses]);
+  const derived = useMemo(() => computeDerivedExpenses(expenses), [expenses]);
+  const monthly = useMemo(() => buildMonthlyExpenses(derived), [derived]);
   const timeline = useMemo(() => {
     if (monthly.length === 0) return [];
     const months = enumerateMonths(monthly[0].ym, monthly[monthly.length - 1].ym);
     return months.map((ym) => {
-      const data = monthly.find((m) => m.ym === ym) || { ym, total: 0 };
+      const data = monthly.find((m) => m.ym === ym) || { ym, total: 0, spent: 0, earned: 0, byCategory: {}, bySource: {}, items: [] };
       const midDate = midOfMonth(ym);
       return { ...data, label: monthLabel(ym), midDate, midDateValue: midDate.getTime() };
     });
   }, [monthly]);
-
   const totals = useMemo(() => computeTotals(derived), [derived]);
 
-  const handleTabChange = (newTab) => {
-    setTab(newTab);
-    if (newTab === 'configuracoes') {
-      navigate('/gastos/configuracoes');
-    } else if (newTab === 'financiamentos') {
-      navigate('/gastos/financiamentos');
-    } else {
-      navigate('/gastos');
-    }
-  };
-
-  const handleFocusChange = (newFocus) => {
-    if (newFocus === 'investimentos') {
-      navigate('/investimentos');
-      return;
-    }
-    navigate('/gastos');
-  };
-
   function exportJson() {
-    // Exportar dados unificados
-    const unifiedData = JSON.parse(localStorage.getItem(UNIFIED_LS_KEY) || '{}');
-    const payload = {
-      version: 3,
-      type: "unified",
-      exported_at: new Date().toISOString(),
-      data: unifiedData,
-    };
-    const now = new Date();
-    const timestamp = `${now.toISOString().slice(0, 10)}_${now.toTimeString().slice(0, 8).replace(/:/g, '-')}`;
-    download(`export-financial-monitor-unified-${timestamp}.json`, JSON.stringify(payload, null, 2));
-  }
-
-
-  function validateExpensesPayload(data) {
-    const errors = [];
-    let items = [];
-    let incomingCategories = null;
-    let incomingSources = null;
-    let created = null;
-
-    if (Array.isArray(data)) {
-      items = data;
-    } else if (data && typeof data === "object") {
-      incomingCategories = Array.isArray(data.categories) ? data.categories : null;
-      incomingSources = Array.isArray(data.sources) ? data.sources : null;
-      created = typeof data.created_at === "string" ? data.created_at : null;
-
-      if (Array.isArray(data.inputs)) {
-        items = data.inputs.flatMap((section) => Array.isArray(section.expenses) ? section.expenses : []);
-        if (!items.length) errors.push("'inputs' não contém nenhuma lista 'expenses'.");
-      } else if (Array.isArray(data.expenses)) {
-        items = data.expenses;
-      } else {
-        errors.push("Estrutura inválida. Use { inputs: [{ expenses: [...] }] } ou { expenses: [...] }.");
-      }
-    } else {
-      errors.push("JSON raiz deve ser um objeto ou um array.");
-    }
-
-    // Validar itens
-    const itemErrors = [];
-    items.forEach((e, idx) => {
-      const where = `Item #${idx + 1}`;
-      if (!e || typeof e !== "object") { itemErrors.push(`${where}: não é um objeto.`); return; }
-      if (!e.date) itemErrors.push(`${where}: campo obrigatório ausente: 'date'.`);
-      else if (isNaN(new Date(e.date))) itemErrors.push(`${where}: 'date' inválido (use AAAA-MM-DD).`);
-      if (!e.description) itemErrors.push(`${where}: campo obrigatório ausente: 'description'.`);
-      if (e.value === undefined || e.value === null || String(e.value).trim() === "") {
-        itemErrors.push(`${where}: 'value' ausente (pode ser 0, positivo ou negativo).`);
-      } else if (!Number.isFinite(Number(String(e.value).replace(/\./g, "").replace(/,/g, ".")))) {
-        itemErrors.push(`${where}: 'value' inválido (use número, ex.: -123.45).`);
-      }
-    });
-    errors.push(...itemErrors);
-
-    return { errors, items, incomingCategories, incomingSources, created };
-  }
-
-  function importJsonFile(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        
-        // Verificar se é um arquivo unificado
-        if (data.type === "unified" && data.data) {
-          // Importar dados unificados
-          setUnifiedStore(data.data);
-          setImportModalOpen(false);
-          return;
-        }
-        
-        if (data && Array.isArray(data.inputs)) {
-          const inputExpenses = data.inputs.flatMap((section) => section.expenses || []);
-          const normalized = inputExpenses.map(withId);
-          const incomingCategories = Array.isArray(data.categories) && data.categories.length ? data.categories : categories;
-          const incomingSources = Array.isArray(data.sources) && data.sources.length ? data.sources : sources;
-          const created = data.created_at || createdAt || new Date().toISOString();
-          setUnifiedStore((prev) => {
-            const safePrev = ensureUnifiedDefaults(prev);
-            const nextCategories = mergeCategoriesFromExpenses(normalized, incomingCategories);
-            const nextSources = mergeSourcesFromExpenses(normalized, incomingSources);
-            const nextPersonal = {
-              ...safePrev.gastos.personalInfo,
-              ...(data.personal_info || {}),
-            };
-            const nextSettings = {
-              ...safePrev.gastos.settings,
-              ...(data.settings || {}),
-            };
-            return {
-              ...safePrev,
-              gastos: {
-                ...safePrev.gastos,
-                expenses: normalized,
-                categories: nextCategories,
-                sources: nextSources,
-                personalInfo: nextPersonal,
-                settings: nextSettings,
-                createdAt: created,
-              },
-            };
-          });
-        } else if (Array.isArray(data.expenses)) {
-          const normalized = data.expenses.map(withId);
-          setUnifiedStore((prev) => {
-            const safePrev = ensureUnifiedDefaults(prev);
-            return {
-              ...safePrev,
-              gastos: {
-                ...safePrev.gastos,
-                expenses: normalized,
-                categories: mergeCategoriesFromExpenses(normalized, safePrev.gastos.categories),
-                sources: mergeSourcesFromExpenses(normalized, safePrev.gastos.sources),
-              },
-            };
-          });
-        } else {
-          window.alert("Arquivo inválido. Esperado JSON com a chave 'inputs' ou um array de transações.");
-        }
-      } catch (e) {
-        window.alert("Falha ao ler JSON: " + e.message);
-      }
-    };
-    reader.readAsText(file);
+    exportStoreJson(store);
+    showToast("Backup JSON exportado.", { tone: "success" });
   }
 
   function downloadTemplate() {
-    const template = {
-      version: 2,
-      created_at: new Date().toISOString(),
-      categories: [
-        { name: "Alimentação", color: "", icon: "🍔" },
-      ],
-      sources: [
-        { name: "Pessoal", color: "", icon: "💼" },
-      ],
-      personal_info: {
-        fullName: "Nome do Usuário",
-        email: "usuario@exemplo.com",
-        householdSize: 1,
-      },
-      settings: {
-        defaultTab: "dashboard",
-        monthlyBudget: 0,
-        currency: "BRL",
-      },
-      inputs: [
-        {
-          expenses: [
-            {
-              date: "2025-01-31",
-              description: "Supermercado",
-              category: "Alimentação",
-              source: "Pessoal",
-              value: -123.45,
-            },
-          ],
-        },
-      ],
-    };
-    download("template_gastos.json", JSON.stringify(template, null, 2));
+    download("template_gastos.json", JSON.stringify(buildExpensesTemplate(), null, 2));
+  }
+
+  function handleImport(analysis, mode) {
+    const { store: nextStore, report } = applyImport(store, analysis, mode);
+    setStore(nextStore);
+    setImportModalOpen(false);
+    showToast(
+      mode === "replace"
+        ? "Dados importados (substituição)."
+        : `Importação concluída: ${report.expensesAdded} transação(ões) e ${report.entriesAdded} lançamento(s) novos.`,
+      { tone: "success" }
+    );
+  }
+
+  function finishSubmit(prepared) {
+    setExpenses((prev) => [...prev, ...prepared]);
+    setDrafts([createDraftExpense({ date: prepared.at(-1)?.date || todayISO() })]);
+    setDuplicateModal(null);
+    showToast(`${prepared.length} transação(ões) salva(s).`, { tone: "success" });
+    setTab("historico");
   }
 
   function handleSubmitDrafts(rows) {
     const prepared = rows
-      .filter((r) => r.date && r.description)
+      .filter((r) => r.date && r.description && r.description.trim())
       .map((r) => {
-        const normalized = normalizeExpense({
-          ...r,
-          id: makeId(),
-          date: r.date,
-          description: r.description.trim(),
-          value: toNumber(r.value),
-        });
-        const categories = normalized.categories.length
-          ? normalized.categories
-          : findCategoriesForDescription(normalized.description);
-        return {
-          ...normalized,
-          categories,
-          category: categories[0] || "",
-        };
+        const normalized = normalizeExpense({ ...r, id: makeId(), description: r.description.trim(), value: toNumber(r.value) });
+        const cats = normalized.categories.length ? normalized.categories : findCategoriesForDescription(normalized.description);
+        return { ...normalized, categories: cats, category: cats[0] || "" };
       });
-    if (!prepared.length) return;
-
-    // Verificar duplicatas
-    const duplicates = [];
-    for (const newItem of prepared) {
-      const existing = expenses.find(existing => 
-        existing.date === newItem.date &&
-        existing.description.toLowerCase() === newItem.description.toLowerCase() &&
-        Math.abs((existing.value || 0) - (newItem.value || 0)) < 0.01 // tolerância para valores decimais
-      );
-      if (existing) {
-        duplicates.push({
-          new: newItem,
-          existing: existing
-        });
-      }
+    if (!prepared.length) {
+      showToast("Preencha data, descrição e valor em pelo menos uma linha.", { tone: "error" });
+      return;
     }
 
-    // Se há duplicatas, mostrar modal de opções
+    const duplicates = [];
+    for (const newItem of prepared) {
+      const existing = expenses.find(
+        (e) =>
+          (newItem.externalId && e.externalId === newItem.externalId) ||
+          e.date === newItem.date &&
+          (e.description || "").toLowerCase() === newItem.description.toLowerCase() &&
+          Math.abs((e.value || 0) - (newItem.value || 0)) < 0.01
+      );
+      if (existing) duplicates.push({ new: newItem, existing });
+    }
+
     if (duplicates.length > 0) {
       setDuplicateModal({
         duplicates,
         onDeleteAndAdd: () => {
-          // Deletar duplicatas existentes
-          const duplicateIds = duplicates.map(dup => dup.existing.id);
-          setExpenses(prev => prev.filter(expense => !duplicateIds.includes(expense.id)));
-          setExpenses((prev) => [...prev, ...prepared]);
-          setDrafts([createDraftExpense()]);
-          setTab("historico");
-          setDuplicateModal(null);
+          const ids = new Set(duplicates.map((d) => d.existing.id));
+          setExpenses((prev) => prev.filter((e) => !ids.has(e.id)));
+          finishSubmit(prepared);
         },
-        onAddAnyway: () => {
-          // Adicionar mesmo com duplicatas
-          setExpenses((prev) => [...prev, ...prepared]);
-          setDrafts([createDraftExpense()]);
-          setTab("historico");
-          setDuplicateModal(null);
+        onSkipDuplicates: () => {
+          const dupNew = new Set(duplicates.map((d) => d.new));
+          const rest = prepared.filter((p) => !dupNew.has(p));
+          if (!rest.length) {
+            setDuplicateModal(null);
+            showToast("Nada novo para adicionar.");
+            return;
+          }
+          finishSubmit(rest);
         },
-        onCancel: () => {
-          setDuplicateModal(null);
-        }
+        onAddAnyway: () => finishSubmit(prepared),
       });
-      return; // Não prosseguir com a adição normal
+      return;
     }
-
-    setExpenses((prev) => [...prev, ...prepared]);
-    setDrafts([createDraftExpense()]);
-    setTab("historico");
+    finishSubmit(prepared);
   }
 
-  function DuplicateModal({ modal }) {
-    if (!modal) return null;
-
-    const { duplicates, onDeleteAndAdd, onAddAnyway, onCancel } = modal;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">
-            Transações Duplicadas Encontradas
-          </h3>
-          
-          <div className="mb-4">
-            <p className="text-sm text-slate-600 mb-3">
-              As seguintes transações já existem no histórico:
-            </p>
-            <div className="bg-slate-50 rounded-lg p-3 max-h-48 overflow-y-auto">
-              <ul className="space-y-2 text-sm">
-                {duplicates.map((dup, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="text-slate-500">•</span>
-                    <div className="flex-1">
-                      <span className="font-medium">{dup.new.date}</span>
-                      <span className="text-slate-600"> - {dup.new.description}</span>
-                    </div>
-                    <span className={`font-semibold ${dup.new.value < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                      {fmtBRL(dup.new.value)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <button
-              onClick={onDeleteAndAdd}
-              className="w-full bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors"
-            >
-              Deletar duplicatas e adicionar novas
-            </button>
-            
-            <button
-              onClick={onAddAnyway}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Adicionar mesmo com duplicatas
-            </button>
-            
-            <button
-              onClick={onCancel}
-              className="w-full bg-slate-200 text-slate-700 py-2 px-4 rounded-lg font-medium hover:bg-slate-300 transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  function clearExpenses() {
+    updateExpenses((prev) => ({ ...prev, expenses: [] }));
+    showToast("Transações removidas.");
   }
+
+  const historyProps = {
+    expenses,
+    derived,
+    setExpenses,
+    categories,
+    sources,
+    onClearAll: () => setConfirmClear(true),
+    onCreateCategory: addCategory,
+    onCreateSource: addSource,
+    onGoToEntry: () => setTab("entrada"),
+    onSaveDescriptionMapping: upsertDescriptionMapping,
+  };
+
+  const monthExpenseCount = useMemo(() => {
+    const ym = todayISO().slice(0, 7);
+    return expenses.filter((e) => (e.date || "").startsWith(ym)).length;
+  }, [expenses]);
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 p-6 text-slate-800">
-      <DuplicateModal modal={duplicateModal} />
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-6 space-y-4">
-          <BackToHomeButton />
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-bold text-slate-900">Controle de Gastos</h1>
-                <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-[0.7rem] font-semibold text-slate-600 shadow-sm">
-                  {focusOptions.map((option) => {
-                    const active = option.key === focusArea;
-                    return (
-                      <button
-                        key={option.key}
-                        type="button"
-                        onClick={() => handleFocusChange(option.key)}
-                        className={`rounded-full px-3 py-1 transition ${
-                          active ? "bg-slate-900 text-white shadow" : "hover:bg-slate-100"
-                        }`}
-                        title={option.tooltip}
-                        aria-pressed={active}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <p className="text-sm text-slate-600">
-                Suba arquivos (CSV/XLSX/PDF), categorize e acompanhe seus gastos por mês. Seus dados ficam no navegador.
-              </p>
-            </div>
-            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <div className="flex flex-wrap items-center gap-2">
-                <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson} title="Baixe um arquivo JSON com os gastos registrados">
-                  Exportar
-                </ActionButton>
-                <ActionButton
-                  icon={ArrowUpTrayIcon}
-                  onClick={() => setImportModalOpen(true)}
-                  title="Importe um arquivo JSON previamente exportado"
-                >
-                  Importar
-                </ActionButton>
-                <Link
-                  to="/gastos/relatorio"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-                >
-                  <DocumentArrowDownIcon className="h-5 w-5" />
-                  Relatório PDF
-                </Link>
-                <Link
-                  to="/gastos/configuracoes"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-                >
-                  <SettingsIcon className="h-5 w-5" />
-                  Configurações
-                </Link>
-              </div>
-            </div>
-          </div>
-          <Tabs
-            tabs={[
-              { key: 'dashboard', label: 'Dashboard', icon: <ChartBarIcon className="h-5 w-5" /> },
-              { key: 'historico', label: 'Histórico', icon: <TableCellsIcon className="h-5 w-5" /> },
-              { key: 'entrada', label: 'Nova Transação', icon: <PlusIcon className="h-5 w-5" /> },
-              { key: 'financiamentos', label: 'Financiamentos', icon: <CalculatorIcon className="h-5 w-5" /> },
-            ]}
-            activeTab={tab}
-            onChange={handleTabChange}
-          />
-        </header>
+    <AppShell>
+      {toast}
+      <PageHeader title="Gastos" description="Importe extratos e faturas (CSV, XLSX ou PDF), categorize e acompanhe seus gastos por mês.">
+        <ActionButton icon={ArrowDownTrayIcon} onClick={exportJson} title="Baixa um backup JSON com todos os dados">
+          Exportar
+        </ActionButton>
+        <ActionButton icon={ArrowUpTrayIcon} onClick={() => setImportModalOpen(true)} title="Importa um backup JSON ou template">
+          Importar
+        </ActionButton>
+        <Link to="/gastos/relatorio" className="btn" title="Resumo imprimível e PDF">
+          <DocumentArrowDownIcon className="h-4 w-4" />
+          Relatório
+        </Link>
+      </PageHeader>
 
-        {tab === 'dashboard' && <ExpensesDashboard monthly={timeline} totals={totals} categories={categories} sources={sources} />}
-        {tab === 'historico' && (
-          <ExpensesHistorico expenses={expensesWithIds} derived={derived} setExpenses={setExpenses} categories={categories} sources={sources} />
-        )}
-        {tab === 'entrada' && (
+      <Tabs
+        className="mb-4"
+        tabs={[
+          { key: "dashboard", label: "Dashboard", icon: <ChartBarIcon className="h-4 w-4" /> },
+          { key: "historico", label: "Histórico", icon: <TableCellsIcon className="h-4 w-4" />, badge: expenses.length },
+          { key: "visoes", label: "Visões", icon: <FilterIcon className="h-4 w-4" />, tooltip: "Histórico com filtros salvos" },
+          { key: "entrada", label: "Nova Transação", icon: <PlusIcon className="h-4 w-4" /> },
+          { key: "financiamentos", label: "Financiamentos", icon: <CalculatorIcon className="h-4 w-4" /> },
+        ]}
+        activeTab={tab}
+        onChange={setTab}
+      />
+
+      {tab === "dashboard" && (
+        <ExpensesDashboard key={ready ? "ready" : "loading"} monthly={timeline} totals={totals} categories={categories} sources={sources} budget={settings.monthlyBudget || 0} />
+      )}
+      {tab === "historico" && (
+        <ExpensesHistorico
+          {...historyProps}
+          onSaveView={({ name, filters }) => {
+            const existing = (expensesData.views || []).find((v) => v.name.toLowerCase() === name.toLowerCase());
+            updateExpenses((prev) => ({
+              ...prev,
+              views: existing
+                ? prev.views.map((v) => (v.id === existing.id ? { ...v, filters } : v))
+                : [...(prev.views || []), { id: `view-${Date.now().toString(36)}`, name, icon: "", filters }],
+            }));
+            showToast(`Visão "${name}" salva. Veja na aba Visões.`, { tone: "success" });
+          }}
+        />
+      )}
+      {tab === "visoes" && (
+        <ExpensesViews
+          {...historyProps}
+          views={expensesData.views || []}
+          onChangeViews={(views) => updateExpenses((prev) => ({ ...prev, views }))}
+        />
+      )}
+      {tab === "entrada" && (
         <ExpensesEntrada
           drafts={drafts}
           setDrafts={setDrafts}
+          createDraft={createDraftExpense}
           onSubmit={handleSubmitDrafts}
           categories={categories}
           sources={sources}
-          setStore={setUnifiedStore}
           suggestCategories={findCategoriesForDescription}
+          descriptionMemory={descriptionMemory}
           onSaveDescriptionMapping={upsertDescriptionMapping}
           descriptionMappings={descriptionCategoryMappings}
-          ignoredDescriptions={store.ignoredDescriptions || []}
+          mappingActions={mappingActions}
+          ignoredDescriptions={ignoredDescriptions}
+          onCreateCategory={addCategory}
+          onCreateSource={addSource}
+          monthCount={monthExpenseCount}
+          referenceRates={settings.fxRates || {}}
         />
-        )}
-        {tab === 'financiamentos' && <FinancingCalculator />}
+      )}
+      {tab === "financiamentos" && <FinancingCalculator />}
 
-        <footer className="mt-10 text-center text-xs text-slate-500">
-          <p>Seus gastos e bibliotecas de categorias/fontes são salvos no localStorage.</p>
-        </footer>
-      </div>
+      {!ready && <p className="mt-6 text-center text-xs text-muted">Carregando dados...</p>}
+
       <ImportModal
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        onImport={importJsonFile}
+        onApply={handleImport}
         onDownloadTemplate={downloadTemplate}
+        templateLabel="Template de gastos"
       />
-    </div>
+      <ConfirmDialog
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={clearExpenses}
+        title="Apagar todas as transações?"
+        message="Categorias, fontes, mapeamentos e os dados de investimentos são mantidos. Exporte um backup antes."
+        confirmLabel="Apagar transações"
+        danger
+      />
+      <Modal
+        open={Boolean(duplicateModal)}
+        onClose={() => setDuplicateModal(null)}
+        title="Transações duplicadas encontradas"
+        description="Estas transações já existem no histórico (mesma data, descrição e valor)."
+        footer={
+          duplicateModal && (
+            <>
+              <button type="button" className="btn" onClick={() => setDuplicateModal(null)}>Cancelar</button>
+              <button type="button" className="btn" onClick={duplicateModal.onSkipDuplicates}>Pular duplicadas</button>
+              <button type="button" className="btn" onClick={duplicateModal.onAddAnyway}>Adicionar mesmo assim</button>
+              <button type="button" className="btn-danger" onClick={duplicateModal.onDeleteAndAdd}>Substituir existentes</button>
+            </>
+          )
+        }
+      >
+        {duplicateModal && (
+          <ul className="max-h-56 space-y-1 overflow-auto rounded-lg bg-surface-2 p-2 text-sm">
+            {duplicateModal.duplicates.map((dup, index) => (
+              <li key={index} className="flex items-center justify-between gap-2">
+                <span className="truncate">
+                  <span className="num text-muted">{fmtDate(dup.new.date)}</span> · {dup.new.description}
+                </span>
+                <span className={`num font-semibold ${dup.new.value < 0 ? "text-neg" : "text-pos"}`}>{fmtBRL(dup.new.value)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
+    </AppShell>
   );
+}
+
+function mergeSourcesFromExpenses(expensesArr, baseSources = []) {
+  let next = Array.isArray(baseSources) ? [...baseSources] : [];
+  for (const e of expensesArr) {
+    for (const src of Array.isArray(e.sources) ? e.sources : [e.source]) next = ensureSourceInLibrary(src, next);
+  }
+  return next;
+}
+
+function mergeCategoriesFromExpenses(expensesArr, baseCategories = []) {
+  let next = Array.isArray(baseCategories) ? [...baseCategories] : [];
+  for (const e of expensesArr) {
+    for (const cat of Array.isArray(e.categories) ? e.categories : [e.category]) next = ensureCategoryInLibrary(cat, next);
+  }
+  return next;
 }
